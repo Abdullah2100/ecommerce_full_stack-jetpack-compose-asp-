@@ -1,9 +1,6 @@
 package com.example.eccomerce_app.util
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.provider.MediaStore
 import androidx.compose.foundation.lazy.LazyListState
@@ -11,22 +8,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
-import android.graphics.Canvas
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.data.Room.Model.AuthModelEntity
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.number
 import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
-import java.io.ByteArrayOutputStream
 import java.io.File
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.util.Calendar
 import java.util.Locale
 
 
@@ -110,29 +102,6 @@ object General {
         }
     }
 
-    fun Calendar.toLocalDateTime(): LocalDateTime? {
-
-        val tz = this.getTimeZone()
-        val zid = if (tz == null) ZoneId.systemDefault() else tz.toZoneId()
-        return LocalDateTime.ofInstant(this.toInstant(), zid)
-    }
-
-    fun Long.toCalender(): Calendar {
-        val calendar = Calendar.getInstance()
-
-        val instant = Instant.ofEpochMilli(this)
-        val zonedDateTime = instant.atZone(ZoneId.systemDefault())
-        calendar.set(
-            zonedDateTime.year,
-            zonedDateTime.month.value - 1,
-            zonedDateTime.dayOfMonth,
-            Calendar.HOUR,
-            Calendar.MINUTE,
-            Calendar.SECOND
-        )
-        return calendar
-
-    }
 
     fun LazyListState.reachedBottom(): Boolean {
         val visibleItemsInfo = layoutInfo.visibleItemsInfo // Get the visible items
@@ -150,15 +119,19 @@ object General {
         }
     }
 
-    fun drawableToByteArray(drawableResId: Int,context: Context): ByteArray {
-        val drawable = ContextCompat.getDrawable(context, drawableResId) ?: return ByteArray(0)
-        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
-        drawable.draw(canvas)
-        val stream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-        return stream.toByteArray()
+    fun LocalDateTime.toCustomString(isTime: Boolean = false): String {
+        return when (isTime) {
+            true -> {
+                if (this.hour == 0) ""
+                else "${this.hour}:${this.minute}"
+            }
+
+            else -> {
+                if(year==1)return ""
+                "${day}/${month.number+1}/${year}"
+            }
+        }
+
     }
 
 }

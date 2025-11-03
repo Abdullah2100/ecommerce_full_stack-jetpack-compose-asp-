@@ -8,7 +8,7 @@ import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.dto.StoreDto
 import com.example.eccomerce_app.model.DtoToModel.toStore
 import com.example.e_commercompose.model.StoreModel
-import com.example.e_commercompose.ui.view.account.store.enStoreOpeation
+import com.example.eccomerce_app.ui.view.account.store.EnStoreOperation
 import com.example.eccomerce_app.dto.CreateStoreDto
 import com.example.eccomerce_app.dto.StoreStatusDto
 import com.example.eccomerce_app.data.NetworkCallHandler
@@ -121,7 +121,8 @@ class StoreViewModel(
         wallpaperImage: File? = null,
         smallImage: File? = null,
         storeTitle: String? = null,
-        updateStoreOperation: MutableState<enStoreOpeation?>? =null
+        updateStoreOperation: MutableState<EnStoreOperation?>? =null,
+        storeId: UUID?=null
     ) {
         var myStoreData: CreateStoreDto? = null
         if (storeCreateData.value == null)
@@ -147,8 +148,8 @@ class StoreViewModel(
         viewModelScope.launch {
             storeCreateData.emit(myStoreData)
         }
-        if (updateStoreOperation != null)
-            updateStoreOperation.value = enStoreOpeation.Update
+        if (updateStoreOperation != null&&storeId!=null)
+            updateStoreOperation.value = EnStoreOperation.Update
     }
 
 

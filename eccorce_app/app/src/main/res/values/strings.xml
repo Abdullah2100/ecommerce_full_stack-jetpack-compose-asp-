@@ -157,4 +157,13 @@
     <string name="enter_your_new_password">Enter Your New Password</string>
     <string name="enter_your_password">Enter your Password</string>
     <string name="address_list">Address List</string>
+    <string name="banner_image">Banner Image</string>
+    <string name="banner_end_date">Banner End Date</string>
+    <string name="banner_end_time">Banner End Time</string>
+    <string name="create_banner">Create Banner</string>
+
+
+
+
+    <string name="leftArrow">Left Arrow</string>
 </resources>

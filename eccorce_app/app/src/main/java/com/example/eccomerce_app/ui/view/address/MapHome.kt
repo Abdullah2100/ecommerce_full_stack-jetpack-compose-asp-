@@ -14,6 +14,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowLeft
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -34,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -121,6 +124,7 @@ fun MapHomeScreen(
     val coroutine = rememberCoroutineScope()
 
 
+    val isMyLocation = remember { mutableStateOf(false) }
     val isLoading = remember { mutableStateOf(false) }
     val isHasError = remember { mutableStateOf(false) }
     val isOpenSheet = remember { mutableStateOf(false) }
@@ -138,6 +142,7 @@ fun MapHomeScreen(
             else LatLng(additionLat, additionLong!!)
         )
     }
+
     val additionLocation = rememberUpdatedMarkerState(
         position = additionLatLng.value
     )
@@ -175,30 +180,22 @@ fun MapHomeScreen(
         orderViewModel.getMyOrders(mutableIntStateOf(1))
     }
 
+    fun updateMainLocation(point: LatLng) {
+//        marker.position = CameraPosition.fromLatLngZoom(point, 15f)
+        mainLocation.position = point
+    }
+
     fun handleMapClick(point: LatLng) {
-        Log.d("LocationClick", point.toString())
         when (mapType) {
             enMapType.My -> {
-                marker.position = CameraPosition.fromLatLngZoom(point, 15f)
-                mainLocation.position = point
+                updateMainLocation(point)
             }
 
             enMapType.MyStore -> {
                 coroutine.launch {
-                    isLoading.value = true
-                    //storeViewModel.setStoreCreateData(point.longitude, point.latitude)
-                    //
-                    val result = storeViewModel.updateStore(
-                        longitude = point.longitude,
-                        latitude = point.latitude
-                    )
-                    isLoading.value = false
-
-                    if (result != null) {
-                        snackBarHostState.showSnackbar(result)
-                        return@launch
-                    }
-                    nav.popBackStack()
+                    storeViewModel.setStoreCreateData(point.longitude, point.latitude)
+                    updateMainLocation(point)
+                    isMyLocation.value = true
                 }
             }
 
@@ -283,7 +280,11 @@ fun MapHomeScreen(
                     )
 
             } else {
-                Toast.makeText(context, context.getString(R.string.location_permission_denied), Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.location_permission_denied),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
     )
@@ -299,11 +300,6 @@ fun MapHomeScreen(
             )
         }
     }
-
-
-    /*LaunchedEffect(Unit) {
-        userViewModel.getMyInfo()
-    }*/
 
     LaunchedEffect(Unit) {
         requestPermissionThenNavigate.launch(
@@ -321,8 +317,6 @@ fun MapHomeScreen(
                 fusedLocationClient.removeLocationUpdates(locationCallback)
         }
     }
-
-
 
     Scaffold(
         modifier = Modifier
@@ -351,6 +345,27 @@ fun MapHomeScreen(
                         modifier = Modifier.size(25.dp)
                     )
                 }
+
+            if (isMyLocation.value)
+                FloatingActionButton(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .width(50.dp),
+                    onClick = {
+                        nav.popBackStack()
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    containerColor = CustomColor.alertColor_1_600
+                )
+                {
+                    Image(
+                        imageVector = ImageVector.vectorResource(R.drawable.arrow_back),
+                        contentDescription = "",
+                        modifier = Modifier.size(25.dp),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
+
         },
         floatingActionButtonPosition = FabPosition.Start,
         bottomBar = {
@@ -426,7 +441,9 @@ fun MapHomeScreen(
                             }
 
                         },
-                        buttonTitle = if (id.isNullOrEmpty()) stringResource(R.string.add) else stringResource(R.string.update),
+                        buttonTitle = if (id.isNullOrEmpty()) stringResource(R.string.add) else stringResource(
+                            R.string.update
+                        ),
                         validationFun = {
                             validateUserAddressTitle()
                         },
@@ -440,113 +457,111 @@ fun MapHomeScreen(
         paddingValue.calculateTopPadding()
         paddingValue.calculateBottomPadding()
 
-        ConstraintLayout {
+        ConstraintLayout(
+            modifier = Modifier
+                .background(Color.White)
+                .fillMaxSize()
+        ) {
             val (bottomRef) = createRefs()
 
 
-            LazyColumn(
+
+
+            GoogleMap(
                 modifier = Modifier
                     .padding(
                         top = paddingValue.calculateTopPadding(),
                         bottom = paddingValue.calculateBottomPadding()
                     )
-                    .background(Color.White)
-                    .fillMaxSize()
-            ) {
-                item {
+                    .fillMaxHeight(),
+                cameraPositionState = marker,
+                onMapClick = { latLng ->
+                    handleMapClick(latLng)
+                },
+                uiSettings = MapUiSettings(
+                    myLocationButtonEnabled = true,
+                    indoorLevelPickerEnabled = true,
 
-                    GoogleMap(
-                        modifier = Modifier.fillParentMaxSize(),
-                        cameraPositionState = marker,
-                        onMapClick = { latLng ->
-                            handleMapClick(latLng)
-                        },
-                        uiSettings = MapUiSettings(
-                            myLocationButtonEnabled = true,
-                            indoorLevelPickerEnabled = true,
-
-                            ),
-                        properties = MapProperties(isMyLocationEnabled = if (isHasNavigationMap) true else false)
+                    ),
+                properties = MapProperties(isMyLocationEnabled = if (isHasNavigationMap) true else false)
+            )
+            {
+                if (isHasNavigationMap == false)
+                    Marker(
+                        state = MarkerState(position = mainLocation.position),
+                        title = title,
                     )
-                    {
-                        if (isHasNavigationMap == false)
-                            Marker(
-                                state = MarkerState(position = mainLocation.position),
-                                title = title,
+                else {
+
+
+                    Marker(
+                        state = MarkerState(position = additionLocation.position),
+                        title = "My Place",
+                    )
+
+                    if (mapType == enMapType.Store)
+                        MarkerComposable(
+                            state = MarkerState(position = mainLocation.position),
+
+                            title = title,
+                            onClick = {
+                                true
+                            }
+                        ) {
+                            Image(
+                                imageVector = ImageVector
+                                    .vectorResource(id = R.drawable.store_icon),
+                                contentDescription = "",
+                                modifier = Modifier.size(20.dp)
                             )
-                        else {
 
-
-                            Marker(
-                                state = MarkerState(position = additionLocation.position),
-                                title = "My Place",
-                            )
-
-                            if (mapType == enMapType.Store)
-                                MarkerComposable(
-                                    state = MarkerState(position = mainLocation.position),
-
-                                    title = title,
-                                    onClick = {
-                                        true
-                                    }
-                                ) {
-                                    Image(
-                                        imageVector = ImageVector
-                                            .vectorResource(id = R.drawable.store_icon),
-                                        contentDescription = "",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-
-                                }
                         }
-
-                        if (!directions.value.isNullOrEmpty() && isHasNavigationMap)
-                            Polyline(
-                                directions.value!!,
-                                color = Color.Red,
-                                pattern = listOf(
-                                    Dash(15f), Gap(2f)
-                                )
-                            )
-                    }
-
-
                 }
+
+                if (!directions.value.isNullOrEmpty() && isHasNavigationMap)
+                    Polyline(
+                        directions.value!!,
+                        color = Color.Red,
+                        pattern = listOf(
+                            Dash(15f), Gap(2f)
+                        )
+                    )
             }
 
 
-               if (isHasTitle) CustomButton(
-                   buttonTitle = if (!id.isNullOrEmpty()) stringResource(R.string.edite_current_location) else stringResource(
-                       R.string.add_new_address
-                   ),
-                   color = CustomColor.primaryColor700,
-                   isEnable = true,
-                   customModifier = Modifier
-                       .padding(bottom = paddingValue.calculateBottomPadding() + 10.dp)
 
-                       .height(50.dp)
-                       .fillMaxWidth(0.9f)
-                       .constrainAs(bottomRef) {
-                           bottom.linkTo(parent.bottom)
-                           start.linkTo(parent.start)
-                           end.linkTo(parent.end)
-                       },
 
-                   isLoading = false,
-                   operation = {
-                       when (isHasTitle) {
-                           true -> {
-                               isOpenSheet.value = true
-                           }
+            if (isHasTitle) CustomButton(
+                buttonTitle = if (!id.isNullOrEmpty()) stringResource(R.string.edite_current_location) else stringResource(
+                    R.string.add_new_address
+                ),
+                color = CustomColor.primaryColor700,
+                isEnable = true,
+                customModifier = Modifier
+                    .padding(bottom = paddingValue.calculateBottomPadding() + 10.dp)
 
-                           else -> {
+                    .height(50.dp)
+                    .fillMaxWidth(0.9f)
+                    .constrainAs(bottomRef) {
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(parent.start)
+                        end.linkTo(parent.end)
+                    },
 
-                           }
-                       }
-                   },
-                   labelSize = 20
-               )
+                isLoading = false,
+                operation = {
+                    when (isHasTitle) {
+                        true -> {
+                            isOpenSheet.value = true
+                        }
+
+                        else -> {
+
+                        }
+                    }
+                },
+                labelSize = 20
+            )
 
         }
     }

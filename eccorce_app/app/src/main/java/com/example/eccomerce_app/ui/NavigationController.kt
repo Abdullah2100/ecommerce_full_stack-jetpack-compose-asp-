@@ -21,7 +21,7 @@ import com.example.e_commercompose.ui.view.account.AccountPage
 import com.example.eccomerce_app.ui.view.account.ProfileScreen
 import com.example.eccomerce_app.ui.view.account.store.CreateProductScreen
 import com.example.eccomerce_app.ui.view.account.store.ProductDetail
-import com.example.e_commercompose.ui.view.account.store.StoreScreen
+import com.example.eccomerce_app.ui.view.account.store.StoreScreen
 import com.example.e_commercompose.ui.view.checkout.CheckoutScreen
 import com.example.eccomerce_app.ui.view.home.CartScreen
 import com.example.eccomerce_app.ui.view.home.HomePage
@@ -573,7 +573,6 @@ fun NavController(
                 }) {
                 OrderForMyStoreScreen(
                     nav = nav,
-                    userViewModel = userViewModel,
                     orderItemsViewModel = orderItemViewModel
                 )
 
