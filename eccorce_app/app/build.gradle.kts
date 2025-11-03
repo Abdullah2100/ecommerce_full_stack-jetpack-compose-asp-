@@ -164,13 +164,19 @@ dependencies {
 
     //qc
    // implementation(libs.qr.kit)
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-    implementation("com.google.zxing:core:3.3.0")
+    implementation(libs.zxing.android.embedded)
+    implementation(libs.core)
+
+    //live time
+    implementation (libs.androidx.runtime.livedata)
 
     //google map
     implementation(libs.maps.utils.ktx)
     implementation(libs.maps.compose)
     implementation(libs.play.services.maps)
+
+    //local datetime kotlin
+    implementation(libs.kotlinx.datetime)
 
 
 }

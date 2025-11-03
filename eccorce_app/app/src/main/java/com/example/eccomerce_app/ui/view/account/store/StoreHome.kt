@@ -1,7 +1,8 @@
-package com.example.e_commercompose.ui.view.account.store
+package com.example.eccomerce_app.ui.view.account.store
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,17 +36,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -53,10 +56,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -89,6 +94,7 @@ import com.example.e_commercompose.model.Category
 import com.example.e_commercompose.model.SubCategoryUpdate
 import com.example.e_commercompose.model.enMapType
 import com.example.e_commercompose.ui.component.BannerBage
+import com.example.e_commercompose.ui.component.CustomAuthBottom
 import com.example.e_commercompose.ui.component.CustomButton
 import com.example.e_commercompose.ui.component.ProductLoading
 import com.example.e_commercompose.ui.component.ProductShape
@@ -99,7 +105,7 @@ import com.example.eccomerce_app.ui.Screens
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.util.General.reachedBottom
 import com.example.eccomerce_app.util.General.toCustomFil
-import com.example.eccomerce_app.util.General.toLocalDateTime
+import com.example.eccomerce_app.util.General.toCustomString
 import com.example.eccomerce_app.viewModel.BannerViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
 import com.example.eccomerce_app.viewModel.ProductViewModel
@@ -108,14 +114,20 @@ import com.example.eccomerce_app.viewModel.SubCategoryViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
+import com.vsnappy1.datepicker.DatePicker
+import com.vsnappy1.timepicker.TimePicker
 import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
 import java.io.File
-import java.util.Calendar
 import java.util.UUID
 
-enum class enOperation { STORE }
-enum class enStoreOpeation { Create, Update }
+enum class EnOperation { STORE }
+enum class EnStoreOperation { Create, Update }
+
+enum class EnBottomSheetType { SupCategory, Banner }
+enum class EnDateTimeType { Date, Time }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,10 +145,12 @@ fun StoreScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val context = LocalContext.current
-    val coroutine = rememberCoroutineScope()
 
+
+    val coroutine = rememberCoroutineScope()
+    val state = rememberPullToRefreshState()
     val sheetState = rememberModalBottomSheetState()
-    val datePickerState = rememberDatePickerState()
+    val dateTimeSheetState = rememberModalBottomSheetState()
     val lazyState = rememberLazyListState()
 
 
@@ -148,8 +162,13 @@ fun StoreScreen(
     val products = productViewModel.products.collectAsState()
 
 
-    val operationType = remember { mutableStateOf<enOperation?>(null) }
-    val storeOperation = remember { mutableStateOf<enStoreOpeation?>(null) }
+    val operationType = remember { mutableStateOf<EnOperation?>(null) }
+    val storeOperation = remember { mutableStateOf<EnStoreOperation?>(null) }
+    val bottomSheetType = remember { mutableStateOf<EnBottomSheetType?>(null) }
+    val bottomSheetDateTimeType = remember { mutableStateOf<EnDateTimeType?>(null) }
+
+
+    val bannerEndDateTime = remember { mutableStateOf<LocalDateTime?>(null) }
 
     val selectedSubCategoryId = remember { mutableStateOf<UUID?>(null) }
     val selectedSubCategoryIdHolder = remember { mutableStateOf<UUID?>(null) }
@@ -165,10 +184,10 @@ fun StoreScreen(
 
     val isLoadingMore = remember { mutableStateOf(false) }
     val isRefresh = remember { mutableStateOf(false) }
-    val isShownSubCategoryBottomSheet = remember { mutableStateOf(false) }
     val isUpdated = remember { mutableStateOf(false) }
     val isDeleted = remember { mutableStateOf(false) }
-    val isSubCategoryCreateError = remember { mutableStateOf(false) }
+    val isDateTimeBottomSheetOpen = remember { mutableStateOf(false) }
+    val isOpenBottomSheet = remember { mutableStateOf(false) }
     val isChangeSubCategory = remember { mutableStateOf(false) }
     val isExpandedCategory = remember { mutableStateOf(false) }
     val isShownDateDialog = remember { mutableStateOf(false) }
@@ -214,91 +233,85 @@ fun StoreScreen(
     val subCategoryName = remember { mutableStateOf(TextFieldValue("")) }
 
 
-    val calendar = Calendar.getInstance();
-
-    val newTimeInMillis = calendar.timeInMillis
-
     val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    fun handlingLocation(): LatLng? {
-              return   if (storeData == null) null
-                else   LatLng(storeData.latitude, storeData.longitude)
+    fun handlingLocation(mapType: enMapType, currentLocation: Location): LatLng? {
+        return when (mapType) {
+            enMapType.MyStore -> LatLng(currentLocation.latitude, currentLocation.longitude)
+            else -> {
+                if (storeData == null) null
+                else LatLng(storeData.latitude, storeData.longitude)
+            }
+        }
     }
 
     val requestPermissionThenNavigate = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestMultiplePermissions(),
-        onResult = { permissions ->
+        contract = ActivityResultContracts.RequestMultiplePermissions(), onResult = { permissions ->
             val arePermissionsGranted = permissions.values.reduce { acc, next -> acc && next }
 
             if (arePermissionsGranted) {
 
                 if (ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_FINE_LOCATION
+                        context, Manifest.permission.ACCESS_FINE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
+                        context, Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
 
                     return@rememberLauncherForActivityResult
-                } else locationClient.lastLocation
-                    .apply {
-                        addOnSuccessListener { location ->
+                } else locationClient.lastLocation.apply {
+                    addOnSuccessListener { location ->
 
-                            location?.toString()
-                            if (location != null) {
-                                val type =
-                                    when ((myStoreId == storeId || myStoreId == null) && isFromHome == false) {
-                                        true -> enMapType.MyStore
-                                        else -> enMapType.Store
-                                    }
-                                val locationHolder = handlingLocation()
-
-                                nav.navigate(
-                                    Screens.MapScreen(
-                                        lognit = locationHolder?.longitude,
-                                        latitt = locationHolder?.latitude,
-                                        additionLat = if (type == enMapType.Store) location.latitude else null,
-                                        additionLong = if (type == enMapType.Store) location.longitude else null,
-                                        isFromLogin = false,
-                                        title = null,
-                                        mapType = type,
-                                    )
-                                )
-                            } else
-                                coroutine.launch {
-                                    snackBarHostState.showSnackbar(context.getString(R.string.you_should_enable_location_services))
+                        location?.toString()
+                        if (location != null) {
+                            val type =
+                                when ((myStoreId == storeId || myStoreId == null) && isFromHome == false) {
+                                    true -> enMapType.MyStore
+                                    else -> enMapType.Store
                                 }
-                        }
-                        addOnFailureListener { fail ->
-                            Log.d(
-                                "contextError",
-                                "the current location is null ${fail.stackTrace}"
-                            )
+                            val locationHolder = handlingLocation(type, location)
 
+                            nav.navigate(
+                                Screens.MapScreen(
+                                    lognit = locationHolder?.longitude,
+                                    latitt = locationHolder?.latitude,
+                                    additionLat = if (type == enMapType.Store) location.latitude else null,
+                                    additionLong = if (type == enMapType.Store) location.longitude else null,
+                                    isFromLogin = false,
+                                    title = null,
+                                    mapType = type,
+                                )
+                            )
+                        } else coroutine.launch {
+                            snackBarHostState.showSnackbar(context.getString(R.string.you_should_enable_location_services))
                         }
                     }
+                    addOnFailureListener { fail ->
+                        Log.d(
+                            "contextError", "the current location is null ${fail.stackTrace}"
+                        )
+
+                    }
+                }
 
 
                 // Got last known location. In some srare situations this can be null.
             } else {
-                Toast.makeText(context,
-                    context.getString(R.string.location_permission_denied)
-                    , Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.location_permission_denied),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
-        }
-    )
-
+        })
 
     val onImageSelection = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
-    )
-    { uri ->
+    ) { uri ->
         if (uri != null) {
             val fileHolder = uri.toCustomFil(context = context)
             if (fileHolder != null) {
-                when (isPigImage.value == null) {
+                when (isPigImage.value == null || bottomSheetType.value == EnBottomSheetType.Banner) {
                     true -> {
                         bannerImage.value = fileHolder
                         isShownDateDialog.value = true
@@ -309,14 +322,16 @@ fun StoreScreen(
                             true -> {
                                 storeViewModel.setStoreCreateData(
                                     wallpaperImage = fileHolder,
-                                    updateStoreOperation = storeOperation
+                                    updateStoreOperation = storeOperation,
+                                    storeId = storeId
                                 )
                             }
 
                             else -> {
                                 storeViewModel.setStoreCreateData(
                                     smallImage = fileHolder,
-                                    updateStoreOperation = storeOperation
+                                    updateStoreOperation = storeOperation,
+                                    storeId = storeId
                                 )
                             }
                         }
@@ -350,17 +365,152 @@ fun StoreScreen(
 
     }
 
-    fun getStoreInfoByStoreId(id: UUID? = UUID.randomUUID()) {
+
+    fun getStoreInfoByStoreId(
+        id: UUID? = UUID.randomUUID(), isLoading: MutableState<Boolean>? = null
+    ) {
         storeViewModel.getStoreData(storeId = id!!)
         bannerViewModel.getStoreBanner(id)
         subCategoryViewModel.getStoreSubCategories(id, 1)
-        productViewModel.getProducts(mutableIntStateOf(1), id)
+        productViewModel.getProducts(mutableIntStateOf(1), id, isLoading)
     }
 
-    fun changeStoreOperation(storeOperationStore: enStoreOpeation?) {
+    fun changeStoreOperation(storeOperationStore: EnStoreOperation?) {
         storeOperation.value = storeOperationStore
     }
 
+    fun createOrUpdateStoreInfo() {
+
+        if (myStoreId == null && !creationValidation()) {
+            return;
+        }
+
+        keyboardController?.hide()
+        isSendingData.value = true
+        operationType.value = EnOperation.STORE
+        coroutine.launch {
+            val result = async {
+                if (storeOperation.value == EnStoreOperation.Update) storeViewModel.updateStore(
+                    name = storeName.value.text,
+                    wallpaperImage = createdStoreInfoHolder.value?.wallpaperImage,
+                    smallImage = createdStoreInfoHolder.value?.smallImage,
+                    longitude = createdStoreInfoHolder.value?.longitude,
+                    latitude = createdStoreInfoHolder.value?.latitude,
+                )
+                else storeViewModel.createStore(
+                    name = createdStoreInfoHolder.value?.name ?: storeName.value.text,
+                    wallpaperImage = createdStoreInfoHolder.value!!.wallpaperImage!!,
+                    smallImage = createdStoreInfoHolder.value!!.smallImage!!,
+                    longitude = createdStoreInfoHolder.value!!.longitude!!,
+                    latitude = createdStoreInfoHolder.value!!.latitude!!,
+                    sumAdditionalFun = { id ->
+                        userViewModel.updateMyStoreId(
+                            id
+                        )
+                        getStoreInfoByStoreId(id)
+                    })
+            }.await()
+            changeStoreOperation(null)
+
+            isSendingData.value = false
+            operationType.value = null
+
+            if (result != null) {
+                snackBarHostState.showSnackbar(result)
+            } else {
+                storeName.value = TextFieldValue("")
+
+            }
+        }
+
+    }
+
+
+    fun createOrUpdateSupCategory() {
+        coroutine.launch {
+            keyboardController?.hide()
+            isSendingData.value = true
+
+            val result = async {
+                if (isUpdated.value) subCategoryViewModel.updateSubCategory(
+                    SubCategoryUpdate(
+                        name = subCategoryName.value.text,
+                        cateogyId = categories.value!!.firstOrNull() { it.name == categoryName.value.text }!!.id,
+                        id = selectedSubCategoryId.value!!
+                    )
+                )
+                else subCategoryViewModel.createSubCategory(
+                    name = subCategoryName.value.text,
+                    categoryId = categories.value!!.firstOrNull() { it.name == categoryName.value.text }!!.id
+                )
+            }.await()
+            isSendingData.value = false
+
+            if (result.isNullOrEmpty()) {
+                isOpenBottomSheet.value = false
+                isExpandedCategory.value = false
+                categoryName.value = TextFieldValue("")
+                subCategoryName.value = TextFieldValue("")
+                if (isUpdated.value) {
+                    isUpdated.value = false
+                }
+            } else {
+                isOpenBottomSheet.value = true
+                errorMessage.value = result
+            }
+
+        }
+
+    }
+
+
+    fun deleteSupCategory() {
+        coroutine.launch {
+            isSendingData.value = true
+            isDeleted.value = true
+            keyboardController?.hide()
+            val result = async {
+                subCategoryViewModel.deleteSubCategory(
+                    id = selectedSubCategoryIdHolder.value!!
+                )
+            }.await()
+            isSendingData.value = false
+            isDeleted.value = false
+            if (result.isNullOrEmpty()) {
+                isOpenBottomSheet.value = false
+                selectedSubCategoryIdHolder.value = null
+                isExpandedCategory.value = false
+                categoryName.value = TextFieldValue("")
+                subCategoryName.value = TextFieldValue("")
+                isUpdated.value = false
+                selectedSubCategoryId.value = null
+            } else {
+                isOpenBottomSheet.value = true
+                errorMessage.value = result
+            }
+
+        }
+
+    }
+    fun createBanner(){
+        coroutine.launch {
+            isOpenBottomSheet.value = false
+            isSendingData.value = true
+            val result = async {
+                bannerViewModel.createBanner(
+                    bannerEndDateTime.value.toString(),
+                    bannerImage.value!!
+                )
+            }.await()
+            isSendingData.value = false
+            if (!result.isNullOrEmpty()) {
+                snackBarHostState.showSnackbar(result)
+                return@launch
+            }
+            bannerEndDateTime.value = null
+            bannerEndDateTime.value = null
+        }
+    }
     LaunchedEffect(Unit) {
         if (storeId != null) {
             getStoreInfoByStoreId(storeId)
@@ -389,8 +539,7 @@ fun StoreScreen(
 
     LaunchedEffect(Unit) {
         changeStoreOperation(
-            if (isFromHome == false && myStoreId == null)
-                enStoreOpeation.Create
+            if (isFromHome == false && myStoreId == null) EnStoreOperation.Create
             else null
         )
     }
@@ -401,259 +550,494 @@ fun StoreScreen(
     Scaffold(
         snackbarHost = {
             SnackbarHost(
-                hostState = snackBarHostState,
-                modifier = Modifier.clip(RoundedCornerShape(8.dp))
+                hostState = snackBarHostState, modifier = Modifier.clip(RoundedCornerShape(8.dp))
             )
         },
 
         bottomBar = {
-
-
-            if (isShownSubCategoryBottomSheet.value)
+            if (isDateTimeBottomSheetOpen.value)
                 ModalBottomSheet(
-                    onDismissRequest = {
-
-                        isShownSubCategoryBottomSheet.value = false
-                        isExpandedCategory.value = false
-                        categoryName.value = TextFieldValue("")
-                        subCategoryName.value = TextFieldValue("")
-
-                    },
-                    sheetState = sheetState,
-                    containerColor = Color.White
-                ) {
-
+                    onDismissRequest = { isDateTimeBottomSheetOpen.value = false },
+                    sheetState = dateTimeSheetState, containerColor = Color.White
+                )
+                {
                     Column(
                         modifier = Modifier
                             .padding(horizontal = 10.dp)
                             .fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        {
-                            Text(
-                                stringResource(R.string.category),
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.End
-
-                            )
-                            Sizer(10)
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .border(
-                                        1.dp, CustomColor.neutralColor400,
-                                        RoundedCornerShape(8.dp)
-                                    )
-                                    .clip(RoundedCornerShape(8.dp))
-//
-                            )
-                            {
-                                Row(
-                                    modifier = Modifier
-                                        .height(65.dp)
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            isExpandedCategory.value = !isExpandedCategory.value
+                        when (bottomSheetDateTimeType.value) {
+                            EnDateTimeType.Date -> {
+                                DatePicker(
+                                    onDateSelected = { year, month, day ->
+                                        if (bannerEndDateTime.value != null)
+                                            bannerEndDateTime.value = LocalDateTime(
+                                                year = year,
+                                                month = month,
+                                                day = day,
+                                                hour = bannerEndDateTime.value!!.hour,
+                                                second = bannerEndDateTime.value!!.second,
+                                                minute = 0
+                                            )
+                                        else {
+                                            bannerEndDateTime.value = LocalDateTime(
+                                                year = year,
+                                                month = month,
+                                                day = day,
+                                                hour = 0,
+                                                second = 0,
+                                                minute = 0
+                                            )
                                         }
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 5.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically)
-                                {
+                                        isDateTimeBottomSheetOpen.value = false
+                                    },
 
-                                    Text(
-                                        categoryName.value.text.ifEmpty { stringResource(R.string.select_category_name) }
+                                    months = listOf(
+                                        "يناير",
+                                        "فبراير",
+                                        "مارس",
+                                        "أبريل",
+                                        "مايو",
+                                        "يونيو",
+                                        "يوليو",
+                                        "أغسطس",
+                                        "سبتمبر",
+                                        "أكتوبر",
+                                        "نوفمبر",
+//                                        "ديسمبر"
+                                    ),
+                                    days = listOf(
+                                        "الأحد",    // Sunday
+                                        "الاثنين",  // Monday
+                                        "الثلاثاء", // Tuesday
+                                        "الأربعاء", // Wednesday
+                                        "الخميس",   // Thursday
+                                        "الجمعة",    // Friday
+                                        "السبت"    // Saturday
                                     )
-                                    Icon(
-                                        Icons.Default.KeyboardArrowDown,
-                                        "",
-                                        modifier = Modifier.rotate(rotation.value)
-                                    )
+                                )
+                            }
+
+                            else -> {
+                                TimePicker(
+                                    onTimeSelected = { hour, second ->
+
+                                        if (bannerEndDateTime.value != null)
+                                            bannerEndDateTime.value = LocalDateTime(
+                                                year = bannerEndDateTime.value!!.year,
+                                                month = bannerEndDateTime.value!!.month,
+                                                day = bannerEndDateTime.value!!.day,
+                                                hour = hour,
+                                                second = second,
+                                                minute = 1
+                                            )
+                                        else {
+                                            if (hour > 0) {
+                                                bannerEndDateTime.value = LocalDateTime(
+                                                    year = 1,
+                                                    month = 1,
+                                                    day = 1,
+                                                    hour = hour,
+                                                    second = second,
+                                                    minute = 1
+                                                )
+                                            }
+                                        }
+                                        isDateTimeBottomSheetOpen.value = false
+
+                                    },
+                                    amPmLocaleList = listOf("صباحا", "مساء")
+                                )
+                            }
+                        }
+                    }
+
+                }
+
+            if (isOpenBottomSheet.value)
+                ModalBottomSheet(
+                    onDismissRequest = {
+
+                        isOpenBottomSheet.value = false
+                        if (bottomSheetType.value == EnBottomSheetType.Banner) {
+                            bannerEndDateTime.value = null
+                            bannerImage.value = null
+
+                        }
+                        if (isExpandedCategory.value) {
+                            isExpandedCategory.value = false
+                            categoryName.value = TextFieldValue("")
+                            subCategoryName.value = TextFieldValue("")
+                        }
+                    }, sheetState = sheetState, containerColor = Color.White
+                )
+                {
+                    Column(
+                        modifier = Modifier
+                            .navigationBarsPadding()
+                            .padding(horizontal = 10.dp)
+                            .fillMaxWidth()
+                    ) {
+                        when (bottomSheetType.value) {
+                            EnBottomSheetType.Banner -> {
+                                Text(
+                                    stringResource(R.string.banner_image),
+                                    fontFamily = General.satoshiFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = (18).sp,
+                                    color = CustomColor.neutralColor950,
+                                    textAlign = TextAlign.Center,
+                                )
+
+                                Sizer(20)
+
+                                ConstraintLayout(
+                                    modifier = Modifier
+                                        .height(150.dp)
+                                        .fillMaxWidth()
+                                )
+                                {
+                                    val (imageRef) = createRefs()
+                                    Box(
+                                        modifier = Modifier
+                                            .constrainAs(imageRef) {
+                                                top.linkTo(parent.top)
+                                                bottom.linkTo(parent.bottom)
+                                                start.linkTo(parent.start)
+                                                end.linkTo(parent.end)
+                                            }
+                                            .height(150.dp)
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .border(
+                                                width = 1.dp,
+                                                color = if (isFromHome == true) CustomColor.neutralColor100 else CustomColor.neutralColor500,
+                                                shape = RoundedCornerShape(8.dp)
+                                            )
+                                            .background(
+                                                color = if (isFromHome == true) CustomColor.primaryColor50
+                                                else Color.White,
+                                            ), contentAlignment = Alignment.Center) {
+                                        when (bannerImage.value == null) {
+                                            true -> {
+
+                                            }
+
+                                            else -> {
+                                                SubcomposeAsyncImage(
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier
+                                                        .fillMaxHeight()
+                                                        .fillMaxWidth()
+                                                        .clip(RoundedCornerShape(8.dp)),
+                                                    model = General.handlingImageForCoil(
+                                                        bannerImage.value!!.path.toString(), context
+                                                    ),
+                                                    contentDescription = "",
+                                                    loading = {
+                                                        Box(
+                                                            modifier = Modifier.fillMaxSize(),
+                                                            contentAlignment = Alignment.Center // Ensures the loader is centered and doesn't expand
+                                                        ) {
+                                                            CircularProgressIndicator(
+                                                                color = Color.Black,
+                                                                modifier = Modifier.size(54.dp) // Adjust the size here
+                                                            )
+                                                        }
+                                                    },
+                                                )
+                                            }
+
+                                        }
+
+
+                                        IconButton(
+                                            onClick = {
+                                                keyboardController?.hide()
+                                                onImageSelection.launch(
+                                                    PickVisualMediaRequest(
+                                                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                                                    )
+                                                )
+                                            },
+                                            modifier = Modifier.size(30.dp),
+                                            colors = IconButtonDefaults.iconButtonColors(
+                                                containerColor = CustomColor.primaryColor500
+                                            )
+                                        ) {
+                                            Icon(
+                                                ImageVector.vectorResource(R.drawable.camera),
+                                                "",
+                                                modifier = Modifier.size(18.dp),
+                                                tint = Color.White
+                                            )
+                                        }
+
+                                    }
+
                                 }
 
+                                Sizer(20)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                )
+                                {
+
+                                    Column {
+                                        Text(
+                                            stringResource(R.string.banner_end_date),
+                                            fontFamily = General.satoshiFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = (18).sp,
+                                            color = CustomColor.neutralColor950,
+                                            textAlign = TextAlign.Center,
+                                        )
+
+                                        if (bannerEndDateTime.value != null)
+                                            Text(
+                                                bannerEndDateTime.value!!.toCustomString(),
+                                                color = CustomColor.neutralColor500,
+                                                fontFamily = General.satoshiFamily,
+                                                fontWeight = FontWeight.Normal,
+                                                fontSize = (16).sp
+                                            )
+
+                                    }
+                                    IconButton(
+                                        onClick = {
+//                                            keyboardController?.hide()
+                                            bottomSheetDateTimeType.value = EnDateTimeType.Date
+                                            isDateTimeBottomSheetOpen.value = true
+
+                                        })
+                                    {
+                                        Icon(
+                                            Icons.Default.CalendarToday,
+                                            "",
+                                            modifier = Modifier.size(24.dp),
+                                            tint = CustomColor.primaryColor700
+                                        )
+                                    }
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                )
+                                {
+
+                                    Column {
+                                        Text(
+                                            stringResource(R.string.banner_end_time),
+                                            fontFamily = General.satoshiFamily,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = (18).sp,
+                                            color = CustomColor.neutralColor950,
+                                            textAlign = TextAlign.Center,
+                                        )
+
+                                        if (bannerEndDateTime.value != null)
+                                            Text(
+                                                bannerEndDateTime.value!!.toCustomString(true),
+                                                color = CustomColor.neutralColor500,
+                                                fontFamily = General.satoshiFamily,
+                                                fontWeight = FontWeight.Normal,
+                                                fontSize = (16).sp
+                                            )
+
+                                    }
+                                    IconButton(
+                                        onClick = {
+                                            keyboardController?.hide()
+                                            bottomSheetDateTimeType.value = EnDateTimeType.Time
+                                            isDateTimeBottomSheetOpen.value = true
+
+                                        })
+                                    {
+                                        Icon(
+                                            Icons.Default.Timelapse,
+                                            "",
+                                            modifier = Modifier.size(24.dp),
+                                            tint = CustomColor.primaryColor700
+                                        )
+                                    }
+                                }
+
+                                CustomButton(
+                                    isEnable = bannerImage.value != null && bannerEndDateTime.value != null && bannerEndDateTime.value!!.year != 1 && bannerEndDateTime.value!!.hour != 0,
+                                    operation = {
+                                        createBanner()
+                                    },
+                                    buttonTitle = stringResource(R.string.create_banner)
+                                )
+                            }
+
+                            else -> {
+
+                                Text(
+                                    stringResource(R.string.category),
+                                    fontFamily = General.satoshiFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = (16).sp,
+                                    color = CustomColor.neutralColor950,
+                                    textAlign = TextAlign.End
+
+                                )
+                                Sizer(10)
+
+                                //this custom drop down menu
                                 Column(
                                     modifier = Modifier
-//                                           .padding(bottom = 19.dp)
                                         .fillMaxWidth()
-                                        .height(animated.value)
                                         .border(
                                             1.dp,
-                                            CustomColor.neutralColor200,
-                                            RoundedCornerShape(
-                                                topStart = 0.dp,
-                                                topEnd = 0.dp,
-                                                bottomStart = 8.dp,
-                                                bottomEnd = 8.dp
-                                            )
-                                        ),
+                                            CustomColor.neutralColor400,
+                                            RoundedCornerShape(8.dp)
+                                        )
+                                        .clip(RoundedCornerShape(8.dp))
+//
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .height(65.dp)
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                isExpandedCategory.value = !isExpandedCategory.value
+                                            }
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .padding(horizontal = 5.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically) {
 
-                                    )
-                                {
-
-                                    categories.value?.forEach { option: Category ->
                                         Text(
-                                            option.name,
-                                            modifier = Modifier
-                                                .height(50.dp)
-                                                .fillMaxWidth()
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .clickable {
-                                                    isExpandedCategory.value = false
-                                                    categoryName.value =
-                                                        TextFieldValue(option.name)
-                                                }
-                                                .padding(top = 12.dp, start = 5.dp)
-
+                                            categoryName.value.text.ifEmpty { stringResource(R.string.select_category_name) })
+                                        Icon(
+                                            Icons.Default.KeyboardArrowDown,
+                                            "",
+                                            modifier = Modifier.rotate(rotation.value)
                                         )
                                     }
+
+                                    Column(
+                                        modifier = Modifier
+//                                           .padding(bottom = 19.dp)
+                                            .fillMaxWidth()
+                                            .height(animated.value)
+                                            .border(
+                                                1.dp,
+                                                CustomColor.neutralColor200,
+                                                RoundedCornerShape(
+                                                    topStart = 0.dp,
+                                                    topEnd = 0.dp,
+                                                    bottomStart = 8.dp,
+                                                    bottomEnd = 8.dp
+                                                )
+                                            ),
+
+                                        ) {
+
+                                        categories.value?.forEach { option: Category ->
+                                            Text(
+                                                option.name,
+                                                modifier = Modifier
+                                                    .height(50.dp)
+                                                    .fillMaxWidth()
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .clickable {
+                                                        isExpandedCategory.value = false
+                                                        categoryName.value =
+                                                            TextFieldValue(option.name)
+                                                    }
+                                                    .padding(top = 12.dp, start = 5.dp)
+
+                                            )
+                                        }
+                                    }
                                 }
+                                Sizer(10)
+
+
+                                TextInputWithTitle(
+                                    value = subCategoryName,
+                                    title = stringResource(R.string.name),
+                                    placeHolder = stringResource(R.string.enter_sub_category_name),
+                                )
+
+                                CustomButton(
+                                    operation = {
+                                        createOrUpdateSupCategory()
+                                    },
+                                    buttonTitle = if (isUpdated.value) stringResource(R.string.update) else stringResource(
+                                        R.string.create
+                                    ),
+                                    color = null,
+                                    isEnable = !isDeleted.value && (subCategoryName.value.text.isNotEmpty() && categoryName.value.text.isNotEmpty())
+                                )
+
+                                if (isUpdated.value) {
+                                    Sizer(10)
+                                    CustomButton(
+                                        isLoading = isDeleted.value && isSendingData.value,
+                                        operation = { deleteSupCategory() },
+                                        buttonTitle = stringResource(R.string.deleted),
+                                        color = CustomColor.alertColor_1_600,
+                                        isEnable = !isSendingData.value
+                                    )
+                                }
+
+                                if (isOpenBottomSheet.value) {
+                                    AlertDialog(
+                                        containerColor = Color.White, onDismissRequest = {
+                                            isOpenBottomSheet.value = false
+                                        },
+
+                                        text = {
+
+                                            Text(
+                                                errorMessage.value,
+                                                fontFamily = General.satoshiFamily,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = (16).sp,
+                                                color = CustomColor.neutralColor950,
+                                                textAlign = TextAlign.End
+
+                                            )
+                                        }, confirmButton = {
+
+                                        }, dismissButton = {
+                                            TextButton(onClick = {
+                                                isOpenBottomSheet.value = false
+                                            }) {
+
+                                                Text(
+                                                    stringResource(R.string.cancel),
+                                                    fontFamily = General.satoshiFamily,
+                                                    fontWeight = FontWeight.Normal,
+                                                    fontSize = (16).sp,
+                                                    color = CustomColor.neutralColor700,
+                                                    textAlign = TextAlign.Center
+                                                )
+                                            }
+                                        })
+                                }
+
                             }
-                            Sizer(10)
-
                         }
-
-
-                        TextInputWithTitle(
-                            value = subCategoryName,
-                            title = stringResource(R.string.name),
-                            placeHolder = stringResource(R.string.enter_sub_category_name),
-                        )
-
-                        CustomButton(
-                            operation = {
-                                coroutine.launch {
-                                    keyboardController?.hide()
-                                    isSendingData.value = true
-
-                                    val result = async {
-                                        if (isUpdated.value) subCategoryViewModel.updateSubCategory(
-                                            SubCategoryUpdate(
-                                                name = subCategoryName.value.text,
-                                                cateogyId = categories.value!!.firstOrNull() { it.name == categoryName.value.text }!!.id,
-                                                id = selectedSubCategoryId.value!!
-                                            )
-                                        )
-                                        else subCategoryViewModel.createSubCategory(
-                                            name = subCategoryName.value.text,
-                                            categoryId = categories.value!!.firstOrNull() { it.name == categoryName.value.text }!!.id
-                                        )
-                                    }.await()
-                                    isSendingData.value = false
-
-                                    if (result.isNullOrEmpty()) {
-                                        isShownSubCategoryBottomSheet.value = false
-                                        isExpandedCategory.value = false
-                                        categoryName.value = TextFieldValue("")
-                                        subCategoryName.value = TextFieldValue("")
-                                        if (isUpdated.value) {
-                                            isUpdated.value = false
-                                        }
-                                    } else {
-                                        isSubCategoryCreateError.value = true
-                                        errorMessage.value = result
-                                    }
-
-                                }
-                            },
-                            buttonTitle = if (isUpdated.value) stringResource(R.string.update) else stringResource(R.string.create),
-                            color = null,
-                            isEnable = !isDeleted.value && (subCategoryName.value.text.isNotEmpty() &&
-                                    categoryName.value.text.isNotEmpty())
-                        )
-
-                        if (isUpdated.value) {
-                            Sizer(10)
-                            CustomButton(
-                                isLoading = isDeleted.value && isSendingData.value,
-                                operation = {
-                                    coroutine.launch {
-                                        isSendingData.value = true
-                                        isDeleted.value = true
-                                        keyboardController?.hide()
-                                        val result = async {
-                                            subCategoryViewModel.deleteSubCategory(
-                                                id = selectedSubCategoryIdHolder.value!!
-                                            )
-                                        }.await()
-                                        isSendingData.value = false
-                                        isDeleted.value = false
-                                        if (result.isNullOrEmpty()) {
-                                            isShownSubCategoryBottomSheet.value = false
-                                            selectedSubCategoryIdHolder.value = null
-                                            isExpandedCategory.value = false
-                                            categoryName.value = TextFieldValue("")
-                                            subCategoryName.value = TextFieldValue("")
-                                            isUpdated.value = false
-                                            selectedSubCategoryId.value = null
-                                        } else {
-                                            isSubCategoryCreateError.value = true
-                                            errorMessage.value = result
-                                        }
-
-                                    }
-                                },
-                                buttonTitle = stringResource(R.string.deleted),
-                                color = CustomColor.alertColor_1_600,
-                                isEnable = !isSendingData.value
-                            )
-                        }
-                        if (isSubCategoryCreateError.value) {
-                            AlertDialog(
-                                containerColor = Color.White, onDismissRequest = {
-                                    isSubCategoryCreateError.value = false
-                                },
-
-                                text = {
-
-                                    Text(
-                                        errorMessage.value,
-                                        fontFamily = General.satoshiFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = (16).sp,
-                                        color = CustomColor.neutralColor950,
-                                        textAlign = TextAlign.End
-
-                                    )
-                                }, confirmButton = {
-
-                                }, dismissButton = {
-                                    TextButton(onClick = {
-                                        isSubCategoryCreateError.value = false
-                                    }) {
-
-                                        Text(
-                                            stringResource(R.string.cancel),
-                                            fontFamily = General.satoshiFamily,
-                                            fontWeight = FontWeight.Normal,
-                                            fontSize = (16).sp,
-                                            color = CustomColor.neutralColor700,
-                                            textAlign = TextAlign.Center
-                                        )
-                                    }
-                                })
-                        }
-
                     }
+
                 }
 
 
-        },
-        modifier = Modifier
+        }, modifier = Modifier
             .fillMaxSize()
-            .background(Color.White),
-        topBar = {
+            .background(Color.White), topBar = {
             CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
-                ),
-                title = {
+                ), title = {
                     Text(
                         stringResource(R.string.store),
                         fontFamily = General.satoshiFamily,
@@ -662,10 +1046,9 @@ fun StoreScreen(
                         color = CustomColor.neutralColor950,
                         textAlign = TextAlign.Center
                     )
-                },
-                navigationIcon = {
+                }, navigationIcon = {
                     IconButton(
-                        onClick = {
+                        modifier = Modifier.offset(x = (-6).dp), onClick = {
                             nav.popBackStack()
                         }) {
                         Icon(
@@ -675,62 +1058,14 @@ fun StoreScreen(
                             tint = CustomColor.neutralColor950
                         )
                     }
-                },
-                actions = {
+                }, actions = {
                     if (isFromHome == false && storeOperation.value != null) {
                         TextButton(
-                            enabled = !isSendingData.value,
-                            onClick = {
+                            enabled = !isSendingData.value, onClick = {
 
-                                if (myStoreId == null && !creationValidation()) {
-                                    return@TextButton
-                                }
-
-                                keyboardController?.hide()
-                                isSendingData.value = true
-                                operationType.value = enOperation.STORE
-                                coroutine.launch {
-                                    val result = async {
-                                        if (storeOperation.value == enStoreOpeation.Update)
-                                            storeViewModel.updateStore(
-                                                name = storeName.value.text,
-                                                wallpaperImage = createdStoreInfoHolder.value?.wallpaperImage,
-                                                smallImage = createdStoreInfoHolder.value?.smallImage,
-                                                longitude = createdStoreInfoHolder.value?.longitude,
-                                                latitude = createdStoreInfoHolder.value?.latitude,
-                                            )
-                                        else
-                                            storeViewModel.createStore(
-                                                name = createdStoreInfoHolder.value?.name
-                                                    ?: storeName.value.text,
-                                                wallpaperImage = createdStoreInfoHolder.value!!.wallpaperImage!!,
-                                                smallImage = createdStoreInfoHolder.value!!.smallImage!!,
-                                                longitude = createdStoreInfoHolder.value!!.longitude!!,
-                                                latitude = createdStoreInfoHolder.value!!.latitude!!,
-                                                sumAdditionalFun = { id ->
-                                                    userViewModel.updateMyStoreId(
-                                                        id
-                                                    )
-                                                    getStoreInfoByStoreId(id)
-                                                }
-                                            )
-                                    }.await()
-                                    changeStoreOperation(null)
-
-                                    isSendingData.value = false
-                                    operationType.value = null
-
-                                    if (result != null) {
-                                        snackBarHostState.showSnackbar(result)
-                                    } else {
-                                        storeName.value = TextFieldValue("")
-
-                                    }
-                                }
-
-
+                                createOrUpdateStoreInfo()
                             }) {
-                            when (isSendingData.value && operationType.value == enOperation.STORE) {
+                            when (isSendingData.value && operationType.value == EnOperation.STORE) {
                                 true -> {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp), strokeWidth = 2.dp
@@ -739,154 +1074,158 @@ fun StoreScreen(
 
                                 else -> {
                                     Text(
-                                        if (storeOperation.value == enStoreOpeation.Update) stringResource(
+                                        if (storeOperation.value == EnStoreOperation.Update) stringResource(
                                             R.string.update
                                         ) else stringResource(R.string.create),
                                         fontFamily = General.satoshiFamily,
                                         fontWeight = FontWeight.Normal,
                                         fontSize = (16).sp,
                                         color = CustomColor.primaryColor700,
-                                        textAlign = TextAlign.Center
+                                        textAlign = TextAlign.Start
                                     )
                                 }
                             }
                         }
                     }
-                },
-                scrollBehavior = scrollBehavior
+                }, scrollBehavior = scrollBehavior
             )
-        },
-        floatingActionButton = {
+        }, floatingActionButton = {
             if (isFromHome == false && storeData != null)
 
                 Column {
                     FloatingActionButton(
                         modifier = Modifier
                             .padding(bottom = 3.dp)
-                            .size(50.dp),
-                        onClick = {
+                            .size(50.dp), onClick = {
                             nav.navigate(Screens.DeliveriesList)
-                        },
-                        containerColor = CustomColor.primaryColor500
+                        }, containerColor = CustomColor.alertColor_2_700
                     ) {
                         Icon(
                             ImageVector.vectorResource(R.drawable.delivery_icon),
-                            "", tint = Color.White,
+                            "",
+                            tint = Color.White,
                             modifier = Modifier.size(35.dp)
                         )
                     }
                     FloatingActionButton(
                         onClick = {
                             nav.navigate(Screens.CreateProduct(storeId.toString(), null))
-                        },
-                        containerColor = CustomColor.primaryColor500
+                        }, containerColor = CustomColor.alertColor_2_700
                     ) {
                         Icon(
-                            Icons.Default.Add,
-                            "", tint = Color.White
+                            Icons.Default.Add, "", tint = Color.White
                         )
                     }
 
                 }
         }
 
-    ) {
-        it.calculateTopPadding()
-        it.calculateBottomPadding()
+    ) { paddingValue ->
+        paddingValue.calculateTopPadding()
+        paddingValue.calculateBottomPadding()
 
 
-        if (isSendingData.value && operationType.value == null)
-            Dialog(
-                onDismissRequest = {})
-            {
-                Box(
-                    modifier = Modifier
-                        .height(90.dp)
-                        .width(90.dp)
-                        .background(
-                            Color.White, RoundedCornerShape(15.dp)
-                        ), contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = CustomColor.primaryColor700, modifier = Modifier.size(40.dp)
-                    )
-                }
-            }
-
-        if (isShownDateDialog.value)
-            DatePickerDialog(
+        if (isSendingData.value && operationType.value == null) Dialog(
+            onDismissRequest = {}) {
+            Box(
                 modifier = Modifier
-                    .padding(horizontal = 40.dp),
-
-                onDismissRequest = {
-                    isShownDateDialog.value = false
-                },
-                confirmButton =
-                    {
-                        TextButton(
-                            onClick = {
-                                if (datePickerState.selectedDateMillis != null && datePickerState.selectedDateMillis!! < newTimeInMillis) {
-                                    isShownDateDialog.value = false
-                                    coroutine.launch {
-                                        snackBarHostState.showSnackbar(context.getString(R.string.you_must_select_valid_date))
-                                    }
-                                } else {
-                                    isShownDateDialog.value = false
-                                    isSendingData.value = true
-                                    coroutine.launch {
-                                        val daytime = Calendar.getInstance().apply {
-                                            timeInMillis = datePickerState.selectedDateMillis!!
-                                        }
-                                        val result = async {
-                                            bannerViewModel.createBanner(
-                                                endDate = daytime.toLocalDateTime().toString(),
-                                                image = bannerImage.value!!,
-                                            )
-                                        }.await()
-                                        isSendingData.value = false
-                                        var errorMessage = ""
-                                        errorMessage =
-                                            if (result.isNullOrEmpty()) context.getString(R.string.banner_created_successfully)
-                                            else result
-                                        coroutine.launch {
-                                            snackBarHostState.showSnackbar(
-                                                errorMessage
-                                            )
-
-                                        }
-                                    }
-
-                                }
-                            }) {
-                            Text(
-                                stringResource(R.string.ok),
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = (18).sp,
-                                color = CustomColor.primaryColor700,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
-                    },
-            )
-            {
-                DatePicker(state = datePickerState)
+                    .height(90.dp)
+                    .width(90.dp)
+                    .background(
+                        Color.White, RoundedCornerShape(15.dp)
+                    ), contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = CustomColor.primaryColor700, modifier = Modifier.size(40.dp)
+                )
             }
+        }
 
+        /*  if (isShownDateDialog.value)
+              DatePickerDialog(
+                  modifier = Modifier
+                      .padding(horizontal = 40.dp),
+
+                  onDismissRequest = {
+                      isShownDateDialog.value = false
+                  },
+                  confirmButton =
+                      {
+                          TextButton(
+                              onClick = {
+                                      isShownDateDialog.value = false
+                                      isSendingData.value = true
+                                      coroutine.launch {
+
+                                          val result = async {
+                                              bannerViewModel.createBanner(
+                                                  endDate = (datePickerState.selectedDateMillis?:newTimeInMillis).toCalender().toLocalDateTime().toString(),
+                                                  image = bannerImage.value!!,
+                                              )
+                                          }.await()
+                                          isSendingData.value = false
+                                          var errorMessage = ""
+                                          errorMessage =
+                                              if (result.isNullOrEmpty()) context.getString(R.string.banner_created_successfully)
+                                              else result
+                                          coroutine.launch {
+                                              snackBarHostState.showSnackbar(
+                                                  errorMessage
+                                              )
+
+                                          }
+                                      }
+                              }) {
+                              Text(
+                                  stringResource(R.string.ok),
+                                  fontFamily = General.satoshiFamily,
+                                  fontWeight = FontWeight.Normal,
+                                  fontSize = (18).sp,
+                                  color = CustomColor.primaryColor700,
+                                  textAlign = TextAlign.Center,
+                              )
+                          }
+                      },
+              )
+              {
+                  DatePicker(state = datePickerState)
+              }
+  */
 
         PullToRefreshBox(
             isRefreshing = isRefresh.value,
-            onRefresh = { getStoreInfoByStoreId(storeId!!) }
+            onRefresh = {
+                coroutine.launch {
 
-        )
-        {
+                    isRefresh.value = true
+                    page.intValue = 1;
+                    delay(100)
+                    getStoreInfoByStoreId(storeId ?: UUID.randomUUID(), isRefresh)
+
+
+                }
+            },
+            state = state,
+            indicator = {
+                Indicator(
+                    modifier = Modifier
+                        .padding(top = paddingValue.calculateTopPadding())
+                        .align(Alignment.TopCenter),
+                    isRefreshing = isRefresh.value,
+                    containerColor = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    state = state
+                )
+            },
+
+            ) {
 
             LazyColumn(
                 state = lazyState,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
-                    .padding(top = it.calculateTopPadding() - 29.dp)
+                    .padding(top = paddingValue.calculateTopPadding() - 29.dp)
                     .padding(horizontal = 15.dp),
                 horizontalAlignment = Alignment.Start,
             ) {
@@ -908,8 +1247,7 @@ fun StoreScreen(
                                     bottom.linkTo(parent.bottom)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
-                                })
-                        {
+                                }) {
                             val (imageRef, cameralRef) = createRefs()
                             Box(
                                 modifier = Modifier
@@ -1045,8 +1383,7 @@ fun StoreScreen(
                                     top.linkTo(bigImageRef.bottom)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
-                                })
-                        {
+                                }) {
                             val (imageRef, cameralRef) = createRefs()
                             Box(
                                 modifier = Modifier
@@ -1230,14 +1567,15 @@ fun StoreScreen(
                             TextInputWithTitle(
                                 value = storeName,
                                 title = "",
-                                placeHolder = storeData?.name ?: stringResource(R.string.write_your_store_name),
+                                placeHolder = storeData?.name
+                                    ?: stringResource(R.string.write_your_store_name),
                                 isHasError = false,
                                 onChange = { it ->
-                                    storeViewModel
-                                        .setStoreCreateData(
-                                            storeTitle = it,
-                                            updateStoreOperation = storeOperation
-                                        )
+                                    storeViewModel.setStoreCreateData(
+                                        storeTitle = it,
+                                        updateStoreOperation = storeOperation,
+                                        storeId = storeId
+                                    )
                                 },
                             )
 
@@ -1247,51 +1585,47 @@ fun StoreScreen(
 
                 }
 
-                if (isFromHome == true || myStoreId != null)
-                    item {
-                        if (isFromHome == false) {
-                            Sizer(10)
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    stringResource(R.string.store_banner),
-                                    fontFamily = General.satoshiFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = (18).sp,
-                                    color = CustomColor.neutralColor950,
-                                    textAlign = TextAlign.Center,
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .height(40.dp)
-                                        .width(70.dp)
-                                        .background(
-                                            CustomColor.primaryColor500, RoundedCornerShape(8.dp)
-                                        )
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            onImageSelection.launch(
-                                                PickVisualMediaRequest(
-                                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                                )
-                                            )
-                                        }, contentAlignment = Alignment.Center
-
-                                ) {
-                                    Icon(
-                                        Icons.Default.Add,
-                                        "",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
+                if (isFromHome == true || myStoreId != null) item {
+                    if (isFromHome == false) {
+                        Sizer(10)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                stringResource(R.string.store_banner),
+                                fontFamily = General.satoshiFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = (18).sp,
+                                color = CustomColor.neutralColor950,
+                                textAlign = TextAlign.Center,
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .height(40.dp)
+                                    .width(70.dp)
+                                    .background(
+                                        CustomColor.primaryColor500, RoundedCornerShape(8.dp)
                                     )
-                                }
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        bottomSheetType.value = EnBottomSheetType.Banner
+                                        isOpenBottomSheet.value = true
+                                    }, contentAlignment = Alignment.Center
 
+                            ) {
+                                Icon(
+                                    Icons.Default.Add,
+                                    "",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
                             }
+
                         }
                     }
+                }
 
                 item {
 
@@ -1331,7 +1665,8 @@ fun StoreScreen(
                                         snackBarHostState.showSnackbar(errorMessage)
                                     }
                                 },
-                                isShowTitle = false)
+                                isShowTitle = false
+                            )
 
                         }
                     }
@@ -1366,7 +1701,8 @@ fun StoreScreen(
                                     )
                                 )
 
-                            }) {
+                            })
+                        {
                             Icon(
                                 ImageVector.vectorResource(R.drawable.location_address_list),
                                 "",
@@ -1408,13 +1744,12 @@ fun StoreScreen(
                                         .height(40.dp)
                                         .width(70.dp)
                                         .background(
-                                            CustomColor.primaryColor500,
-                                            RoundedCornerShape(8.dp)
+                                            CustomColor.primaryColor500, RoundedCornerShape(8.dp)
                                         )
                                         .clip(RoundedCornerShape(8.dp))
                                         .clickable {
                                             isUpdated.value = false
-                                            isShownSubCategoryBottomSheet.value = true
+                                            isOpenBottomSheet.value = true
 
                                         }, contentAlignment = Alignment.Center
 
@@ -1469,9 +1804,8 @@ fun StoreScreen(
                                                         .clip(RoundedCornerShape(8.dp))
                                                         .combinedClickable(
                                                             onClick = {
-                                                                if (selectedSubCategoryId.value != null)
-                                                                    selectedSubCategoryId.value =
-                                                                        null
+                                                                if (selectedSubCategoryId.value != null) selectedSubCategoryId.value =
+                                                                    null
                                                             },
                                                         )
                                                     //
@@ -1498,14 +1832,12 @@ fun StoreScreen(
                                                         .height(40.dp)
 //                                                        .width(70.dp)
                                                         .background(
-                                                            if (selectedSubCategoryId.value == subCategroy.id
-                                                            ) CustomColor.alertColor_3_300 else Color.White,
+                                                            if (selectedSubCategoryId.value == subCategroy.id) CustomColor.alertColor_3_300 else Color.White,
                                                             RoundedCornerShape(8.dp)
                                                         )
                                                         .border(
                                                             width = 1.dp,
-                                                            color = if (selectedSubCategoryId.value == subCategroy.id
-                                                            ) Color.White else CustomColor.neutralColor200,
+                                                            color = if (selectedSubCategoryId.value == subCategroy.id) Color.White else CustomColor.neutralColor200,
                                                             RoundedCornerShape(8.dp)
 
                                                         )
@@ -1540,8 +1872,7 @@ fun StoreScreen(
                                                                         subCategroy.name
                                                                     )
                                                                 isUpdated.value = true
-                                                                isShownSubCategoryBottomSheet.value =
-                                                                    true
+                                                                isOpenBottomSheet.value = true
 
                                                             }
                                                         })
@@ -1554,8 +1885,7 @@ fun StoreScreen(
                                                         fontFamily = General.satoshiFamily,
                                                         fontWeight = FontWeight.Bold,
                                                         fontSize = (18).sp,
-                                                        color = if (selectedSubCategoryId.value == subCategroy.id
-                                                        ) Color.White else CustomColor.neutralColor200,
+                                                        color = if (selectedSubCategoryId.value == subCategroy.id) Color.White else CustomColor.neutralColor200,
 
                                                         textAlign = TextAlign.Center,
                                                     )
@@ -1596,48 +1926,45 @@ fun StoreScreen(
                                             CircularProgressIndicator(color = CustomColor.primaryColor700)
                                         }
                                         Sizer(40)
-                                    } else
-                                        when (products.value == null) {
-                                            true -> {
-                                                ProductLoading()
-                                            }
+                                    } else when (products.value == null) {
+                                        true -> {
+                                            ProductLoading()
+                                        }
 
-                                            else -> {
-                                                if (productFilterBySubCategory.isNotEmpty()) {
-                                                    ProductShape(
-                                                        isCanNavigateToStore = false,
-                                                        product = productFilterBySubCategory,
-                                                        nav = nav,
-                                                        delFun = if (isFromHome == true) null else { it ->
-                                                            coroutine.launch {
-                                                                isSendingData.value = true
-                                                                val result =
-                                                                    productViewModel.deleteProduct(
-                                                                        storeId!!,
-                                                                        it
-                                                                    )
-
-                                                                isSendingData.value = false
-                                                                var resultMessage = ""
-                                                                resultMessage = result
-                                                                    ?: context.getString(R.string.product_is_deleted_successfully)
-
-                                                                snackBarHostState.showSnackbar(
-                                                                    resultMessage
+                                        else -> {
+                                            if (productFilterBySubCategory.isNotEmpty()) {
+                                                ProductShape(
+                                                    isCanNavigateToStore = false,
+                                                    product = productFilterBySubCategory,
+                                                    nav = nav,
+                                                    delFun = if (isFromHome == true) null else { it ->
+                                                        coroutine.launch {
+                                                            isSendingData.value = true
+                                                            val result =
+                                                                productViewModel.deleteProduct(
+                                                                    storeId!!, it
                                                                 )
-                                                            }
-                                                        },
-                                                        updFun = if (isFromHome == true) null else { it ->
-                                                            nav.navigate(
-                                                                Screens.CreateProduct(
-                                                                    storeId.toString(),
-                                                                    it.toString()
-                                                                )
+
+                                                            isSendingData.value = false
+                                                            var resultMessage = ""
+                                                            resultMessage = result
+                                                                ?: context.getString(R.string.product_is_deleted_successfully)
+
+                                                            snackBarHostState.showSnackbar(
+                                                                resultMessage
                                                             )
-                                                        })
-                                                }
+                                                        }
+                                                    },
+                                                    updFun = if (isFromHome == true) null else { it ->
+                                                        nav.navigate(
+                                                            Screens.CreateProduct(
+                                                                storeId.toString(), it.toString()
+                                                            )
+                                                        )
+                                                    })
                                             }
                                         }
+                                    }
 
 
                                 }
@@ -1650,10 +1977,9 @@ fun StoreScreen(
                 item {
                     Sizer(50)
                 }
-                if (!isLoadingMore.value)
-                    item {
-                        Sizer(140)
-                    }
+                if (!isLoadingMore.value) item {
+                    Sizer(140)
+                }
 
             }
 

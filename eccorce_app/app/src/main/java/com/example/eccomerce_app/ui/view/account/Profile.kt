@@ -281,7 +281,7 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(top = it.calculateTopPadding() + 20.dp)
+                .padding(top = it.calculateTopPadding() + 20.dp, bottom = it.calculateBottomPadding())
                 .padding(horizontal = 15.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -438,7 +438,7 @@ fun ProfileScreen(
                             ) {
                                 Icon(
                                     ImageVector.vectorResource(R.drawable.copy), "",
-                                    modifier = Modifier.size(30.dp)
+                                    modifier = Modifier.size(25.dp)
                                 )
                             }
                     }
@@ -488,6 +488,7 @@ fun ProfileScreen(
                     errMessage = ""
                 )
             }
+
         }
     }
 

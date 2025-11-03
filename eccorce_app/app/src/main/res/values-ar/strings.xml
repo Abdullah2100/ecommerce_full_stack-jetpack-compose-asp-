@@ -42,7 +42,7 @@
     <string name="ok">موافق</string>
     <string name="store_name">اسم المتجر</string>
     <string name="write_your_store_name">اكتب اسم متجرك</string>
-    <string name="store_banner">لافتة المتجر</string>
+    <string name="store_banner">عروض المتجر</string>
     <string name="store_location">موقع المتجر</string>
     <string name="sub_category">فئة فرعية</string>
     <string name="all">الكل</string>
@@ -57,7 +57,7 @@
     <string name="total_price">السعر الإجمالي</string>
     <string name="my_order">طلباتي</string>
     <string name="total">المجموع</string>
-    <string name="my_cart">السلتي</string>
+    <string name="my_cart">سلتي</string>
     <string name="checkout">الدفع</string>
     <string name="enter_your_location">أدخل موقعك</string>
     <string name="you_need_to_approve_this_permission_in_order_to">تحتاج إلى الموافقة على هذا الإذن من أجل...</string>
@@ -94,7 +94,7 @@
     <string name="location_permission_denied">تم رفض إذن الموقع</string>
     <string name="edite_current_location">تعديل الموقع الحالي</string>
     <string name="add_new_address">إضافة عنوان جديد</string>
-    <string name="address_title">عنوان العنوان</string>
+    <string name="address_title">اسم العنوان</string>
     <string name="write_address_name">اكتب اسم العنوان</string>
     <string name="address_add_successfully">تمت إضافة العنوان بنجاح</string>
     <string name="address_updated_successfully">تم تحديث العنوان بنجاح</string>
@@ -157,4 +157,15 @@
     <string name="enter_your_new_password">أدخل كلمة المرور الجديدة</string>
     <string name="enter_your_password">ادخل كلمة المرور</string>
     <string name="address_list">العناوين</string>
+    <string name="banner_image">صورة العرض</string>
+    <string name="banner_end_date">تاريخ نهاية العرض</string>
+    <string name="banner_end_time">وقت نهاية العرض</string>
+    <string name="create_banner">انشاء لوحة اعلانية</string>
+
+
+
+
+
+
+    <string name="leftArrow">Left Arrow</string>
 </resources>

@@ -2,10 +2,8 @@ package com.example.e_commercompose.ui.view.account
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,15 +22,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MenuItemColors
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -42,7 +37,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
@@ -105,6 +99,37 @@ fun AccountPage(
         }
     }
 
+    fun updateLanguage(lang:String){
+        coroutine.launch {
+            isChangingLanguage.value = true
+            delay(100)
+            val currentLange =
+                if (lang == "العربية") {
+                    if (currentLocale.value == "en")
+                        "ar"
+                    else ""
+                } else {
+                    if (currentLocale.value == "ar")
+                        "en"
+                    else ""
+                }
+            if (currentLange.isEmpty()) {
+                isChangingLanguage.value = false
+                return@launch
+            };
+            async {
+                userViewModel.updateCurrentLocale(
+                    currentLange
+                )
+            }.await()
+            currentLocal.emit(currentLange)
+            whenLanguageUpdateDo(currentLange, context)
+            isChangingLanguage.value = false
+            isExpandLanguage.value = false
+
+        }
+
+    }
 
 
 
@@ -207,6 +232,12 @@ fun AccountPage(
                 AccountCustomBottom(
                     "Language",
                     R.drawable.language,
+                    operation = {
+                        if (currentLocale.value == "en")
+                            updateLanguage("العربية")
+                        else
+                            updateLanguage("English")
+                    },
                     additionalComponent = {
 
                         Box {
@@ -215,7 +246,7 @@ fun AccountPage(
                                     .offset(y = 2.dp),
                                 onClick = { isExpandLanguage.value = true }) {
                                 Text(
-                                    if (currentLocale.value == "en") "English" else "Arabic",
+                                    if (currentLocale.value == "en") "English" else "العربية",
                                     fontFamily = General.satoshiFamily,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 12.sp,
@@ -245,35 +276,8 @@ fun AccountPage(
                                             )
                                         },
                                         onClick = {
-                                            coroutine.launch {
-                                                isChangingLanguage.value = true
-                                                delay(100)
-                                                val currentLange =
-                                                    if (lang == "العربية") {
-                                                        if (currentLocale.value == "en")
-                                                            "ar"
-                                                        else ""
-                                                    } else {
-                                                        if (currentLocale.value == "ar")
-                                                            "en"
-                                                        else ""
-                                                    }
-                                                if (currentLange.isEmpty()) {
-                                                    isChangingLanguage.value = false
-                                                    return@launch
-                                                };
-                                                async {
-                                                    userViewModel.updateCurrentLocale(
-                                                        currentLange
-                                                    )
-                                                }.await()
-                                                currentLocal.emit(currentLange)
-                                                whenLanguageUpdateDo(currentLange, context)
-                                                isChangingLanguage.value = false
-                                                isExpandLanguage.value = false
-
-                                            }
-                                        }
+                                            updateLanguage(lang)
+                                          }
                                     )
                                 }
                             }

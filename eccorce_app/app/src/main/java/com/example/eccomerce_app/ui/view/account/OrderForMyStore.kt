@@ -74,7 +74,6 @@ import java.util.UUID
 @Composable
 fun OrderForMyStoreScreen(
     nav: NavHostController,
-    userViewModel: UserViewModel,
     orderItemsViewModel: OrderItemsViewModel
 ) {
     val context = LocalContext.current
@@ -82,7 +81,6 @@ fun OrderForMyStoreScreen(
     val screenWidth = config.screenWidthDp
 
     val orderData = orderItemsViewModel.orderItemForMyStore.collectAsState()
-    val myInfo = userViewModel.userInfo.collectAsState()
 
 
     val lazyState = rememberLazyListState()
