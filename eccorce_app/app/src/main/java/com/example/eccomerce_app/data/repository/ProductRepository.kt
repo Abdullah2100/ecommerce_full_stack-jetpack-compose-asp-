@@ -202,7 +202,7 @@ class ProductRepository(val client: HttpClient)  {
         subcategoryId: UUID,
         storeId: UUID,
         price: Double,
-        productVarients: List<ProductVarientSelection>,
+        productVariants: List<ProductVarientSelection>,
         images: List<File>
     ): NetworkCallHandler {
         return try {
@@ -220,7 +220,7 @@ class ProductRepository(val client: HttpClient)  {
                             append("name", name)
                             append("description", description)
                             append(
-                                key = "thmbnail", // Must match backend expectation
+                                key = "Thumbnail", // Must match backend expectation
                                 value = thumbnail.readBytes(),
                                 headers = Headers.Companion.build {
                                     append(
@@ -234,11 +234,11 @@ class ProductRepository(val client: HttpClient)  {
                                 }
                             )
 
-                            append("subcategoryId", subcategoryId.toString())
-                            append("storeId", storeId.toString())
-                            append("price", price)
-                            if (productVarients.isNotEmpty())
-                                productVarients.forEachIndexed { it, value ->
+                            append("SubcategoryId", subcategoryId.toString())
+                            append("StoreId", storeId.toString())
+                            append("Price", price)
+                            if (productVariants.isNotEmpty())
+                                productVariants.forEachIndexed { it, value ->
                                     append("productVarients[${it}].name", value.name)
                                     append("productVarients[${it}].percentage", value.percentage!!)
                                     append(
@@ -320,12 +320,12 @@ class ProductRepository(val client: HttpClient)  {
                         formData {
                             append("id", id.toString())
                             if (name != null)
-                                append("name", name)
+                                append("Name", name)
                             if (description != null)
                                 append("description", description)
                             if (thumbnail != null)
                                 append(
-                                    key = "thmbnail", // Must match backend expectation
+                                    key = "Thumbnail", // Must match backend expectation
                                     value = thumbnail.readBytes(),
                                     headers = Headers.Companion.build {
                                         append(
@@ -339,30 +339,30 @@ class ProductRepository(val client: HttpClient)  {
                                     }
                                 )
                             if (subcategoryId != null)
-                                append("subcategoryId", subcategoryId.toString())
-                            append("storeId", storeId.toString())
+                                append("SubcategoryId", subcategoryId.toString())
+                            append("StoreId", storeId.toString())
 
                             if (price != null)
                                 append("price", price)
 
                             if (!productVarients.isNullOrEmpty())
                                 productVarients.forEachIndexed { it, value ->
-                                    append("productVarients[${it}].name", value.name)
-                                    append("productVarients[${it}].percentage", value.percentage!!)
+                                    append("productVariants[${it}].name", value.name)
+                                    append("productVariants[${it}].percentage", value.percentage!!)
                                     append(
-                                        "productVarients[${it}].valientId",
+                                        "productVariants[${it}].variantId",
                                         value.variantId.toString()
                                     )
                                 }
                             if (!deletedProductVarients.isNullOrEmpty())
                                 deletedProductVarients.forEachIndexed { it, value ->
-                                    append("deletedProductVarients[${it}].name", value.name)
+                                    append("deletedProductVariants[${it}].name", value.name)
                                     append(
-                                        "deletedProductVarients[${it}].percentage",
+                                        "deletedProductVariants[${it}].percentage",
                                         value.percentage!!
                                     )
                                     append(
-                                        "deletedProductVarients[${it}].valientId",
+                                        "deletedProductVariants[${it}].valientId",
                                         value.variantId.toString()
                                     )
 
@@ -384,7 +384,7 @@ class ProductRepository(val client: HttpClient)  {
                             if (!images.isNullOrEmpty())
                                 images.forEachIndexed { it, value ->
                                     append(
-                                        key = "images", // Must match backend expectation
+                                        key = "Images", // Must match backend expectation
                                         value = value.readBytes(),
                                         headers = Headers.Companion.build {
                                             append(

@@ -293,6 +293,8 @@ fun MapHomeScreen(
 
     LaunchedEffect(Unit) {
         if (isHasNavigationMap) {
+            Log.d("appPassingTheNavigation","Yes\n" +
+                    "${directions.value?.toString()}")
             mapViewModel.findPointBetweenTwoDestination(
                 mainLocation.position,
                 additionLocation.position,

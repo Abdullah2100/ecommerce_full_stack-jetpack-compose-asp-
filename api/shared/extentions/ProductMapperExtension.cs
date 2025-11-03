@@ -55,7 +55,7 @@ public static class ProductMapperExtension
                && dto.ProductVariants == null
                && dto.Images == null
                && dto.Deletedimages == null
-               && dto.DeletedProductVarients==null
+               && dto.DeletedProductVariants==null
             ;    
     }
 

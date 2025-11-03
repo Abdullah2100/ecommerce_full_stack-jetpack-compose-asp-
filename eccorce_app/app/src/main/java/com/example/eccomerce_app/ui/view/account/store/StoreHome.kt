@@ -261,7 +261,6 @@ fun StoreScreen(
                     return@rememberLauncherForActivityResult
                 } else locationClient.lastLocation.apply {
                     addOnSuccessListener { location ->
-
                         location?.toString()
                         if (location != null) {
                             val type =
@@ -270,6 +269,12 @@ fun StoreScreen(
                                     else -> enMapType.Store
                                 }
                             val locationHolder = handlingLocation(type, location)
+                            Log.d(
+                                "thisTheLocation",
+                                "${locationHolder.toString()}\n " +
+                                        "${location.latitude} ${location.longitude}\n " +
+                                        "${storeData?.latitude} ${storeData?.longitude}"
+                            )
 
                             nav.navigate(
                                 Screens.MapScreen(
@@ -430,6 +435,7 @@ fun StoreScreen(
         coroutine.launch {
             keyboardController?.hide()
             isSendingData.value = true
+            isOpenBottomSheet.value = false
 
             val result = async {
                 if (isUpdated.value) subCategoryViewModel.updateSubCategory(
@@ -445,24 +451,21 @@ fun StoreScreen(
                 )
             }.await()
             isSendingData.value = false
+            isExpandedCategory.value = false
 
             if (result.isNullOrEmpty()) {
-                isOpenBottomSheet.value = false
-                isExpandedCategory.value = false
                 categoryName.value = TextFieldValue("")
                 subCategoryName.value = TextFieldValue("")
                 if (isUpdated.value) {
                     isUpdated.value = false
                 }
             } else {
-                isOpenBottomSheet.value = true
-                errorMessage.value = result
+                snackBarHostState.showSnackbar(result)
             }
 
         }
 
     }
-
 
     fun deleteSupCategory() {
         coroutine.launch {
@@ -492,7 +495,8 @@ fun StoreScreen(
         }
 
     }
-    fun createBanner(){
+
+    fun createBanner() {
         coroutine.launch {
             isOpenBottomSheet.value = false
             isSendingData.value = true
@@ -511,6 +515,7 @@ fun StoreScreen(
             bannerEndDateTime.value = null
         }
     }
+
     LaunchedEffect(Unit) {
         if (storeId != null) {
             getStoreInfoByStoreId(storeId)
@@ -865,7 +870,7 @@ fun StoreScreen(
                                         )
                                     }
                                 }
-
+                                Sizer(10)
                                 CustomButton(
                                     isEnable = bannerImage.value != null && bannerEndDateTime.value != null && bannerEndDateTime.value!!.year != 1 && bannerEndDateTime.value!!.hour != 0,
                                     operation = {
@@ -898,8 +903,8 @@ fun StoreScreen(
                                             RoundedCornerShape(8.dp)
                                         )
                                         .clip(RoundedCornerShape(8.dp))
-//
-                                ) {
+                                )
+                                {
                                     Row(
                                         modifier = Modifier
                                             .height(65.dp)
@@ -957,6 +962,7 @@ fun StoreScreen(
                                         }
                                     }
                                 }
+
                                 Sizer(10)
 
 
@@ -988,41 +994,6 @@ fun StoreScreen(
                                     )
                                 }
 
-                                if (isOpenBottomSheet.value) {
-                                    AlertDialog(
-                                        containerColor = Color.White, onDismissRequest = {
-                                            isOpenBottomSheet.value = false
-                                        },
-
-                                        text = {
-
-                                            Text(
-                                                errorMessage.value,
-                                                fontFamily = General.satoshiFamily,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = (16).sp,
-                                                color = CustomColor.neutralColor950,
-                                                textAlign = TextAlign.End
-
-                                            )
-                                        }, confirmButton = {
-
-                                        }, dismissButton = {
-                                            TextButton(onClick = {
-                                                isOpenBottomSheet.value = false
-                                            }) {
-
-                                                Text(
-                                                    stringResource(R.string.cancel),
-                                                    fontFamily = General.satoshiFamily,
-                                                    fontWeight = FontWeight.Normal,
-                                                    fontSize = (16).sp,
-                                                    color = CustomColor.neutralColor700,
-                                                    textAlign = TextAlign.Center
-                                                )
-                                            }
-                                        })
-                                }
 
                             }
                         }
@@ -1089,7 +1060,8 @@ fun StoreScreen(
                     }
                 }, scrollBehavior = scrollBehavior
             )
-        }, floatingActionButton = {
+        },
+        floatingActionButton = {
             if (isFromHome == false && storeData != null)
 
                 Column {
@@ -1141,56 +1113,6 @@ fun StoreScreen(
             }
         }
 
-        /*  if (isShownDateDialog.value)
-              DatePickerDialog(
-                  modifier = Modifier
-                      .padding(horizontal = 40.dp),
-
-                  onDismissRequest = {
-                      isShownDateDialog.value = false
-                  },
-                  confirmButton =
-                      {
-                          TextButton(
-                              onClick = {
-                                      isShownDateDialog.value = false
-                                      isSendingData.value = true
-                                      coroutine.launch {
-
-                                          val result = async {
-                                              bannerViewModel.createBanner(
-                                                  endDate = (datePickerState.selectedDateMillis?:newTimeInMillis).toCalender().toLocalDateTime().toString(),
-                                                  image = bannerImage.value!!,
-                                              )
-                                          }.await()
-                                          isSendingData.value = false
-                                          var errorMessage = ""
-                                          errorMessage =
-                                              if (result.isNullOrEmpty()) context.getString(R.string.banner_created_successfully)
-                                              else result
-                                          coroutine.launch {
-                                              snackBarHostState.showSnackbar(
-                                                  errorMessage
-                                              )
-
-                                          }
-                                      }
-                              }) {
-                              Text(
-                                  stringResource(R.string.ok),
-                                  fontFamily = General.satoshiFamily,
-                                  fontWeight = FontWeight.Normal,
-                                  fontSize = (18).sp,
-                                  color = CustomColor.primaryColor700,
-                                  textAlign = TextAlign.Center,
-                              )
-                          }
-                      },
-              )
-              {
-                  DatePicker(state = datePickerState)
-              }
-  */
 
         PullToRefreshBox(
             isRefreshing = isRefresh.value,
@@ -1218,7 +1140,8 @@ fun StoreScreen(
                 )
             },
 
-            ) {
+            )
+        {
 
             LazyColumn(
                 state = lazyState,
@@ -1749,6 +1672,7 @@ fun StoreScreen(
                                         .clip(RoundedCornerShape(8.dp))
                                         .clickable {
                                             isUpdated.value = false
+                                            bottomSheetType.value = EnBottomSheetType.SupCategory
                                             isOpenBottomSheet.value = true
 
                                         }, contentAlignment = Alignment.Center
