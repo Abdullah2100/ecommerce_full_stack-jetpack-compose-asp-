@@ -10,7 +10,8 @@ data class ProductDto(
     val id: UUID,
     val name: String,
     val description:String,
-    val thmbnail:String,
+      //
+    val thumbnail:String,
     @Serializable(with = UUIDKserialize::class)
     val subcategoryId: UUID,
     @Serializable(with = UUIDKserialize::class)

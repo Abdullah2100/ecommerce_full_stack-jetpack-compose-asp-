@@ -45,7 +45,7 @@ namespace api.Presentation.dto
         [Required] public Guid StoreId { get; set; }
         public decimal? Price { get; set; }= null;
         public List<CreateProductVariantDto>? ProductVariants { get; set; } = null;
-        public List<CreateProductVariantDto>? DeletedProductVarients { get; set; } = null;
+        public List<CreateProductVariantDto>? DeletedProductVariants { get; set; } = null;
         public List<IFormFile>? Images { get; set; }= null;
         public List<string>? Deletedimages { get; set; }= null;
 

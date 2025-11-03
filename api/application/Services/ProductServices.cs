@@ -366,9 +366,9 @@ public class ProductServices(
         }
 
         //delete preview productvarients
-        if (productDto.DeletedProductVarients is not null)
+        if (productDto.DeletedProductVariants is not null)
         {
-             unitOfWork.ProductVariantRepository.DeleteProductVariant(productDto.DeletedProductVarients,
+             unitOfWork.ProductVariantRepository.DeleteProductVariant(productDto.DeletedProductVariants,
                 productDto.Id);
             
         }

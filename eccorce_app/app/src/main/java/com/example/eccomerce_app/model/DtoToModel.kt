@@ -147,7 +147,7 @@ object DtoToModel {
             id = this.id,
             name = this.name,
             description = this.description,
-            thumbnail = if (this.thmbnail.isNotEmpty()) this.thmbnail.replace(
+            thumbnail = if (this.thumbnail.isNotEmpty()) this.thumbnail.replace(
                 "0.0.0.0",
                 Secrets.imageUrl
             ) else "",
