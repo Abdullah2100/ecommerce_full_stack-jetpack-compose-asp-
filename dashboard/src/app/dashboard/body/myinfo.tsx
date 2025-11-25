@@ -3,19 +3,54 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import edite from '../../../../public/images/edite.svg';
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { iUserUpdateInfoDto } from "@/dto/response/iUserUpdateInfoDto";
+import { getMyInfo, updateUser } from "@/lib/api/user";
+import { toast } from "react-toastify";
+import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 
 const MyInfoPage = () => {
-    const data = mockMyInfo;
+    // const data = mockMyInfo;
+
+    const { data, refetch } = useQuery({
+        queryKey: ['myinfo'],
+        queryFn: () => getMyInfo()
+    })
+
     const [userUpdate, setUserUpdate] = useState({
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
+        name: data?.name ?? "",
+        phone: data?.phone ?? "",
+        email: data?.email ?? "",
         password: '',
         newPassword: '',
-        thumbnail: undefined
+        thumbnail: data?.thumbnail ?? undefined
     });
-    const [previewImage, setPreviewImage] = useState(data.thumbnail);
+    const [previewImage, setPreviewImage] = useState(convertImageToValidUrl(data?.thumbnail ?? ""));
+
     const inputRef = useRef<HTMLInputElement>(null);
+
+
+    const updateUserData = useMutation(
+        {
+            mutationFn: (userData: iUserUpdateInfoDto) => updateUser(userData),
+            onError: (e) => {
+                toast.error(e.message)
+            },
+            onSuccess: () => {
+                refetch();
+                toast.success("تم التعديل بنجاح");
+                setUserUpdate(prev => ({
+                    ...prev,
+                    thumbnail: undefined,
+                    password: '',
+                    newPassword: ''
+                }));
+            }
+        }
+    )
+
+
+    if (data == undefined) return;
 
     return (
         <div className="flex flex-col w-full h-full space-y-8 p-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
@@ -92,35 +127,10 @@ const MyInfoPage = () => {
                         />
                     </div>
 
-                    <div className="border-t border-border/50 pt-6 space-y-6">
-                        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Security</h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">Current Password</label>
-                                <input
-                                    type="password"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                    placeholder="••••••••"
-                                    value={userUpdate.password}
-                                    onChange={(e) => setUserUpdate({ ...userUpdate, password: e.target.value })}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium">New Password</label>
-                                <input
-                                    type="password"
-                                    className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                    placeholder="••••••••"
-                                    value={userUpdate.newPassword}
-                                    onChange={(e) => setUserUpdate({ ...userUpdate, newPassword: e.target.value })}
-                                />
-                            </div>
-                        </div>
-                    </div>
-
                     <div className="pt-4">
-                        <Button className="w-full shadow-lg shadow-primary/25 h-11 text-base">
+                        <Button
+                            // onClick={ }
+                            className="w-full shadow-lg shadow-primary/25 h-11 text-base">
                             Save Changes
                         </Button>
                     </div>
