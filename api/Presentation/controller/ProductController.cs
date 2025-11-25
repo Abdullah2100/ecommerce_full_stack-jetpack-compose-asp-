@@ -18,9 +18,7 @@ public class ProductController(
     [HttpGet("store/{storeId}/{pageNumber:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProducts
-    (
-        Guid storeId, int pageNumber
-    )
+    (Guid storeId, int pageNumber)
     {
         if (pageNumber < 1)
             return BadRequest("رقم الصفحة لا بد ان تكون اكبر من الصفر");

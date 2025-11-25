@@ -26,11 +26,7 @@ export const Sidebar = (props: SidebarProps) => {
 
             {/* Sidebar Container */}
             <aside
-                className={`
-          fixed top-0 left-0 z-50 h-full w-64 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out
-          lg:translate-x-0 lg:static lg:block
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+                className={`fixed top-0 left-0 z-50 h-screen w-64 bg-sidebar border-r border-sidebar-border transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:block ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
             >
                 <div className="flex h-full flex-col">
                     {/* Header */}

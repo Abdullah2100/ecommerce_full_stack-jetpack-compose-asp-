@@ -1,5 +1,5 @@
-export default interface iCategoryDto{
-    id?:string,
-    name:string,
-    image?:File
+export default interface iCategoryDto {
+    id?: string,
+    name: string,
+    image: File | undefined
 }

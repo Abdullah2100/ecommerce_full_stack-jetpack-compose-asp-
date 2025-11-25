@@ -41,7 +41,7 @@ const Product = () => {
                                     <td className="px-6 py-4 text-muted-foreground font-mono text-xs">{index + 1}</td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-border/50 shadow-sm group-hover:scale-105 transition-transform">
+                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-border/50 shadow-sm   transition-transform">
                                                 <Image
                                                     src={value.thmbnail}
                                                     alt={value.name}

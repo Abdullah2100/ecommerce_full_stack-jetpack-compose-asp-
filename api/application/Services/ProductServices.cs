@@ -135,7 +135,7 @@ public class ProductServices(
             statusCode: 200
         );
     }
-
+/*
     private async Task<Result<ProductDto?>?> isUserNotExistOrNotHasStore(Guid userId)
     {
         User? user = await unitOfWork.UserRepository
@@ -186,17 +186,26 @@ public class ProductServices(
 
         return null;
     }
-
+*/
     public async Task<Result<ProductDto?>> CreateProducts(
         Guid userId,
         CreateProductDto productDto
     )
     {
-        var isPassed = await isUserNotExistOrNotHasStore(userId);
 
-        if (isPassed is not null)
+        User? user = await unitOfWork.UserRepository.GetUser(userId);
+
+        var isValidate = user.IsValidateFunc(false, true);
+       
+        if (isValidate is not null)
         {
-            return isPassed;
+            return new Result<ProductDto?>
+            (
+                data: null,
+                message: isValidate.Message,
+                isSuccessful: false,
+                statusCode: isValidate.StatusCode 
+            );
         }
 
 
@@ -240,9 +249,9 @@ public class ProductServices(
         }
 
 
-        List<ProductVariant>? productVarients = null;
+        List<ProductVariant>? productVariants = null;
         if (productDto.ProductVariants is not null)
-            productVarients = productDto
+            productVariants = productDto
                 .ProductVariants!.Select(pv =>
                     new ProductVariant
                     {
@@ -255,7 +264,7 @@ public class ProductServices(
                     })
                 .ToList();
 
-        if (productVarients is not null && productVarients.Count > 20)
+        if (productVariants is not null && productVariants.Count > 20)
         {
             return new Result<ProductDto?>
             (
@@ -277,14 +286,12 @@ public class ProductServices(
             CreatedAt = DateTime.Now,
             UpdatedAt = null,
             Thumbnail = savedThumbnail,
-            //ProductImages = images,
-            // ProductVariants = productVarients
         };
 
         unitOfWork.ProductRepository.Add(product);
         unitOfWork.ProductImageRepository.AddProductImage(images);
-        if (productVarients is not null)
-            unitOfWork.ProductVariantRepository.AddProductVariants(productVarients);
+        if (productVariants is not null)
+            unitOfWork.ProductVariantRepository.AddProductVariants(productVariants);
         int result = await unitOfWork.SaveChanges();
 
         if (result == 0)
@@ -322,13 +329,21 @@ public class ProductServices(
                 statusCode: 201
             );
 
-        var isPassed = await isUserNotExistOrNotHasStore(userId);
+        User? user = await unitOfWork.UserRepository.GetUser(userId);
 
-        if (isPassed is not null)
+        var isValidate = user.IsValidateFunc(false, true);
+       
+        if (isValidate is not null)
         {
-            return isPassed;
+            return new Result<ProductDto?>
+            (
+                data: null,
+                message: isValidate.Message,
+                isSuccessful: false,
+                statusCode: isValidate.StatusCode 
+            );
         }
-
+        
         if (productDto.SubcategoryId is not null &&
             !(await unitOfWork.SubCategoryRepository.IsExist((Guid)productDto!.SubcategoryId!)))
         {
@@ -415,9 +430,9 @@ public class ProductServices(
             );
         }
 
-        List<ProductVariant>? productVarients = null;
+        List<ProductVariant>? productVariants = null;
         if (productDto.ProductVariants is not null)
-            productVarients = productDto
+            productVariants = productDto
                 .ProductVariants!.Select(pv =>
                     new ProductVariant
                     {
@@ -429,7 +444,8 @@ public class ProductServices(
                         OrderProductsVariants = null
                     })
                 .ToList();
-        if (productVarients is not null && (productVarients.Count + product?.ProductVariants?.Count) > 20)
+        
+        if (productVariants is not null && (productVariants.Count + product?.ProductVariants?.Count) > 20)
         {
             return new Result<ProductDto?>
             (
@@ -449,7 +465,7 @@ public class ProductServices(
         product.Price = productDto.Price ?? product.Price;
         product.UpdatedAt = DateTime.Now;
         product.Thumbnail = savedThumbnail ?? product.Thumbnail;
-        product.ProductVariants = productVarients;
+        product.ProductVariants = productVariants;
         product.ProductImages = savedImage;
 
         unitOfWork.ProductRepository.Update(product);
@@ -482,20 +498,20 @@ public class ProductServices(
         Guid id
     )
     {
-        var user = await unitOfWork.UserRepository.GetUser(userId);
-        var isPassed = await isUserNotExistOrNotHasStore(userId);
+        User? user = await unitOfWork.UserRepository.GetUser(userId);
 
-        if (isPassed is not null)
+        var isValidate = user.IsValidateFunc(false, true);
+       
+        if (isValidate is not null)
         {
             return new Result<bool>
             (
                 data: false,
-                message: isPassed.Message,
+                message: isValidate.Message,
                 isSuccessful: false,
-                statusCode: 404
+                statusCode: isValidate.StatusCode 
             );
         }
-
 
         Product? product = await unitOfWork.ProductRepository.GetProduct(id, user.Store.Id);
 
