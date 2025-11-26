@@ -18,7 +18,8 @@ public static class UserMapperExtension
             IsActive = user.IsBlocked == false,
             IsAdmin = user.Role == 0,
             Address = user.Addresses?.Select(ad => ad.ToDto()).ToList(),
-            StoreId = user?.Store?.Id
+            StoreId = user?.Store?.Id,
+            StoreName = user?.Store?.Name??"",
         };
     }
 

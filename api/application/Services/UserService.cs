@@ -234,33 +234,43 @@ public class UserService(
         User? admin = await unitOfWork.UserRepository
             .GetUser(id);
 
-        var isValideAdmin = admin.IsValidateFunc();
-        if (isValideAdmin is not null)
+        var validateFunc = admin.IsValidateFunc();
+        if (validateFunc is not null)
         {
             return new Result<bool>(
                 isSuccessful: false,
                 data: false,
-                message: isValideAdmin.Message,
-                statusCode: isValideAdmin.StatusCode
+                message: validateFunc.Message,
+                statusCode: validateFunc.StatusCode
             );
         }
 
         User? user = await unitOfWork.UserRepository.GetUser(userId);
 
-        isValideAdmin = user.IsValidateFunc();
+        validateFunc = user.IsValidateFunc();
 
         //this to handle if user that admin want to block is not admin
-        if (isValideAdmin?.StatusCode == 404 || isValideAdmin == null)
+        if (validateFunc is not null)
         {
             return new Result<bool>(
                 isSuccessful: false,
                 data: false,
                 message: $"unable to {(user?.IsBlocked == true ? "block" : "unblock")}  user",
-                statusCode: isValideAdmin?.StatusCode ?? 400
+                statusCode: validateFunc?.StatusCode ?? 400
             );
         }
 
         user!.IsBlocked = !user.IsBlocked;
+
+        if (user is { IsBlocked: true, Role: 0 })
+        {
+            return new Result<bool>(
+                isSuccessful: false,
+                data: false,
+                message: "you could not block admin user ",
+                statusCode: 400
+            ); 
+        }
 
         unitOfWork.UserRepository.Update(user);
         int result = await unitOfWork.SaveChanges();

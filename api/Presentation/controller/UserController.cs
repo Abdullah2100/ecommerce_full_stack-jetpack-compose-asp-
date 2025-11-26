@@ -109,7 +109,7 @@ public class UserController(
     }
 
 
-    [HttpDelete("{userId:guid}")]
+    [HttpDelete("status/{userId:guid}")]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
