@@ -1,13 +1,54 @@
 import { mockUsers } from "@/lib/mockData";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { ToastContainer } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import { Button } from "@/components/ui/button";
+import { getUserPages, getUserAtPage, changeUserStatus } from "@/lib/api/user";
+import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 
 const Users = () => {
-    const [currentPage, setCurrentPage] = useState(1);
-    const data = mockUsers;
-    const userPages = 1;
+    const queryClient = useQueryClient()
+    const { data: userPages } = useQuery({
+        queryKey: ['usersPage'],
+        queryFn: () => getUserPages()
+
+    })
+
+    const [currnetPage, setCurrentPage] = useState(1);
+
+    const { data, refetch, isPlaceholderData } = useQuery({
+        queryKey: ['users', currnetPage],
+        queryFn: () => getUserAtPage(currnetPage)
+
+    })
+
+    useEffect(() => {
+        queryClient.prefetchQuery({
+            queryKey: ['users', currnetPage],
+            queryFn: () => getUserAtPage(currnetPage),
+        })
+    }, [currnetPage])
+
+
+    const changeUserStatusFun = useMutation(
+        {
+            mutationFn: (userId: string) => changeUserStatus(userId),
+            onError: (e) => {
+                toast.error(e.message)
+            },
+            onSuccess: (res) => {
+                refetch()
+                toast.success("تم التعديل بنجاح")
+
+
+            }
+        }
+    )
+
+    if (data == undefined) return;
+
+    console.log("users info", JSON.stringify(data))
 
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
@@ -38,7 +79,7 @@ const Users = () => {
                                         <div className="flex items-center gap-4">
                                             <div className="relative h-10 w-10 rounded-full overflow-hidden border border-border/50 shadow-sm">
                                                 <Image
-                                                    src={value.thumbnail}
+                                                    src={convertImageToValidUrl(value.thumbnail)}
                                                     alt={value.name}
                                                     fill
                                                     className="object-cover"
@@ -63,7 +104,7 @@ const Users = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        {value.store_id ? (
+                                        {value.storeName ? (
                                             <div className="flex items-center gap-2">
                                                 <span className="h-2 w-2 rounded-full bg-green-500"></span>
                                                 <span className="font-medium">{value.storeName}</span>
@@ -92,7 +133,7 @@ const Users = () => {
                                                 className="h-7 text-xs"
                                                 onClick={() => {
                                                     // Mock toggle logic
-                                                    console.log(`Toggle user ${value.id}`);
+                                                    changeUserStatusFun.mutate(value.id)
                                                 }}
                                             >
                                                 {value.isActive ? 'Block' : 'Unblock'}
@@ -108,13 +149,13 @@ const Users = () => {
 
             <div className="flex justify-center mt-6">
                 <div className="flex gap-2">
-                    {Array.from({ length: userPages }, (_, i) => (
+                    {Array.from({ length: userPages ?? 1 }, (_, i) => (
                         <button
                             key={i}
                             onClick={() => setCurrentPage(i + 1)}
                             className={`
                                 h-9 w-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200
-                                ${currentPage === i + 1
+                                ${currnetPage === i + 1
                                     ? 'bg-primary text-primary-foreground shadow-md scale-105'
                                     : 'bg-card border border-border hover:bg-accent hover:text-accent-foreground'
                                 }
