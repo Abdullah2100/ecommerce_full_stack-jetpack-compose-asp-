@@ -13,23 +13,23 @@ namespace api.Presentation.controller;
 public class ProductController(
     IProductServices productServices,
     IAuthenticationService authenticationService
-    ) : ControllerBase
+) : ControllerBase
 {
     [HttpGet("store/{storeId}/{pageNumber:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProducts
-    (Guid storeId, int pageNumber)
+        (Guid storeId, int pageNumber)
     {
         if (pageNumber < 1)
             return BadRequest("رقم الصفحة لا بد ان تكون اكبر من الصفر");
 
-        var result = await productServices.GetProductsByStoreId(storeId,pageNumber,25);
+        var result = await productServices.GetProductsByStoreId(storeId, pageNumber, 25);
 
         return result.IsSuccessful switch
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
 
 
@@ -42,13 +42,13 @@ public class ProductController(
     {
         if (pageNumber < 1)
             return BadRequest("رقم الصفحة لا بد ان تكون اكبر من الصفر");
-        var result = await productServices.GetProductsByCategoryId(categoryId,pageNumber,25);
+        var result = await productServices.GetProductsByCategoryId(categoryId, pageNumber, 25);
 
         return result.IsSuccessful switch
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
 
 
@@ -74,7 +74,7 @@ public class ProductController(
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
 
 
@@ -86,16 +86,16 @@ public class ProductController(
         if (pageNumber < 1)
             return BadRequest("رقم الصفحة لا بد ان تكون اكبر من الصفر");
 
-        var result = await productServices.GetProducts(pageNumber,25);
+        var result = await productServices.GetProducts(pageNumber, 25);
 
         return result.IsSuccessful switch
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
 
-  
+
     [HttpGet("{pageNumber:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -129,11 +129,9 @@ public class ProductController(
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
 
-
-  
 
     [HttpPost("")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -161,15 +159,14 @@ public class ProductController(
         }
 
         var result = await productServices.CreateProducts(
-            userId,product);
+            userId, product);
 
         return result.IsSuccessful switch
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
-
 
 
     [HttpPut("")]
@@ -198,13 +195,13 @@ public class ProductController(
         }
 
         var result = await productServices.UpdateProducts(
-            userId,product);
+            userId, product);
 
         return result.IsSuccessful switch
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        };  
+        };
     }
 
     [HttpDelete("{storeId:guid}/{productId:guid}")]
@@ -232,15 +229,14 @@ public class ProductController(
         {
             return Unauthorized("هناك مشكلة في التحقق");
         }
+
         var result = await productServices.DeleteProducts(
-            userId,productId);
+            userId, productId);
 
         return result.IsSuccessful switch
         {
             true => StatusCode(result.StatusCode, result.Data),
             _ => StatusCode(result.StatusCode, result.Message)
-        }; 
+        };
     }
-    
-    
 }

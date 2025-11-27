@@ -2,7 +2,7 @@ import axios from "axios";
 import iProductResponseDto from "../../dto/response/iProductResponseDto";
 import { Util } from "@/util/globle";
 
-  async function getProductPages() {
+async function getProductPages() {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Product/pages`;
     console.log(`funtion is Called ${url}`)
     try {
@@ -30,7 +30,7 @@ import { Util } from "@/util/globle";
 }
 
 
-  async function getProductAtPage(pageNumber: number) {
+async function getProductAtPage(pageNumber: number) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Product/${pageNumber}`;
     console.log(`funtion is Called ${url}`)
     try {

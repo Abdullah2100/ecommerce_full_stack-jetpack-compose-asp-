@@ -36,8 +36,8 @@ public static class ProductMapperExtension
             Price = product.Price,
             Thumbnail = string.IsNullOrEmpty(product.Thumbnail) ? "" : url+ product.Thumbnail,
             StoreName = product.Store.Name,
-            ProductImages =product.ProductImages.Select(pi=>url+pi.Path).ToList(),
-            ProductVariants = product.ProductVariants
+            ProductImages =product?.ProductImages==null?new List<string>():product.ProductImages.Select(pi=>url+pi.Path).ToList(),
+            ProductVariants = product?.ProductVariants==null?new List<List<AdminProductVarientDto>>(): product.ProductVariants
                 .GroupBy(pv => pv.VariantId, (key, g)
                     => g.Select(pvH=>pvH.ToAdminProductVarientDto()).ToList()
                 ).ToList(),

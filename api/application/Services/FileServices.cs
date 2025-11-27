@@ -63,9 +63,9 @@ namespace api.application.Services
         public async Task<List<string>?> SaveFile(List<IFormFile> file, EnImageType type)
         {
             List<string> images = new List<string>();
-            foreach (var image in file)
+            for (int i=0;i<file.Count;i++)
             {
-                string? path = await SaveFile(image, type);
+                string? path = await SaveFile(file[i], type);
                 if (path is null)
                 {
                     DeleteFile(images);

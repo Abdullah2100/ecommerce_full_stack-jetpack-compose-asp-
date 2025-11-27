@@ -60,7 +60,6 @@ const Analytics = () => {
 
     if (isLoading || isError) return null;
 
-    console.log("data is ", JSON.stringify(data))
 
     const anylyseByIndex = (index: number) => {
         switch (index) {

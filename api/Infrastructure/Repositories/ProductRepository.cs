@@ -143,6 +143,7 @@ public class ProductRepository(
     {
         return await context.Products
             .AsNoTracking()
+            .Include(pro=>pro.Store)
             .Include(pro => pro.SubCategory)
             .Include(pro => pro.ProductImages)
             .Include(pro => pro.ProductVariants)

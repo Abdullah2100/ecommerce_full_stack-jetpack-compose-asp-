@@ -25,7 +25,6 @@ namespace api.Presentation.dto
         public string Description { get; set; }
         public IFormFile Thumbnail { get; set; }
         public Guid SubcategoryId { get; set; }
-        public Guid StoreId { get; set; }
         public decimal Price { get; set; }
         public List<CreateProductVariantDto>? ProductVariants { get; set; } = null;
         public List<IFormFile> Images { get; set; }

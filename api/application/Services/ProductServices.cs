@@ -16,6 +16,15 @@ public class ProductServices(
 )
     : IProductServices
 {
+
+
+    private void deleteProductImages(List<string>? images = null, string? savedThumbnail=null)
+    {
+        if (images is not null)
+            fileServices.DeleteFile(images);
+        if(savedThumbnail is not null)
+            fileServices.DeleteFile(savedThumbnail); 
+    }
     public async Task<Result<List<ProductDto>>> GetProductsByStoreId(
         Guid storeId,
         int pageNum,
@@ -135,6 +144,7 @@ public class ProductServices(
             statusCode: 200
         );
     }
+
 /*
     private async Task<Result<ProductDto?>?> isUserNotExistOrNotHasStore(Guid userId)
     {
@@ -192,11 +202,10 @@ public class ProductServices(
         CreateProductDto productDto
     )
     {
-
         User? user = await unitOfWork.UserRepository.GetUser(userId);
 
         var isValidate = user.IsValidateFunc(false, true);
-       
+
         if (isValidate is not null)
         {
             return new Result<ProductDto?>
@@ -204,7 +213,7 @@ public class ProductServices(
                 data: null,
                 message: isValidate.Message,
                 isSuccessful: false,
-                statusCode: isValidate.StatusCode 
+                statusCode: isValidate.StatusCode
             );
         }
 
@@ -215,8 +224,11 @@ public class ProductServices(
         List<string>? savedImage = await fileServices.SaveFile(
             productDto.Images,
             EnImageType.Product);
+        
         if (savedImage is null || savedThumbnail is null)
         {
+            deleteProductImages(savedImage,savedThumbnail);
+
             return new Result<ProductDto?>
             (
                 data: null,
@@ -239,6 +251,7 @@ public class ProductServices(
 
         if ((images.Count) > 20)
         {
+            deleteProductImages(savedImage,savedThumbnail);
             return new Result<ProductDto?>
             (
                 data: null,
@@ -266,6 +279,8 @@ public class ProductServices(
 
         if (productVariants is not null && productVariants.Count > 20)
         {
+            deleteProductImages(savedImage,savedThumbnail);
+
             return new Result<ProductDto?>
             (
                 data: null,
@@ -281,7 +296,7 @@ public class ProductServices(
             Name = productDto.Name,
             Description = productDto.Description,
             SubcategoryId = productDto.SubcategoryId,
-            StoreId = productDto.StoreId,
+            StoreId = user!.Store!.Id,
             Price = productDto.Price,
             CreatedAt = DateTime.Now,
             UpdatedAt = null,
@@ -296,6 +311,8 @@ public class ProductServices(
 
         if (result == 0)
         {
+            deleteProductImages(savedImage,savedThumbnail);
+
             return new Result<ProductDto?>
             (
                 data: null,
@@ -316,6 +333,7 @@ public class ProductServices(
         );
     }
 
+
     public async Task<Result<ProductDto?>> UpdateProducts(
         Guid userId, UpdateProductDto productDto
     )
@@ -332,7 +350,7 @@ public class ProductServices(
         User? user = await unitOfWork.UserRepository.GetUser(userId);
 
         var isValidate = user.IsValidateFunc(false, true);
-       
+
         if (isValidate is not null)
         {
             return new Result<ProductDto?>
@@ -340,10 +358,10 @@ public class ProductServices(
                 data: null,
                 message: isValidate.Message,
                 isSuccessful: false,
-                statusCode: isValidate.StatusCode 
+                statusCode: isValidate.StatusCode
             );
         }
-        
+
         if (productDto.SubcategoryId is not null &&
             !(await unitOfWork.SubCategoryRepository.IsExist((Guid)productDto!.SubcategoryId!)))
         {
@@ -374,7 +392,7 @@ public class ProductServices(
         //delete preview images
         if (productDto.Deletedimages is not null)
         {
-              unitOfWork.ProductImageRepository.DeleteProductImages(productDto.Deletedimages,
+            unitOfWork.ProductImageRepository.DeleteProductImages(productDto.Deletedimages,
                 productDto.Id);
 
             fileServices.DeleteFile(productDto.Deletedimages);
@@ -383,9 +401,8 @@ public class ProductServices(
         //delete preview productvarients
         if (productDto.DeletedProductVariants is not null)
         {
-             unitOfWork.ProductVariantRepository.DeleteProductVariant(productDto.DeletedProductVariants,
+            unitOfWork.ProductVariantRepository.DeleteProductVariant(productDto.DeletedProductVariants,
                 productDto.Id);
-            
         }
 
         string? savedThumbnail = null;
@@ -410,6 +427,7 @@ public class ProductServices(
 
         if (savedImage is not null && (savedImage.Count + product?.ProductImages?.Count) > 20)
         {
+            deleteProductImages(savedImage.Select(value=>value.Path).ToList(),savedThumbnail);
             return new Result<ProductDto?>
             (
                 data: null,
@@ -421,6 +439,8 @@ public class ProductServices(
 
         if ((savedImage?.Count + product?.ProductImages?.Count) < 1)
         {
+            
+            deleteProductImages(savedImage?.Select(value=>value.Path).ToList(),savedThumbnail);
             return new Result<ProductDto?>
             (
                 data: null,
@@ -444,9 +464,11 @@ public class ProductServices(
                         OrderProductsVariants = null
                     })
                 .ToList();
-        
+
         if (productVariants is not null && (productVariants.Count + product?.ProductVariants?.Count) > 20)
         {
+            deleteProductImages(savedImage?.Select(value=>value.Path).ToList(),savedThumbnail);
+ 
             return new Result<ProductDto?>
             (
                 data: null,
@@ -473,6 +495,8 @@ public class ProductServices(
 
         if (result == 0)
         {
+            deleteProductImages(savedImage?.Select(value=>value.Path).ToList(),savedThumbnail);
+
             return new Result<ProductDto?>
             (
                 data: null,
@@ -501,7 +525,7 @@ public class ProductServices(
         User? user = await unitOfWork.UserRepository.GetUser(userId);
 
         var isValidate = user.IsValidateFunc(false, true);
-       
+
         if (isValidate is not null)
         {
             return new Result<bool>
@@ -509,7 +533,7 @@ public class ProductServices(
                 data: false,
                 message: isValidate.Message,
                 isSuccessful: false,
-                statusCode: isValidate.StatusCode 
+                statusCode: isValidate.StatusCode
             );
         }
 
