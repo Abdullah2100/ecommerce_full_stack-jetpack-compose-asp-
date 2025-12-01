@@ -1,17 +1,17 @@
 import iOrderItemResponseDto from "./iOrderItemResponseDto";
 
-    interface IOrderResponseDto {
+interface IOrderResponseDto {
     id: string,
     name: string,
-    user_phone: string,
-    status: number,
+    userPhone: string,
+    status: string,
     totalPrice: number,
-    order_items: iOrderItemResponseDto[]
+    orderItems: iOrderItemResponseDto[]
 }
 
-interface IAdminReposeDto{
+interface IAdminReposeDto {
     orders: IOrderResponseDto[],
-    pageNum:number
+    pageNum: number
 }
 export type {
     IOrderResponseDto,

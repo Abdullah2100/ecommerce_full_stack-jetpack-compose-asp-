@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-   
+CREATE EXTENSION postgis; 
        
 insert into "GeneralSettings"("Id","Name","Value","CreatedAt") 
 VALUES(uuid_generate_v4(),'one_kilo_price',150,CURRENT_TIMESTAMP);

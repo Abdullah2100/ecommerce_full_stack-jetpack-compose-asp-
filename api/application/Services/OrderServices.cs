@@ -75,14 +75,17 @@ public class OrderServices(
         foreach (var item in orderDto.Items)
         {
             var orderItemId = ClsUtil.GenerateGuid();
-            List<OrderProductsVariant> OrderProductsVariants = item.ProductVariant
-                .Select(x => new OrderProductsVariant
-                {
-                    Id = ClsUtil.GenerateGuid(),
-                    OrderItemId = orderItemId,
-                    ProductVariantId = x
-                })
-                .ToList();
+            List<OrderProductsVariant>? orderProductsVariants =
+                item.ProductVariant == null || item.ProductVariant.Count == 0
+                    ? null
+                    : item.ProductVariant
+                        .Select(x => new OrderProductsVariant
+                        {
+                            Id = ClsUtil.GenerateGuid(),
+                            OrderItemId = orderItemId,
+                            ProductVariantId = x
+                        })
+                        .ToList();
 
             OrderItem orderItem = new OrderItem
             {
@@ -92,10 +95,11 @@ public class OrderServices(
                 Quantity = item.Quantity,
                 StoreId = item.StoreId,
                 Price = item.Price,
-                OrderProductsVariants = OrderProductsVariants
             };
             unitOfWork.OrderItemRepository.Add(orderItem);
-            unitOfWork.OrderProductVariantRepository.Add(OrderProductsVariants);
+            
+            if (orderProductsVariants is not null)
+                unitOfWork.OrderProductVariantRepository.Add(orderProductsVariants);
         }
 
 
@@ -114,9 +118,11 @@ public class OrderServices(
         }
 
         var isSavedDistance = await unitOfWork.OrderRepository.IsSavedDistanceToOrder(order.Id);
-
+        // this line to save delete order if is deleted
+        await unitOfWork.SaveChanges();
         if (isSavedDistance == false)
         {
+            
             return new Result<OrderDto?>
             (
                 data: null,
@@ -601,7 +607,7 @@ public class OrderServices(
 
                 case 1:
                 {
-                 await   SendNotificationToDeliveries(deliveryMessage, messageServe);
+                    await SendNotificationToDeliveries(deliveryMessage, messageServe);
                 }
                     break;
 

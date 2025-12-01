@@ -11,7 +11,7 @@ namespace api.Presentation.dto
         public Guid VariantId { get; set; }
     }
     
-    public class CreateProductVariantDto
+     public class CreateProductVariantDto
     {
         [StringLength(maximumLength:50,MinimumLength =3 ,ErrorMessage= "name must not be empty")]
         public string Name { get; set; }

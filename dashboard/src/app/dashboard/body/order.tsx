@@ -1,6 +1,6 @@
 import { mockOrders, mockOrderStatus } from "@/lib/mockData";
-import { useState } from "react";
-import { ToastContainer } from "react-toastify";
+import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,12 +8,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import iOrderStatusUpdateRequestDto from "@/dto/request/iOrderStatusUpdateRequestDto";
+import useOrder from "@/stores/order";
+import { useMutation } from "@tanstack/react-query";
+import iOrderItemResponseDto from "@/dto/response/iOrderItemResponseDto";
+import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
+import Image from "next/image";
 
 const Order = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const orders = mockOrders;
-  const pageNumb = 1;
-  const orderStatus = mockOrderStatus;
+  const {
+    updateOrderStatus,
+    getOrdersAt,
+    getOrderStatus,
+    orders,
+    orderStatus,
+    pageNumb,
+    currentPage,
+  } = useOrder();
+
+  const chageOrderStatus = useMutation({
+    mutationFn: (orderStatus: iOrderStatusUpdateRequestDto) =>
+      updateOrderStatus(orderStatus),
+    onError: (e) => {
+      toast.error(e.message);
+    },
+    onSuccess: (res) => {
+      toast.success("تم التعديل بنجاح");
+    },
+  });
+
+  const [selectedItem, setNewSelectedItem] = useState<iOrderItemResponseDto[] | undefined>(undefined)
+  const [currentIndex, changeCurrentIndex] = useState<number>(0)
+
+  useEffect(() => {
+    getOrdersAt(1);
+    getOrderStatus()
+  }, []);
+
+  if (orders == null) return;
 
   return (
     <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
@@ -22,6 +54,68 @@ const Order = () => {
           Orders
         </h1>
       </div>
+      {selectedItem !== undefined &&
+        <>
+
+          <div className="fixed inset-0 bg-black/50 z-50  flex items-center justify-center" >
+
+            <div className="h-[800px] w-[700px] bg-white rounded-xl flex ">
+              <button
+                onClick={() => setNewSelectedItem(undefined)}
+                className=" fixed    h-10 w-10 flex items-center justify-center rounded-lg bg-muted transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+              <div className="h-[800px] w-[700px] flex flex-col   items-center justify-center">
+                <Image
+                  alt="ffff"
+                  src={convertImageToValidUrl(selectedItem[currentIndex].product.thumbnail)}
+                  width={450}
+                  height={450}
+                  className="object-contain"
+                  priority
+                />
+                <div>
+                  <h1>{selectedItem[currentIndex].product.name}</h1>
+                </div>
+                <div>
+                  <h1 className="font-bold">{'Quantity : ' + selectedItem[currentIndex].quantity}</h1>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  if (currentIndex != 0)
+                    changeCurrentIndex(currentIndex - 1)
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center rounded-full bg-background/90 border border-border/50 shadow-lg hover:bg-background hover:scale-110 transition-all duration-200"
+              >
+                <svg
+                  style={{ color: currentIndex > 0 ? 'black' : 'gray' }}
+                  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <button
+                onClick={() => {
+                  if (currentIndex + 1 > selectedItem.length)
+                    changeCurrentIndex(currentIndex + 1)
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center rounded-full bg-background/90 border border-border/50 shadow-lg hover:bg-background hover:scale-110 transition-all duration-200"
+              >
+                <svg
+                  style={{ color: currentIndex + 1 < selectedItem.length ? 'black' : 'gray' }}
+                  xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </>
+
+      }
 
       <div className="w-full overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
         <div className="overflow-x-auto">
@@ -41,8 +135,13 @@ const Order = () => {
                   <td className="px-6 py-4 text-muted-foreground font-mono text-xs">#{value.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col">
-                      <span className="font-medium text-foreground group-hover:text-primary transition-colors">{value.name}</span>
-                      <span className="text-xs text-muted-foreground">{value.user_phone}</span>
+
+                      <button
+                        onClick={() => { setNewSelectedItem(value.orderItems) }}
+                      >
+                        <span
+                          className="font-medium text-foreground group-hover:text-primary transition-colors">{value.name}</span>
+                      </button>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -53,14 +152,14 @@ const Order = () => {
                           size="sm"
                           className={`
                                 w-[140px] justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors
-                                ${value.status === 0 ? 'bg-yellow-500 text-yellow-600 hover:text-yellow-700' : ''}
-                                ${value.status === 1 ? 'bg-blue-500 text-blue-600 hover:text-blue-700' : ''}
-                                ${value.status === 2 ? 'bg-purple-500 text-purple-600 hover:text-purple-700' : ''}
-                                ${value.status === 3 ? 'bg-green-500 text-green-600 hover:text-green-700' : ''}
-                                ${value.status === 4 ? 'bg-red-500 text-red-600 hover:text-red-700' : ''}
+                                ${value.status === "Inprogress" ? 'bg-yellow-500 text-yellow-600 hover:text-yellow-700' : ''}
+                                ${value.status === "Accepted" ? 'bg-blue-500 text-blue-600 hover:text-blue-700' : ''}
+                                ${value.status === "In away" ? 'bg-purple-500 text-purple-600 hover:text-purple-700' : ''}
+                                ${value.status === "Completed" || value.status == "Received" ? 'bg-green-500 text-green-600 hover:text-green-700' : ''}
+                                ${value.status === "Rejected" ? 'bg-red-500 text-red-600 hover:text-red-700' : 'text-white'}
                             `}
                         >
-                          {orderStatus[value.status]}
+                          {value.status}
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="start" className="w-[140px]">
@@ -68,7 +167,10 @@ const Order = () => {
                           <DropdownMenuItem
                             key={sIndex}
                             onClick={() => {
-                              // Mock update logic would go here
+                              chageOrderStatus.mutate({
+                                id: value.id,
+                                statsu: sIndex,
+                              })
                               console.log(`Update order ${value.id} to ${statusItem}`);
                             }}
                           >
@@ -98,7 +200,7 @@ const Order = () => {
           {Array.from({ length: pageNumb }, (_, i) => (
             <button
               key={i}
-              onClick={() => setCurrentPage(i + 1)}
+              onClick={() => getOrdersAt(i + 1)}
               className={`
                   h-9 w-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200
                   ${currentPage === i + 1
@@ -112,7 +214,8 @@ const Order = () => {
           ))}
         </div>
       </div>
-      <ToastContainer />
+
+
     </div>
   );
 };

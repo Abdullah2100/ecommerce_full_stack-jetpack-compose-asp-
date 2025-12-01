@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { changeStoreStatus, getStoreAtPage, getStorePages } from "@/lib/api/store";
+import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 
 const Stores = () => {
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const data = mockStores;
-    // const storePages = 1;
 
     const queryClient = useQueryClient()
     const { data: storePages } = useQuery({
@@ -50,7 +48,7 @@ const Stores = () => {
     )
 
     if (data == null) return;
-
+    console.log("this store data", JSON.stringify(data))
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
@@ -80,7 +78,7 @@ const Stores = () => {
                                         <div className="flex items-center gap-4">
                                             <div className="relative h-10 w-10 rounded-lg overflow-hidden border border-border/50 shadow-sm">
                                                 <Image
-                                                    src={value.small_image}
+                                                    src={convertImageToValidUrl(value.smallImage)}
                                                     alt={value.name}
                                                     fill
                                                     className="object-cover"

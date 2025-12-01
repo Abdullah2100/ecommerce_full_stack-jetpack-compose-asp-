@@ -1,4 +1,4 @@
-export default interface iOrderProductDto{
+export default interface iOrderProductDto {
     name: string,
- thmbnail:string
+    thumbnail: string
 }

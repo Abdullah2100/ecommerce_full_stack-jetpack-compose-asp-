@@ -11,7 +11,7 @@ import { ToastOptions } from "react-toastify";
 interface IOrder {
   currentPage: number;
   pageNumb: number;
-  isHasNewOrder:boolean;
+  isHasNewOrder: boolean;
   orderStatus: string[];
   orders: IOrderResponseDto[];
   getOrdersAt: (pageNumb: number) => void;
@@ -19,21 +19,19 @@ interface IOrder {
   updateOrderStatus: (
     orderStatus: iOrderStatusUpdateRequestDto
   ) => Promise<string>;
-  changeHasNewOrderStatus:(status:boolean)=>void;
+  changeHasNewOrderStatus: (status: boolean) => void;
 }
 
 const useOrder = create<IOrder>((set, get) => ({
   currentPage: 0,
   pageNumb: 1,
-  isHasNewOrder:false,
+  isHasNewOrder: false,
   orderStatus: [],
   orders: [],
   getOrdersAt: async (pageNum: number) => {
-    if (pageNum === get().currentPage) return;
+    // if (pageNum === get().currentPage) return;
     set({ orders: [] });
-    await new Promise((resolve) => setTimeout(resolve, 3000));
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Order/all/${pageNum}`;
-    console.log(`funtion is Called ${url}`);
     try {
       const result = await axios.get(url, {
         headers: {
@@ -41,11 +39,19 @@ const useOrder = create<IOrder>((set, get) => ({
         },
       });
       let data = result.data as IAdminReposeDto;
-      set((state) => ({
-        orders: [...state.orders, ...data.orders],
-        pageNumb: data.pageNum,
-        currentPage: pageNum,
-      }));
+      set((state) => {
+        const combinedOrders = [...state.orders, ...data.orders];
+        const uniqueOrders = Array.from(
+          new Map(combinedOrders.map((item) => [item.id, item])).values()
+        );
+        return {
+          orders: uniqueOrders,
+          pageNumb: data.pageNum,
+          currentPage: pageNum,
+        };
+      });
+
+      console.log(`funtion is Called ${JSON.stringify(get().orders)}`);
     } catch (error) {
       // Extract meaningful error message
       let errorMessage = "An unexpected error occurred";
@@ -62,9 +68,8 @@ const useOrder = create<IOrder>((set, get) => ({
     }
   },
   getOrderStatus: async () => {
-    if (get().orderStatus.length > 0) return;
     const url =
-      process.env.NEXT_PUBLIC_PASE_URL + `/api/Order/orderStatusDeffination`;
+      process.env.NEXT_PUBLIC_PASE_URL + `/api/Order/orderStatusDefinition`;
 
     console.log(`funtion is Called ${url}`);
     try {
@@ -113,7 +118,12 @@ const useOrder = create<IOrder>((set, get) => ({
         var orders = get().orders;
         let orderIndex = orders.findIndex((x) => x.id == orderStatus.id);
         if (orderIndex === -1) throw new Error("order not found");
-        orders[orderIndex].status = orderStatus.statsu;
+
+
+        const newStatus = get().orderStatus[orderStatus.statsu];
+        if (newStatus) {
+          orders[orderIndex].status = newStatus;
+        }
         set({ orders: orders });
         return "";
       } else {
@@ -134,8 +144,8 @@ const useOrder = create<IOrder>((set, get) => ({
       throw new Error(errorMessage);
     }
   },
-  changeHasNewOrderStatus:(status:boolean)=>{
-    set({isHasNewOrder:status})
+  changeHasNewOrderStatus: (status: boolean) => {
+    set({ isHasNewOrder: status })
   }
 }));
 export default useOrder;

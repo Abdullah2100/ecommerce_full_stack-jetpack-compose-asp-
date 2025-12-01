@@ -46,7 +46,7 @@ public class OrderController(
         };
     }
     
-    [HttpGet("orderStatusDeffination")]
+    [HttpGet("orderStatusDefinition")]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
