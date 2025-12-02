@@ -51,7 +51,7 @@ namespace api.Presentation.dto
     public class UpdateOrderStatusDto
     {
         public Guid Id { get; set; }
-        public int Status { get; } 
+        public int Status { get; set; } 
     }
     
     public class UpdateOrderStatusEventDto

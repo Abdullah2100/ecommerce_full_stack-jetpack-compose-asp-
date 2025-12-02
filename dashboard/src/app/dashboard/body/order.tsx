@@ -46,6 +46,7 @@ const Order = () => {
   }, []);
 
   if (orders == null) return;
+  console.log(`funtion is Called ${JSON.stringify(orders)}`);
 
   return (
     <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
@@ -150,13 +151,12 @@ const Order = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          className={`
-                                w-[140px] justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors
-                                ${value.status === "Inprogress" ? 'bg-yellow-500 text-yellow-600 hover:text-yellow-700' : ''}
-                                ${value.status === "Accepted" ? 'bg-blue-500 text-blue-600 hover:text-blue-700' : ''}
-                                ${value.status === "In away" ? 'bg-purple-500 text-purple-600 hover:text-purple-700' : ''}
-                                ${value.status === "Completed" || value.status == "Received" ? 'bg-green-500 text-green-600 hover:text-green-700' : ''}
-                                ${value.status === "Rejected" ? 'bg-red-500 text-red-600 hover:text-red-700' : 'text-white'}
+                          className={` justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors text-white
+                                ${value.status === "Inprogress" ? 'bg-yellow-500 ' : ''}
+                                ${value.status === "Accepted" ? 'bg-blue-500 ' : ''}
+                                ${value.status === "In away" ? 'bg-purple-500 ' : ''}
+                                ${value.status === "Completed" || value.status == "Received" ? 'bg-green-500 ' : ''}
+                                ${value.status === "Rejected" ? 'bg-red-500' : ''}
                             `}
                         >
                           {value.status}
@@ -167,11 +167,12 @@ const Order = () => {
                           <DropdownMenuItem
                             key={sIndex}
                             onClick={() => {
+                              console.log(`Update  ${sIndex}`);
+
                               chageOrderStatus.mutate({
                                 id: value.id,
                                 statsu: sIndex,
                               })
-                              console.log(`Update order ${value.id} to ${statusItem}`);
                             }}
                           >
                             {statusItem}

@@ -39,19 +39,12 @@ const useOrder = create<IOrder>((set, get) => ({
         },
       });
       let data = result.data as IAdminReposeDto;
-      set((state) => {
-        const combinedOrders = [...state.orders, ...data.orders];
-        const uniqueOrders = Array.from(
-          new Map(combinedOrders.map((item) => [item.id, item])).values()
-        );
-        return {
-          orders: uniqueOrders,
-          pageNumb: data.pageNum,
-          currentPage: pageNum,
-        };
+      set({
+        orders: [...data.orders],
+        pageNumb: data.pageNum,
+        currentPage: pageNum,
       });
 
-      console.log(`funtion is Called ${JSON.stringify(get().orders)}`);
     } catch (error) {
       // Extract meaningful error message
       let errorMessage = "An unexpected error occurred";

@@ -256,7 +256,7 @@ public class DeliveryController(
             return Unauthorized("هناك مشكلة في التحقق");
         }
 
-        var result = await orderServices.GetOrdersbyDeliveryId(
+        var result = await orderServices.GetOrdersByDeliveryId(
             deliveryId.Value, pageNumber, 25);
 
         return result.IsSuccessful switch

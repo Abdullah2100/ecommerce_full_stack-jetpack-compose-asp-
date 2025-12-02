@@ -18,7 +18,7 @@ public class OrderServices(
     IHubContext<OrderHub> hubContext)
     : IOrderServices
 {
-    public static List<string> OrderStatus = new List<string>
+    public static readonly List<string> OrderStatus = new List<string>
     {
         "Rejected",
         "Inprogress",
@@ -298,7 +298,7 @@ public class OrderServices(
 
 
     // for delivery 
-    public async Task<Result<List<OrderDto>>> GetOrdersbyDeliveryId(Guid deliveryId, int pageNum, int pageSize)
+    public async Task<Result<List<OrderDto>>> GetOrdersByDeliveryId(Guid deliveryId, int pageNum, int pageSize)
     {
         Delivery? delivery = await unitOfWork.DeliveryRepository.GetDelivery(deliveryId);
 

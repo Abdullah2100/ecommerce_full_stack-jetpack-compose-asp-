@@ -19,7 +19,7 @@ export interface iNavProp {
 }
 
 export const useNavItems = ({ selectedIndex, setSelectedIndex, isNewOrder }: iNavProp) => {
-  const { getOrdersAt, changeHasNewOrderStatus, getOrderStatus } = useOrder();
+  const { changeHasNewOrderStatus } = useOrder();
 
   const navLinkItems: iNavItemProp[] = [
     {

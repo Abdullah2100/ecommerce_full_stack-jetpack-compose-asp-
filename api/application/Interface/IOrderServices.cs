@@ -16,7 +16,7 @@ public interface IOrderServices
    Task<Result<bool>> DeleteOrder(Guid id,Guid userId);
    
    //delivery 
-   Task<Result<List<OrderDto>>> GetOrdersbyDeliveryId(Guid deliveryId,int pageNum,int pageSize);
+   Task<Result<List<OrderDto>>> GetOrdersByDeliveryId(Guid deliveryId,int pageNum,int pageSize);
    Task<Result<List<OrderDto>>> GetOrdersNotBelongToDeliveries(Guid deliveryId,int pageNum,int pageSize);
    Task<Result<bool>> SubmitOrderToDelivery(Guid id,Guid deliveryId);
    Task<Result<bool>> CancelOrderFromDelivery(Guid id,Guid deliveryId);
