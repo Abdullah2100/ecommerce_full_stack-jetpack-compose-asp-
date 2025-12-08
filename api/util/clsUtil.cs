@@ -11,7 +11,8 @@ namespace api.util
         Category,
         Store,
         Banner,
-        Delivery
+        Delivery,
+        Payment,
     };
 
     static class ClsUtil

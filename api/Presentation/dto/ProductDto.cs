@@ -7,6 +7,7 @@ namespace api.Presentation.dto
     public class ProductDto
     {
         public Guid Id { get; set; }
+        public String Symbol { get; set; } 
         public string Name { get; set; }
         public string Description { get; set; }
         public string  Thumbnail { get; set; }
@@ -26,6 +27,8 @@ namespace api.Presentation.dto
         public IFormFile Thumbnail { get; set; }
         public Guid SubcategoryId { get; set; }
         public decimal Price { get; set; }
+        public String Symbol { get; set; } 
+
         public List<CreateProductVariantDto>? ProductVariants { get; set; } = null;
         public List<IFormFile> Images { get; set; }
     }
@@ -43,6 +46,8 @@ namespace api.Presentation.dto
         public Guid? SubcategoryId { get; set; }= null;
         [Required] public Guid StoreId { get; set; }
         public decimal? Price { get; set; }= null;
+        public String? Symbol { get; set; } = null; 
+
         public List<CreateProductVariantDto>? ProductVariants { get; set; } = null;
         public List<CreateProductVariantDto>? DeletedProductVariants { get; set; } = null;
         public List<IFormFile>? Images { get; set; }= null;
@@ -64,6 +69,8 @@ namespace api.Presentation.dto
         public string Subcategory { get; set; }
         public string StoreName { get; set; }
         public decimal Price { get; set; }
+        public String Symbol { get; set; } 
+
         public List<List<AdminProductVariantDto>>? ProductVariants { get; set; }
         public List<string> ProductImages { get; set; } 
     }

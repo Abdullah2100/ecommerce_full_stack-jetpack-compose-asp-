@@ -153,7 +153,7 @@ class StoreViewModel(
     }
 
 
-    suspend fun createStore(
+  suspend  fun createStore(
         name: String,
         wallpaperImage: File,
         smallImage: File,

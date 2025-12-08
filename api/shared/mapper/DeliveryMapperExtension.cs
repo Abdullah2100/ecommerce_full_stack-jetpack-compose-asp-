@@ -2,7 +2,7 @@ using api.application.Result;
 using api.domain.entity;
 using api.Presentation.dto;
 
-namespace api.shared.extentions;
+namespace api.shared.mapper;
 
 public static class DeliveryMapperExtension
 {

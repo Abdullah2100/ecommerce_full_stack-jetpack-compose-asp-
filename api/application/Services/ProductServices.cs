@@ -3,7 +3,7 @@ using api.application.Result;
 using api.domain.entity;
 using api.Infrastructure;
 using api.Presentation.dto;
-using api.shared.extentions;
+using api.shared.mapper;
 using api.util;
 using ecommerc_dotnet.midleware.ConfigImplment;
 
@@ -16,15 +16,14 @@ public class ProductServices(
 )
     : IProductServices
 {
-
-
-    private void deleteProductImages(List<string>? images = null, string? savedThumbnail=null)
+    private void deleteProductImages(List<string>? images = null, string? savedThumbnail = null)
     {
         if (images is not null)
             fileServices.DeleteFile(images);
-        if(savedThumbnail is not null)
-            fileServices.DeleteFile(savedThumbnail); 
+        if (savedThumbnail is not null)
+            fileServices.DeleteFile(savedThumbnail);
     }
+
     public async Task<Result<List<ProductDto>>> GetProductsByStoreId(
         Guid storeId,
         int pageNum,
@@ -136,8 +135,8 @@ public class ProductServices(
                 .GetProducts(pageNum, pageSize))
             .Select((de) => de.ToAdminDto(config.getKey("url_file")))
             .ToList();
-        
-        if(products.Count == 0 || products.Any(x=>x==null))
+
+        if (products.Count == 0 || products.Any(x => x == null))
             return new Result<List<AdminProductsDto>>
             (
                 data: new List<AdminProductsDto>(),
@@ -154,10 +153,10 @@ public class ProductServices(
         );
     }
 
-    public async Task<Result<int>> GetProductsPagesForAdmin(Guid adminId,int length=25)
+    public async Task<Result<int>> GetProductsPagesForAdmin(Guid adminId, int length = 25)
     {
         User? admin = await unitOfWork.UserRepository.GetUser(adminId);
-        
+
         var isValidate = admin.IsValidateFunc(false, true);
 
         if (isValidate is not null)
@@ -172,80 +171,28 @@ public class ProductServices(
         }
 
 
-        var productPageLength= await unitOfWork.ProductRepository.GetProductPages();
-        
-        if (productPageLength is  null)
+        var productPageLength = await unitOfWork.ProductRepository.GetProductPages();
+
+        if (productPageLength is null)
         {
             return new Result<int>
             (
                 data: 0,
                 message: "no pages found",
                 isSuccessful: false,
-                statusCode:404 
-            );
-        } 
-        
-        return new Result<int>
-        (
-            data:(int) Math.Ceiling((double)productPageLength / length),
-            message: "",
-            isSuccessful: true,
-            statusCode:200 
-        ); 
-    }
-
-    /*
-    private async Task<Result<ProductDto?>?> isUserNotExistOrNotHasStore(Guid userId)
-    {
-        User? user = await unitOfWork.UserRepository
-            .GetUser(userId);
-        if (user is null)
-        {
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "user not found",
-                isSuccessful: false,
                 statusCode: 404
             );
         }
 
-        if (user.IsBlocked)
-        {
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "user is blocked",
-                isSuccessful: false,
-                statusCode: 400
-            );
-        }
-
-        if (user.Store is null)
-        {
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "user not has store",
-                isSuccessful: false,
-                statusCode: 400
-            );
-        }
-
-        if (user.Store.IsBlock)
-        {
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "admin is block you store from creating product",
-                isSuccessful: false,
-                statusCode: 400
-            );
-        }
-
-        return null;
+        return new Result<int>
+        (
+            data: (int)Math.Ceiling((double)productPageLength / length),
+            message: "",
+            isSuccessful: true,
+            statusCode: 200
+        );
     }
-*/
+
     public async Task<Result<ProductDto?>> CreateProducts(
         Guid userId,
         CreateProductDto productDto
@@ -266,6 +213,19 @@ public class ProductServices(
             );
         }
 
+        bool isExistCurrency = await unitOfWork.CurrencyRepository.isExist(productDto.Symbol);
+
+        if (!isExistCurrency)
+        {
+            return new Result<ProductDto?>
+            (
+                data: null,
+                message: "Currency is Not Exist",
+                isSuccessful: false,
+                statusCode: 404
+            );
+        }
+
 
         string? savedThumbnail = await fileServices.SaveFile(
             productDto.Thumbnail,
@@ -273,10 +233,10 @@ public class ProductServices(
         List<string>? savedImage = await fileServices.SaveFile(
             productDto.Images,
             EnImageType.Product);
-        
+
         if (savedImage is null || savedThumbnail is null)
         {
-            deleteProductImages(savedImage,savedThumbnail);
+            deleteProductImages(savedImage, savedThumbnail);
 
             return new Result<ProductDto?>
             (
@@ -300,7 +260,7 @@ public class ProductServices(
 
         if ((images.Count) > 20)
         {
-            deleteProductImages(savedImage,savedThumbnail);
+            deleteProductImages(savedImage, savedThumbnail);
             return new Result<ProductDto?>
             (
                 data: null,
@@ -328,7 +288,7 @@ public class ProductServices(
 
         if (productVariants is not null && productVariants.Count > 20)
         {
-            deleteProductImages(savedImage,savedThumbnail);
+            deleteProductImages(savedImage, savedThumbnail);
 
             return new Result<ProductDto?>
             (
@@ -350,6 +310,7 @@ public class ProductServices(
             CreatedAt = DateTime.Now,
             UpdatedAt = null,
             Thumbnail = savedThumbnail,
+            Symbol = productDto.Symbol
         };
 
         unitOfWork.ProductRepository.Add(product);
@@ -360,7 +321,7 @@ public class ProductServices(
 
         if (result == 0)
         {
-            deleteProductImages(savedImage,savedThumbnail);
+            deleteProductImages(savedImage, savedThumbnail);
 
             return new Result<ProductDto?>
             (
@@ -409,6 +370,22 @@ public class ProductServices(
                 isSuccessful: false,
                 statusCode: isValidate.StatusCode
             );
+        }
+
+        if (productDto.Symbol is not null)
+        {
+            bool isExistCurrency = await unitOfWork.CurrencyRepository.isExist(productDto.Symbol);
+
+            if (!isExistCurrency)
+            {
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: "Currency is Not Exist",
+                    isSuccessful: false,
+                    statusCode: 404
+                );
+            }
         }
 
         if (productDto.SubcategoryId is not null &&
@@ -476,7 +453,7 @@ public class ProductServices(
 
         if (savedImage is not null && (savedImage.Count + product?.ProductImages?.Count) > 20)
         {
-            deleteProductImages(savedImage.Select(value=>value.Path).ToList(),savedThumbnail);
+            deleteProductImages(savedImage.Select(value => value.Path).ToList(), savedThumbnail);
             return new Result<ProductDto?>
             (
                 data: null,
@@ -488,8 +465,7 @@ public class ProductServices(
 
         if ((savedImage?.Count + product?.ProductImages?.Count) < 1)
         {
-            
-            deleteProductImages(savedImage?.Select(value=>value.Path).ToList(),savedThumbnail);
+            deleteProductImages(savedImage?.Select(value => value.Path).ToList(), savedThumbnail);
             return new Result<ProductDto?>
             (
                 data: null,
@@ -516,8 +492,8 @@ public class ProductServices(
 
         if (productVariants is not null && (productVariants.Count + product?.ProductVariants?.Count) > 20)
         {
-            deleteProductImages(savedImage?.Select(value=>value.Path).ToList(),savedThumbnail);
- 
+            deleteProductImages(savedImage?.Select(value => value.Path).ToList(), savedThumbnail);
+
             return new Result<ProductDto?>
             (
                 data: null,
@@ -538,13 +514,14 @@ public class ProductServices(
         product.Thumbnail = savedThumbnail ?? product.Thumbnail;
         product.ProductVariants = productVariants;
         product.ProductImages = savedImage;
+        product.Symbol = productDto.Symbol?? product.Symbol;
 
         unitOfWork.ProductRepository.Update(product);
         result = await unitOfWork.SaveChanges();
 
         if (result == 0)
         {
-            deleteProductImages(savedImage?.Select(value=>value.Path).ToList(),savedThumbnail);
+            deleteProductImages(savedImage?.Select(value => value.Path).ToList(), savedThumbnail);
 
             return new Result<ProductDto?>
             (

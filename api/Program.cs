@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using Stripe;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -55,6 +56,8 @@ builder.Services.AddTransient<IOrderServices, OrderServices>();
 builder.Services.AddTransient<IOrderItemServices, OrderItemServices>();
 builder.Services.AddTransient<IRefreshTokenServices, RefreshTokenServices>();
 builder.Services.AddTransient<IAnalyseServices, AnalyseServices>();
+builder.Services.AddTransient<ICurrencyServices, CurrencyServices>();
+
 
 
  var fireBaseConfig = Path.Combine(
@@ -110,7 +113,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 var connectionUrl = configuration["ConnectionStrings:connection_url"];
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionUrl));
-
 
 var app = builder.Build();
 

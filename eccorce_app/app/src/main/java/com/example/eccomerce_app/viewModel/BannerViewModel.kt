@@ -102,7 +102,6 @@ class BannerViewModel(
                     if (errorMessage.contains(General.BASED_URL)) {
                         errorMessage.replace(General.BASED_URL, " Server ")
                     }
-                    Log.d("errorFromGettingStoreData", errorMessage)
                 }
             }
         }

@@ -1,7 +1,7 @@
 using api.domain.entity;
 using api.Presentation.dto;
 
-namespace api.shared.extentions;
+namespace api.shared.mapper;
 
 public static class ProductMapperExtension
 {
@@ -14,12 +14,13 @@ public static class ProductMapperExtension
             Name = product.Name,
             Description = product.Description,
             Price = product.Price,
+            Symbol = product.Symbol,
             Thumbnail = string.IsNullOrEmpty(product.Thumbnail) ? "" : url+ product.Thumbnail,
             CategoryId = product.SubCategory.CategoryId,
             ProductImages =product.ProductImages.Select(pi=>url+pi.Path).ToList(),
             ProductVariants = product.ProductVariants
                 .GroupBy(pv => pv.VariantId, (key, g)
-                    => g.Select(pvH=>pvH.ToProductVarientDto()).ToList()
+                    => g.Select(pvH=>pvH.ToProductVariantDto()).ToList()
                 ).ToList(),
             StoreId = product.StoreId,
             SubcategoryId = product.SubcategoryId,
@@ -36,6 +37,7 @@ public static class ProductMapperExtension
                 Name = product.Name,
                 Description = product.Description,
                 Price = product.Price,
+                Symbol = product.Symbol,
                 Thumbnail = string.IsNullOrEmpty(product.Thumbnail) ? "" : url + product.Thumbnail,
                 StoreName = product.Store.Name,
                 ProductImages = product?.ProductImages == null
@@ -68,6 +70,7 @@ public static class ProductMapperExtension
                && dto.Images == null
                && dto.Deletedimages == null
                && dto.DeletedProductVariants==null
+               && dto.Symbol ==null
             ;    
     }
 

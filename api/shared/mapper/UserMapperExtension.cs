@@ -2,7 +2,7 @@ using api.application.Result;
 using api.domain.entity;
 using api.Presentation.dto;
 
-namespace api.shared.extentions;
+namespace api.shared.mapper;
 
 public static class UserMapperExtension
 {
@@ -19,7 +19,7 @@ public static class UserMapperExtension
             IsAdmin = user.Role == 0,
             Address = user.Addresses?.Select(ad => ad.ToDto()).ToList(),
             StoreId = user?.Store?.Id,
-            StoreName = user?.Store?.Name??"",
+            StoreName = user?.Store?.Name ?? "",
         };
     }
 
@@ -74,7 +74,7 @@ public static class UserMapperExtension
                         data: null,
                         message: "you must has store before done this operation",
                         isSuccessful: false,
-                        statusCode: 404
+                        statusCode: 400
                     );
                 }
 
@@ -85,7 +85,7 @@ public static class UserMapperExtension
 
     public static Result<AuthDto?>? IsValidateFunc(
         this User? user,
-        bool isAdmin = true,
+        bool? isAdmin = true,
         bool isStore = false)
     {
         if (user is null)
@@ -103,6 +103,8 @@ public static class UserMapperExtension
         //validate user if it is admin or user according to isAdmin feild 
         switch (isAdmin)
         {
+            case null: return isStore ? IsHasStore(user) : null;
+
             case false:
             {
                 if (user.IsBlocked)
@@ -112,7 +114,7 @@ public static class UserMapperExtension
                         data: null,
                         message: "user is blocked",
                         isSuccessful: false,
-                        statusCode: 404
+                        statusCode: 400
                     );
                 }
 

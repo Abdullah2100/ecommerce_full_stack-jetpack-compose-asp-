@@ -1,4 +1,4 @@
-namespace api.shared.extentions;
+namespace api.shared.mapper;
 
 public static class OrderStatusMapperExtension
 {

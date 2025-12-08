@@ -30,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
         VarientRepository =  new VarientRepository( _context );
         OrderProductVariantRepository = new OrderProductVariantRepository(context);
         AnalyseRepository = new AnalyseRepository( _context );
+        CurrencyRepository = new CurrencyRepository( _context );
 
     }
     
@@ -39,6 +40,8 @@ public class UnitOfWork : IUnitOfWork
     }
 
     public IOrderProductVariant OrderProductVariantRepository { get; }
+
+    public ICurrencyRepository CurrencyRepository { get; }
 
     public async Task<int> SaveChanges()
     {

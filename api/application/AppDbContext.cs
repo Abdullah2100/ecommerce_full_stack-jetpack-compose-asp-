@@ -28,7 +28,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<GeneralSetting> GeneralSettings { get; set; }
 
     public DbSet<Delivery> Deliveries { get; set; }
-
+    public DbSet<Currency> Payments { get; set; }
+public DbSet<Currency> Currencies { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -37,6 +38,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Currency>(cu =>
+        {
+            cu.HasIndex(c => new { c.Name }).IsUnique();
+        });
         modelBuilder.Entity<User>(
             user =>
             {
@@ -166,6 +171,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasPrincipalKey(or => or.Id);
         });
 
+      
         base.OnModelCreating(modelBuilder);
     }
     

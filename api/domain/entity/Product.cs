@@ -21,6 +21,8 @@ public class Product
 
     [Column(TypeName = "Timestamp")] 
     public DateTime? UpdatedAt { get; set; } = null;
+    
+    public String Symbol { get; set; } 
 
     public ICollection<ProductVariant>? ProductVariants { get; set; } = null;
     public ICollection<ProductImage>? ProductImages { get; set; } = null;

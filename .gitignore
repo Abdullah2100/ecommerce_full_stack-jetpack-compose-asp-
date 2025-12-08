@@ -12,6 +12,7 @@ obj/
 *.dbmdl
 *.pfx
 *.publishsettings
+
 *.ncrunchsolution
 *.ncrunchproject
 Migrations/
@@ -105,3 +106,5 @@ vcs.xml
 local.properties
 
 google-services.json
+appsettings.Development.json
+appsettings.json

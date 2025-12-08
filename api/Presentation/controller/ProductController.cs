@@ -15,6 +15,7 @@ public class ProductController(
     IAuthenticationService authenticationService
 ) : ControllerBase
 {
+    
     [HttpGet("store/{storeId}/{pageNumber:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProducts

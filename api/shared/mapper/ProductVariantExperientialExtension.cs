@@ -1,9 +1,9 @@
 using api.domain.entity;
 using api.Presentation.dto;
 
-public static class ProductExperientialExtension
+public static class ProductVariantExperientialExtension
 {
-    public static ProductVariantDto ToProductVarientDto(this ProductVariant productVariant)
+    public static ProductVariantDto ToProductVariantDto(this ProductVariant productVariant)
     {
         return new ProductVariantDto
         {

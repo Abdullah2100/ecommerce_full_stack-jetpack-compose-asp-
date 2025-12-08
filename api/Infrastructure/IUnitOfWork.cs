@@ -21,6 +21,7 @@ public interface IUnitOfWork:IDisposable
     public IVarientRepository VarientRepository { get; }
     public IOrderProductVariant OrderProductVariantRepository { get; } 
     public IAnalyseRepository AnalyseRepository { get; }
+    public ICurrencyRepository CurrencyRepository { get; }
 
 
     public Task<int> SaveChanges();
