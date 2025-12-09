@@ -1,6 +1,7 @@
 package com.example.eccomerce_app
 
 import android.app.Application
+import com.example.eccomerce_app.di.coroutineScopModel
 import com.example.eccomerce_app.di.dataBaseModule
 import com.example.eccomerce_app.di.httpClientModule
 import com.example.eccomerce_app.di.repositoryModel
@@ -12,7 +13,6 @@ import org.koin.core.context.startKoin
 class MyApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-        MobilePaymentsSdk.initialize(getId(), this)
 
         startKoin {
             androidContext(this@MyApplication)
@@ -21,7 +21,8 @@ class MyApplication : Application() {
                 httpClientModule,
                 viewModelModel,
                 repositoryModel,
-                webSocketClientModule
+                webSocketClientModule,
+                coroutineScopModel
 
             )
         }

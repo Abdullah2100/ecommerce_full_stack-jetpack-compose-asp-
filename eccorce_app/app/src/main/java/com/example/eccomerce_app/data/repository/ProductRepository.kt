@@ -202,6 +202,7 @@ class ProductRepository(val client: HttpClient)  {
         subcategoryId: UUID,
         storeId: UUID,
         price: Double,
+        symbol:String,
         productVariants: List<ProductVarientSelection>,
         images: List<File>
     ): NetworkCallHandler {
@@ -237,6 +238,7 @@ class ProductRepository(val client: HttpClient)  {
                             append("SubcategoryId", subcategoryId.toString())
                             append("StoreId", storeId.toString())
                             append("Price", price)
+                            append("symbol", symbol)
                             if (productVariants.isNotEmpty())
                                 productVariants.forEachIndexed { it, value ->
                                     append("productVarients[${it}].name", value.name)
@@ -301,9 +303,10 @@ class ProductRepository(val client: HttpClient)  {
         subcategoryId: UUID?,
         storeId: UUID,
         price: Double?,
-        productVarients: List<ProductVarientSelection>?,
+        symbol:String?,
+        productVariants: List<ProductVarientSelection>?,
         images: List<File>?,
-        deletedProductVarients: List<ProductVarientSelection>?,
+        deletedProductVariants: List<ProductVarientSelection>?,
         deleteImages: List<String>?
     ): NetworkCallHandler {
         return try {
@@ -345,8 +348,11 @@ class ProductRepository(val client: HttpClient)  {
                             if (price != null)
                                 append("price", price)
 
-                            if (!productVarients.isNullOrEmpty())
-                                productVarients.forEachIndexed { it, value ->
+                            if(symbol !=null)
+                                append("symbol", symbol)
+
+                            if (!productVariants.isNullOrEmpty())
+                                productVariants.forEachIndexed { it, value ->
                                     append("productVariants[${it}].name", value.name)
                                     append("productVariants[${it}].percentage", value.percentage!!)
                                     append(
@@ -354,8 +360,8 @@ class ProductRepository(val client: HttpClient)  {
                                         value.variantId.toString()
                                     )
                                 }
-                            if (!deletedProductVarients.isNullOrEmpty())
-                                deletedProductVarients.forEachIndexed { it, value ->
+                            if (!deletedProductVariants.isNullOrEmpty())
+                                deletedProductVariants.forEachIndexed { it, value ->
                                     append("deletedProductVariants[${it}].name", value.name)
                                     append(
                                         "deletedProductVariants[${it}].percentage",

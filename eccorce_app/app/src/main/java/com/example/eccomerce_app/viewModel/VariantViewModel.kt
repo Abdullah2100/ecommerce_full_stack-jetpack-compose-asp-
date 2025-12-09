@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eccomerce_app.dto.VarientDto
-import com.example.eccomerce_app.model.DtoToModel.toVarient
+import com.example.eccomerce_app.model.DtoToModel.toVariant
 import com.example.e_commercompose.model.VarirntModel
 import com.example.eccomerce_app.data.NetworkCallHandler
 import com.example.eccomerce_app.data.repository.VariantRepository
@@ -39,7 +39,7 @@ class VariantViewModel(val variantRepository: VariantRepository) : ViewModel() {
                         mutableVariant.addAll(_variants.value!!.toList())
                     }
                     if (variantsHolder.isNotEmpty()) mutableVariant.addAll(
-                        variantsHolder.map { it.toVarient() }.toList()
+                        variantsHolder.map { it.toVariant() }.toList()
                     )
 
                     if (mutableVariant.isNotEmpty()) {

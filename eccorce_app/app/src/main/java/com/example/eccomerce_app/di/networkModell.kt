@@ -1,7 +1,7 @@
 package com.example.eccomerce_app.di
 
 import android.util.Log
-import com.example.eccomerce_app.data.Room.DAO.AuthDao
+import com.example.eccomerce_app.data.Room.Dao.AuthDao
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.HttpTimeout

@@ -11,6 +11,7 @@ data class ProductModel(
     val storeId: UUID,
     val categoryId: UUID,
     val price: Double,
+    val symbol: String,
     val productVariants:List<List<ProductVariant>>?=null,
     val productImages:List<String>
 ) 

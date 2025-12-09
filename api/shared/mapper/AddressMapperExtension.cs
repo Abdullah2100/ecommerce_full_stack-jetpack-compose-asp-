@@ -5,8 +5,8 @@ namespace api.shared.mapper;
 
 public static class AddressMapperExtension
 {
-   
-   public static AddressDto ToDto(this Address address)
+
+    public static AddressDto ToDto(this Address address)
     {
         return new AddressDto
         {
@@ -16,11 +16,11 @@ public static class AddressMapperExtension
             Title = address.Title,
             IsCurrent = address.IsCurrent
         };
-    } 
-    
+    }
+
     public static DeliveryAddressDto ToDeliveryDto(this Address address)
     {
-        return new DeliveryAddressDto 
+        return new DeliveryAddressDto
         {
             Latitude = address.Latitude,
             Longitude = address.Longitude,

@@ -42,8 +42,10 @@ import com.example.eccomerce_app.viewModel.SubCategoryViewModel
 import com.example.eccomerce_app.viewModel.VariantViewModel
 import com.example.eccomerce_app.viewModel.BannerViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
+import com.example.eccomerce_app.viewModel.CurrencyViewModel
 import com.example.eccomerce_app.viewModel.DeliveryViewModel
 import com.example.eccomerce_app.viewModel.GeneralSettingViewModel
+import com.example.eccomerce_app.viewModel.HomeViewModel
 import com.example.eccomerce_app.viewModel.MapViewModel
 import com.example.eccomerce_app.viewModel.OrderItemsViewModel
 import com.example.eccomerce_app.viewModel.OrderViewModel
@@ -67,6 +69,8 @@ fun NavController(
     orderItemViewModel: OrderItemsViewModel = koinViewModel(),
     mapViewModel: MapViewModel = koinViewModel(),
     deliveryViewModel: DeliveryViewModel = koinViewModel(),
+    homeViewModel: HomeViewModel=koinViewModel(),
+    currencyViewModel: CurrencyViewModel= koinViewModel(),
     currentScreen: Int,
 ) {
 
@@ -311,7 +315,9 @@ fun NavController(
                     productViewModel = productViewModel,
                     userViewModel = userViewModel,
                     generalSettingViewModel = generalSettingViewModel,
-                    orderViewModel = orderViewModel
+                    orderViewModel = orderViewModel,
+                    currencyViewModel = currencyViewModel,
+                    homeViewModel = homeViewModel
 
                 )
             }

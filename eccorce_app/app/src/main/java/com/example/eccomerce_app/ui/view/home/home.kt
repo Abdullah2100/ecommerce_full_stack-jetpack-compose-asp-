@@ -55,6 +55,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import androidx.savedstate.savedState
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.util.General
 import com.example.e_commercompose.ui.component.Sizer
@@ -72,7 +73,9 @@ import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.VariantViewModel
 import com.example.eccomerce_app.viewModel.BannerViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
+import com.example.eccomerce_app.viewModel.CurrencyViewModel
 import com.example.eccomerce_app.viewModel.GeneralSettingViewModel
+import com.example.eccomerce_app.viewModel.HomeViewModel
 import com.example.eccomerce_app.viewModel.OrderViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
 import kotlinx.coroutines.delay
@@ -90,7 +93,9 @@ fun HomePage(
     productViewModel: ProductViewModel,
     userViewModel: UserViewModel,
     generalSettingViewModel: GeneralSettingViewModel,
-    orderViewModel: OrderViewModel
+    orderViewModel: OrderViewModel,
+    homeViewModel: HomeViewModel,
+    currencyViewModel: CurrencyViewModel
 ) {
     val configuration = LocalConfiguration.current
     val lazyState = rememberLazyListState()
@@ -101,11 +106,12 @@ fun HomePage(
     val banner = bannerViewModel.bannersRadom.collectAsState()
     val categories = categoryViewModel.categories.collectAsState()
     val products = productViewModel.products.collectAsState()
-
+    val accessHomeScreenCounter = homeViewModel.accessHomeScreenCounter.collectAsState()
 
     val isClickingSearch = remember { mutableStateOf(false) }
     val isLoadingMore = remember { mutableStateOf(false) }
     val isRefresh = remember { mutableStateOf(false) }
+    val isFirst = savedState { derivedStateOf { accessHomeScreenCounter.value == 1 } }
     val reachedBottom = remember { derivedStateOf { lazyState.reachedBottom() } }
 
 
@@ -125,21 +131,23 @@ fun HomePage(
 
 
     fun initialDataLoad(showRefreshIndicator: Boolean = false) {
+        homeViewModel.increaseAccessHomeScreenCounter()
         if (showRefreshIndicator)
             isRefresh.value = true
 
         scope.launch {
-                userViewModel.getMyInfo()
-                generalSettingViewModel.getGeneral(1)
-                categoryViewModel.getCategories(1)
-                bannerViewModel.getStoresBanner()
-                variantViewModel.getVariants(1)
-                productViewModel.getProducts(mutableIntStateOf(1)) // Pass the reset page
-                orderViewModel.getMyOrders(mutableIntStateOf(1)) // Ensure page is managed here too if paginated
-                if (showRefreshIndicator) {
-                    delay(1000)
-                    isRefresh.value = false
-                }
+            userViewModel.getMyInfo()
+            generalSettingViewModel.getGeneral(1)
+            categoryViewModel.getCategories(1)
+            bannerViewModel.getStoresBanner()
+            variantViewModel.getVariants(1)
+            productViewModel.getProducts(mutableIntStateOf(1)) // Pass the reset page
+            orderViewModel.getMyOrders(mutableIntStateOf(1)) // Ensure page is managed here too if paginated
+            currencyViewModel.getCurrencies(1)
+            if (showRefreshIndicator) {
+                delay(1000)
+                isRefresh.value = false
+            }
         }
     }
 
@@ -149,7 +157,7 @@ fun HomePage(
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(isFirst) {
         initialDataLoad()
     }
 
