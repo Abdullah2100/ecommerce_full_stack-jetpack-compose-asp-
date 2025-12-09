@@ -291,8 +291,9 @@ fun CreateProductScreen(
                                             description = description.value.text,
                                             thmbnail = File(thumbnail.value!!),
                                             subcategoryId = selectedSubCategoryId.value!!,
-                                            store_id = storeIdHolder!!,
+                                            storeId = storeIdHolder!!,
                                             price = price.value.text.toDouble(),
+                                            "",
                                             productVariants = productVariants.value,
                                             images = images.value.map { it -> File(it) },
                                         )
@@ -348,6 +349,7 @@ fun CreateProductScreen(
                                         price = if (price.value.text.isEmpty()) null
                                         else if (Validation.isValidMoney(price.value.text)) price.value.text.toDouble()
                                         else null,
+                                        symbol = null,
                                         productVariants = if (newProductVariant.isEmpty()) null
                                         else newProductVariant,
                                         images = if (newImages.isEmpty()) null else newImages.map { it ->
@@ -356,7 +358,7 @@ fun CreateProductScreen(
                                             )
                                         }.toList(),
                                         deletedImages = deleteImages.value.ifEmpty { null },
-                                        deletedProductVarients = deleteProductVariant.value.ifEmpty { null }
+                                        deletedProductVariants = deleteProductVariant.value.ifEmpty { null }
                                     )
                                 }.await()
                                 isSendingData.value = false

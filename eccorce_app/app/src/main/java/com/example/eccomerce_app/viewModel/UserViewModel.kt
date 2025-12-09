@@ -1,11 +1,10 @@
 package com.example.eccomerce_app.viewModel
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eccomerce_app.util.General
-import com.example.eccomerce_app.data.Room.DAO.AuthDao
+import com.example.eccomerce_app.data.Room.Dao.AuthDao
 import com.example.eccomerce_app.data.Room.Model.IsPassLocationScreen
 import com.example.e_commercompose.model.Address
 import com.example.eccomerce_app.model.DtoToModel.toAddress
@@ -17,7 +16,7 @@ import com.example.eccomerce_app.dto.CreateAddressDto
 import com.example.eccomerce_app.dto.UpdateAddressDto
 import com.example.eccomerce_app.dto.UserDto
 import com.example.eccomerce_app.data.NetworkCallHandler
-import com.example.eccomerce_app.data.Room.DAO.LocaleDao
+import com.example.eccomerce_app.data.Room.Dao.LocaleDao
 import com.example.eccomerce_app.data.Room.Model.CurrentLocal
 import com.example.eccomerce_app.data.Room.Model.IsPassOnBoardingScreen
 import com.example.eccomerce_app.data.repository.AddressRepository
@@ -25,7 +24,6 @@ import com.example.eccomerce_app.data.repository.UserRepository
 import com.example.eccomerce_app.util.General.currentLocal
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

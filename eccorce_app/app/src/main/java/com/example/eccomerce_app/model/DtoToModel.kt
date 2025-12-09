@@ -126,14 +126,14 @@ object DtoToModel {
         )
     }
 
-    fun VarientDto.toVarient(): VarirntModel {
+    fun VarientDto.toVariant(): VarirntModel {
         return VarirntModel(
             id = this.Id,
             name = this.Name
         )
     }
 
-    fun ProductVarientDto.toProductVarient(): ProductVariant {
+    fun ProductVarientDto.toProductVariant(): ProductVariant {
         return ProductVariant(
             id = this.id,
             name = this.name,
@@ -142,7 +142,7 @@ object DtoToModel {
         )
     }
 
-    fun ProductDto.toProdcut(): ProductModel {
+    fun ProductDto.toProduct(): ProductModel {
         return ProductModel(
             id = this.id,
             name = this.name,
@@ -154,9 +154,10 @@ object DtoToModel {
             subcategoryId = this.subcategoryId,
             storeId = this.storeId,
             price = this.price,
+            symbol = this.symbol,
             categoryId = this.categoryId,
-            productVariants = this.productVariants?.map {
-                it.map { it.toProductVarient() }
+            productVariants = this.productVariants?.map {data->
+                data.map { it.toProductVariant() }
             },
             productImages = this.productImages.map { it ->
                 if (it.isNotEmpty()) it.replace(
@@ -167,7 +168,7 @@ object DtoToModel {
         )
     }
 
-    fun OrderVariantDto.toOrderVarient(): OrderVariant {
+    fun OrderVariantDto.toOrderVariant(): OrderVariant {
         return OrderVariant(
             variantName = this.variantName,
             productVariantName = this.productVariantName
@@ -193,7 +194,7 @@ object DtoToModel {
             product = this.product.toOrderProduct(),
             productVariant = if (this.productVariant.isNullOrEmpty())
                 listOf()
-            else this.productVariant.map { it.toOrderVarient() },
+            else this.productVariant.map { it.toOrderVariant() },
             orderItemStatus = this.orderItemStatus,
             orderStatusName = this.orderStatusName,
             orderId = this.orderId
@@ -220,4 +221,13 @@ object DtoToModel {
         )
     }
 
+    fun CurrencyDto.toCurrency(): Currency {
+        return Currency(
+            id = this.id,
+            name=this.name,
+            symbol=this.symbol,
+            value=this.value,
+            isDefault = this.isDefault
+        )
+    }
 }

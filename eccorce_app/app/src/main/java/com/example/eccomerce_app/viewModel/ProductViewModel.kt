@@ -6,12 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.dto.ProductDto
-import com.example.eccomerce_app.model.DtoToModel.toProdcut
+import com.example.eccomerce_app.model.DtoToModel.toProduct
 import com.example.e_commercompose.model.ProductModel
 import com.example.e_commercompose.model.ProductVarientSelection
 import com.example.eccomerce_app.data.NetworkCallHandler
+import com.example.eccomerce_app.data.Room.Dao.CurrencyDao
 import com.example.eccomerce_app.data.repository.ProductRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +24,10 @@ import java.util.UUID
 
 
 class ProductViewModel(
-    val productRepository: ProductRepository,
+    private val productRepository: ProductRepository,
+    private val currencyDao: CurrencyDao,
+    private val scop: CoroutineScope,
+
 //    val webSocket: HubConnection?
 ) : ViewModel() {
 
@@ -37,7 +42,81 @@ class ProductViewModel(
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
-/*
+    fun setDefaultCurrency(symbol:String, isCompleteUpdate: MutableState<Boolean>) {
+        scop.launch(Dispatchers.IO + _coroutineException) {
+            currencyDao.setSelectedCurrency(symbol)
+            val result = convertProductCurrencyToSavedCurrency()
+             isCompleteUpdate.value = result;
+        }
+    }
+
+    //this if user change the currency from setting
+    private suspend fun convertProductCurrencyToSavedCurrency(): Boolean{
+        val currencyList = currencyDao.getSavedCurrencies()
+        if(!_products.value.isNullOrEmpty()){
+           val defaultCurrency= currencyList.firstOrNull{it->it.id==0}
+            val targetCurrency = currencyList.firstOrNull{it->it.isSelected==true}
+
+            val productToNewCurrency = _products.value?.map { data->
+                if(!data.symbol.equals(defaultCurrency!!.symbol)) {
+                    val currentCurrency = currencyList.firstOrNull{it->it.symbol==data.symbol}
+                    if(currentCurrency!=null){
+                        val changer = (data.price/currentCurrency.value)*targetCurrency!!.value
+                        data.copy(price = changer,symbol = targetCurrency.symbol)
+                    }
+                    else {
+                        data
+                    }
+                }else if(data.symbol.equals(defaultCurrency.symbol)){
+                    val changer = (data.price)*targetCurrency!!.value
+                    data.copy(price = changer,symbol = targetCurrency.symbol)
+
+                }
+                else data
+            }
+
+            _products.emit(null)
+            _products.emit(productToNewCurrency)
+            return true
+
+        }
+        return false
+    }
+
+
+    //this if the user is select the currency then for api  comming will use this
+    // to convert them to local currency saved
+    private suspend fun convertProductCurrencyToSavedCurrency(products:List<ProductModel>?=null): List<ProductModel>?{
+        val currencyList = currencyDao.getSavedCurrencies()
+        val targetCurrency = currencyList.firstOrNull{it->it.isSelected==true}
+        if(!products.isNullOrEmpty()&&targetCurrency!=null){
+            val defaultCurrency= currencyList.firstOrNull{it->it.id==0}
+
+            val productToNewCurrency = products.map { data->
+                if(!data.symbol.equals(defaultCurrency!!.symbol)) {
+                    val currentCurrency = currencyList.firstOrNull{it->it.symbol==data.symbol}
+                    if(currentCurrency!=null){
+                        val changer = (data.price/currentCurrency.value)*targetCurrency!!.value
+                        data.copy(price = changer,symbol = targetCurrency.symbol)
+                    } else {
+                        data
+                    }
+                }else if(data.symbol.equals(defaultCurrency.symbol)){
+                    val changer = (data.price)*targetCurrency!!.value
+                    data.copy(price = changer,symbol = targetCurrency.symbol)
+
+                } else data
+            }
+
+            return productToNewCurrency
+
+        }
+        return null
+    }
+
+
+
+    /*
     fun connection() {
 
         if (webSocket != null) {
@@ -92,7 +171,7 @@ class ProductViewModel(
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
-                    val addressResponse = data.map { it.toProdcut() }.toList()
+                    val addressResponse = data.map { it.toProduct() }.toList()
 
                     holder.addAll(addressResponse)
                     if (_products.value != null) {
@@ -144,9 +223,11 @@ class ProductViewModel(
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
-                    val addressResponse = data.map { it.toProdcut() }.toList()
+                    val productsResponse = data.map { it.toProduct() }.toList()
 
-                    holder.addAll(addressResponse)
+                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+
+                    holder.addAll(productWithSavedCurrency)
                     if (_products.value != null) {
                         holder.addAll(_products.value!!)
                     }
@@ -196,9 +277,13 @@ class ProductViewModel(
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
-                    val addressResponse = data.map { it.toProdcut() }.toList()
 
-                    holder.addAll(addressResponse)
+                    val productsResponse = data.map { it.toProduct() }.toList()
+
+                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+
+                    holder.addAll(productWithSavedCurrency)
+
                     if (_products.value != null) {
                         holder.addAll(_products.value!!)
                     }
@@ -250,9 +335,13 @@ class ProductViewModel(
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
-                    val productsesponse = data.map { it.toProdcut() }.toList()
+                    val productsResponse = data.map { it.toProduct() }.toList()
 
-                    holder.addAll(productsesponse)
+                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+
+                    holder.addAll(productWithSavedCurrency)
+
+
                     if (_products.value != null) {
                         holder.addAll(_products.value!!)
                     }
@@ -292,8 +381,9 @@ class ProductViewModel(
         description: String,
         thmbnail: File,
         subcategoryId: UUID,
-        store_id: UUID,
+        storeId: UUID,
         price: Double,
+        symbol:String,
         productVariants: List<ProductVarientSelection>,
         images: List<File>
     ): String? {
@@ -302,8 +392,9 @@ class ProductViewModel(
             description,
             thmbnail,
             subcategoryId,
-            store_id,
+            storeId,
             price,
+            symbol,
             productVariants,
             images
         )
@@ -312,7 +403,7 @@ class ProductViewModel(
                 val data = result.data as ProductDto
 
                 val holder = mutableListOf<ProductModel>()
-                val addressResponse = data.toProdcut()
+                val addressResponse = data.toProduct()
 
                 holder.add(addressResponse)
                 if (_products.value != null) {
@@ -347,9 +438,10 @@ class ProductViewModel(
         subcategoryId: UUID?,
         storeId: UUID,
         price: Double?,
+        symbol:String?,
         productVariants: List<ProductVarientSelection>?,
         images: List<File>?,
-        deletedProductVarients: List<ProductVarientSelection>?,
+        deletedProductVariants: List<ProductVarientSelection>?,
         deletedImages: List<String>?
 
     ): String? {
@@ -361,9 +453,10 @@ class ProductViewModel(
             subcategoryId,
             storeId,
             price,
+            symbol,
             productVariants,
             images,
-            deletedProductVarients,
+            deletedProductVariants,
             deletedImages
         )
         when (result) {
@@ -371,7 +464,7 @@ class ProductViewModel(
                 val data = result.data as ProductDto
 
                 val holder = mutableListOf<ProductModel>()
-                val addressResponse = data.toProdcut()
+                val addressResponse = data.toProduct()
 
                 holder.add(addressResponse)
                 if (_products.value != null) {

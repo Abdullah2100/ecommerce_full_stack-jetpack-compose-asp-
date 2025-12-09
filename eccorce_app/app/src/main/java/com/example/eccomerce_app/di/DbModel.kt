@@ -23,4 +23,5 @@ val dataBaseModule = module {
     single { provideDataBase(application = get()) }
     single { get<DataBase>().authDao() }
     single { get<DataBase>().currentLocal() }
+    single { get<DataBase>().currencyDao() }
 }
