@@ -23,10 +23,9 @@ interface CurrencyDao {
     @Insert(onConflict = REPLACE)
    suspend fun addNewCurrency(currencies: List<Currency>)
 
-    @Query("Update Currency set isSelected=1 where symbol=:symbol")
+    @Query("Update Currency set isSelected= case when symbol=:symbol then 1 else 0 end; ")
     suspend fun setSelectedCurrency(symbol:String)
-    @Query("Update Currency set isSelected=0")
-    suspend fun setDeSelectCurrency()
+
 
     @Query("Delete from Currency")
     suspend fun deleteCurrencies();

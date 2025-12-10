@@ -47,7 +47,6 @@ class ProductViewModel(
     fun setDefaultCurrency(symbol:String, isCompleteUpdate: MutableState<Boolean>) {
         scop.launch(Dispatchers.IO + SupervisorJob()) {
             delay(100)
-             currencyDao.setDeSelectCurrency()
             currencyDao.setSelectedCurrency(symbol)
              async{convertProductCurrencyToSavedCurrency()}.await()
              isCompleteUpdate.value = false;
