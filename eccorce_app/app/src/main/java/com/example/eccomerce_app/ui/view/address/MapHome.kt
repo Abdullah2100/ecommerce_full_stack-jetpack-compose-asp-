@@ -95,12 +95,6 @@ fun MapHomeScreen(
     nav: NavHostController,
     userViewModel: UserViewModel,
     storeViewModel: StoreViewModel,
-    generalSettingViewModel: GeneralSettingViewModel,
-    categoryViewModel: CategoryViewModel,
-    orderViewModel: OrderViewModel,
-    bannerViewModel: BannerViewModel,
-    variantViewModel: VariantViewModel,
-    productViewModel: ProductViewModel,
     mapViewModel: MapViewModel,
     title: String? = null,
     id: String? = null,
@@ -170,15 +164,6 @@ fun MapHomeScreen(
     """.trimIndent()
     )
 
-    fun initial() {
-        userViewModel.getMyInfo()
-        generalSettingViewModel.getGeneral(1)
-        categoryViewModel.getCategories(1)
-        bannerViewModel.getStoresBanner()
-        variantViewModel.getVariants(1)
-        productViewModel.getProducts(mutableIntStateOf(1))
-        orderViewModel.getMyOrders(mutableIntStateOf(1))
-    }
 
     fun updateMainLocation(point: LatLng) {
 //        marker.position = CameraPosition.fromLatLngZoom(point, 15f)
@@ -432,7 +417,6 @@ fun MapHomeScreen(
                                 }
 
                                 userViewModel.userPassLocation(true)
-                                initial()
                                 nav.navigate(Screens.HomeGraph) {
                                     popUpTo(nav.graph.id) {
                                         inclusive = true

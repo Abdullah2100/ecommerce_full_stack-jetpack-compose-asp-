@@ -71,14 +71,14 @@ object General {
     }
 
     fun whenLanguageUpdateDo(locale: String, context: Context) {
-        val locale = Locale(locale)
-        Locale.setDefault(locale)
-
-        val config = context.resources.configuration
-        config.setLocale(locale)
-        config.setLayoutDirection(locale)
-
-        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+//        val locale = Locale(locale)
+//        Locale.setDefault(locale)
+//
+//        val config = context.resources.configuration
+//        config.setLocale(locale)
+//        config.setLayoutDirection(locale)
+//
+//        context.resources.updateConfiguration(config, context.resources.displayMetrics)
     }
 
     fun Uri.toCustomFil(context: Context): File? {

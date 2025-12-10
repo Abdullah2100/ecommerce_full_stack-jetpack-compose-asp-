@@ -1,5 +1,6 @@
 package com.example.eccomerce_app.data.Room.Model
 
+import com.example.eccomerce_app.model.*
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

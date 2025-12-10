@@ -221,13 +221,4 @@ object DtoToModel {
         )
     }
 
-    fun CurrencyDto.toCurrency(): Currency {
-        return Currency(
-            id = this.id,
-            name=this.name,
-            symbol=this.symbol,
-            value=this.value,
-            isDefault = this.isDefault
-        )
-    }
 }

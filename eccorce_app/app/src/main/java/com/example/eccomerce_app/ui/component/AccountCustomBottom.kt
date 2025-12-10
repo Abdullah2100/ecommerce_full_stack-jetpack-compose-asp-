@@ -34,6 +34,7 @@ fun AccountCustomBottom(
     title: String,
     icon: Int,
     operation: (() -> Unit)? = null,
+    isShownArrowIcon: Boolean = true,
     additionalComponent: (@Composable () -> Unit)? = null
 
 ) {
@@ -75,15 +76,16 @@ fun AccountCustomBottom(
 
                 )
             }
-            when (additionalComponent == null) {
-                true -> Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight, "",
-                    tint = CustomColor.neutralColor950,
-                    modifier = Modifier.size(24.dp)
-                )
+            if (isShownArrowIcon)
+                when (additionalComponent == null) {
+                    true -> Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight, "",
+                        tint = CustomColor.neutralColor950,
+                        modifier = Modifier.size(24.dp)
+                    )
 
-                else -> additionalComponent();
-            }
+                    else -> additionalComponent();
+                }
 
         }
 

@@ -161,9 +161,6 @@
     <string name="banner_end_date">Banner End Date</string>
     <string name="banner_end_time">Banner End Time</string>
     <string name="create_banner">Create Banner</string>
-
-
-
-
     <string name="leftArrow">Left Arrow</string>
+    <string name="exchange_currency">Exchange Currency</string>
 </resources>

@@ -7,7 +7,7 @@ namespace api.Infrastructure.Repositories;
 
 public class ProductRepository(
     AppDbContext context
-  ) : IProductRepository
+) : IProductRepository
 {
     public async Task<IEnumerable<Product>> GetAllAsync(int page, int length)
     {
@@ -23,42 +23,26 @@ public class ProductRepository(
             .ToListAsync();
     }
 
-    
 
     public void Add(Product entity)
     {
-       
-           context.Products.Add(new Product
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Description = entity.Description,
-                SubcategoryId = entity.SubcategoryId,
-                StoreId = entity.StoreId,
-                Price = entity.Price,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = null,
-                Thumbnail = entity.Thumbnail
-            });
-          
+        context.Products.Add(entity);
     }
 
-    public void  Update(Product entity)
+    public void Update(Product entity)
     {
         var result = true;
-        
+
         var product = context.Products.Find(entity.Id);
         if (product == null) throw new ArgumentNullException();
-        
+
         context.Products.Update(entity);
-
-
     }
 
     public void Delete(Guid id)
-    
+
     {
-        var product= context.Products.Find(id);
+        var product = context.Products.Find(id);
         if (product == null) throw new ArgumentNullException();
         context.Products.Remove(product);
     }
@@ -146,26 +130,35 @@ public class ProductRepository(
 
     public async Task<IEnumerable<Product>> GetProducts(int page, int length)
     {
-        var products= await context.Products
-            .AsNoTracking()
-            .Include(pro=>pro.Store)
-            .Include(pro => pro.SubCategory)
-            .Include(pro => pro.ProductImages)
-            .Include(pro => pro.ProductVariants)
-            .AsSplitQuery()
-            .Skip((page - 1) * length)
-            .Take(length)
-            .OrderDescending()
-            .ToListAsync();
-        for (int i = 0; i < products.Count; i++)
+        try
         {
-           products[i].ProductVariants = await context.ProductVariants
-               .Include(pr=>pr.Variant)
-               .Where(p => p.ProductId == products[i].Id).ToListAsync();
+            var products = await context.Products
+                .AsNoTracking()
+                .Include(pro => pro.Store)
+                .Include(pro => pro.SubCategory)
+                .Include(pro => pro.ProductImages)
+                .Include(pro => pro.ProductVariants)
+                .AsSplitQuery()
+                .Skip((page - 1) * length)
+                .Take(length)
+                .OrderDescending()
+                .ToListAsync();
+            if (products is null) return new List<Product>();
+
+            for (int i = 0; i < products.Count; i++)
+            {
+                products[i].ProductVariants = await context.ProductVariants
+                    .Include(pr => pr.Variant)
+                    .Where(p => p.ProductId == products[i].Id).ToListAsync();
+            }
+
+            return products;
         }
-
-        return products;
-
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new List<Product>();
+        }
     }
 
     public async Task<IEnumerable<Product>> GetProductsByCategory(
@@ -193,9 +186,4 @@ public class ProductRepository(
     {
         return await context.Products.FindAsync(id) != null;
     }
-    
-
-  
-
-   
 }

@@ -7,8 +7,6 @@ import com.example.eccomerce_app.data.NetworkCallHandler
 import com.example.eccomerce_app.data.Room.Dao.CurrencyDao
 import com.example.eccomerce_app.data.repository.CurrencyRepository
 import com.example.eccomerce_app.dto.CurrencyDto
-import com.example.eccomerce_app.model.Currency
-import com.example.eccomerce_app.model.DtoToModel.toCurrency
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,21 +36,31 @@ class CurrencyViewModel(
             when (result) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<CurrencyDto>
+                    _currencies.emit(null)
 
-                    val currenciesResponse = data.map { it.toCurrency() }.toList()
-                    currenciesResponse.map { data ->
-                        currencyDao.addNewCurrency(
-                            Currency(
-                                symbol = data.symbol,
-                                name = data.name,
-                                value = data.value,
-                                isDefault = data.isDefault,
-                                isSelected = false,
-                                id = null
-                            )
+                    if (data.isEmpty()) {
+                        val currenies = currencyDao.getSavedCurrencies()
+                        if (!currenies.isNullOrEmpty()) {
+                            _currencies.emit(currenies)
+                        }
+                        return@launch
+                    }
+
+                    val selectedCurrency = currencyDao.getSelectedCurrency();
+                    currencyDao.deleteCurrencies()
+                    val currencyToDbModel = data.map { data ->
+                        Currency(
+                            symbol = data.symbol,
+                            name = data.name,
+                            value = data.value,
+                            isDefault = data.isDefault,
+                            isSelected = selectedCurrency?.name == data.name,
+                            id = null
                         )
                     }
-                    _currencies.emit(currenciesResponse)
+                    currencyDao.addNewCurrency(currencyToDbModel)
+
+                    _currencies.emit(currencyToDbModel)
 
                 }
 

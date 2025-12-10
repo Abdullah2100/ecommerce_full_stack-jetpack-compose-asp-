@@ -14,17 +14,20 @@ interface CurrencyDao {
     fun getSavedCurrenciesAsFlow(): Flow<List<Currency>>
 
     @Query("Select * from Currency where isSelected = 1")
-    fun getSelectedCurrency():Currency?
+    suspend fun getSelectedCurrency():Currency?
 
     @Query("Select * from Currency")
-    fun getSavedCurrencies(): List<Currency>
+    suspend fun getSavedCurrencies(): List<Currency>
 
 
     @Insert(onConflict = REPLACE)
-    fun addNewCurrency(currency: Currency)
+   suspend fun addNewCurrency(currencies: List<Currency>)
 
     @Query("Update Currency set isSelected=1 where symbol=:symbol")
-    fun setSelectedCurrency(symbol:String)
+    suspend fun setSelectedCurrency(symbol:String)
+    @Query("Update Currency set isSelected=0")
+    suspend fun setDeSelectCurrency()
 
-
+    @Query("Delete from Currency")
+    suspend fun deleteCurrencies();
 }

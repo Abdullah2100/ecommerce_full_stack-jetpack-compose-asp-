@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,13 +46,13 @@ import java.util.UUID
 
 
 @Composable
-fun  ProductShape(
+fun ProductShape(
     product: List<ProductModel>,
     delFun: ((it: UUID) -> Unit)? = null,
-    updFun: ((product_id: UUID) -> Unit)? = null,
+    updFun: ((productId: UUID) -> Unit)? = null,
     nav: NavHostController,
-    isFromHome: Boolean=false,
-    isCanNavigateToStore:Boolean = true
+    isFromHome: Boolean = false,
+    isCanNavigateToStore: Boolean = true
 ) {
     val context = LocalContext.current
 
@@ -76,11 +77,13 @@ fun  ProductShape(
                     modifier = Modifier
                         .width(160.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .clickable{
-                            nav.navigate(Screens.ProductDetails(
-                                product[index].id.toString(),
-                                isFromHome = isFromHome,
-                                isCanNavigateToStore=isCanNavigateToStore)
+                        .clickable {
+                            nav.navigate(
+                                Screens.ProductDetails(
+                                    product[index].id.toString(),
+                                    isFromHome = isFromHome,
+                                    isCanNavigateToStore = isCanNavigateToStore
+                                )
                             )
                         }
                         .border(
@@ -143,12 +146,20 @@ fun  ProductShape(
                             overflow = TextOverflow.Ellipsis
                         )
                         Sizer(10)
-                        Text(
-                            "${product[index].price}",
-                            fontFamily = General.satoshiFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = (16).sp, color = CustomColor.neutralColor950
-                        )
+                        Row {
+                            Text(
+                                product[index].symbol,
+                                fontFamily = General.satoshiFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = (16).sp, color = CustomColor.neutralColor950
+                            )
+                            Text(
+                                "${product[index].price}",
+                                fontFamily = General.satoshiFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = (16).sp, color = CustomColor.neutralColor950
+                            )
+                        }
                     }
                 }
                 if (delFun != null)

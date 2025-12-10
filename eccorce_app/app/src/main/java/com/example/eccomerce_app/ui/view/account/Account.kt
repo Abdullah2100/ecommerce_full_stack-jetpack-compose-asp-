@@ -28,6 +28,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -56,7 +57,9 @@ import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.util.General.currentLocal
 import com.example.eccomerce_app.util.General.whenLanguageUpdateDo
 import com.example.eccomerce_app.viewModel.AuthViewModel
+import com.example.eccomerce_app.viewModel.CurrencyViewModel
 import com.example.eccomerce_app.viewModel.OrderItemsViewModel
+import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
@@ -70,7 +73,9 @@ fun AccountPage(
     nav: NavHostController,
     userViewModel: UserViewModel,
     orderItemsViewModel: OrderItemsViewModel,
-    authViewModel: AuthViewModel
+    authViewModel: AuthViewModel,
+    productViewModel: ProductViewModel,
+    currencyViewModel: CurrencyViewModel
 ) {
     val context = LocalContext.current
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -79,11 +84,15 @@ fun AccountPage(
 
     val myInfo = userViewModel.userInfo.collectAsState()
     val currentLocale = currentLocal.collectAsState()
+    val currencies = currencyViewModel.currencies.collectAsState()
+    val currentCurrency = currencies.value?.firstOrNull { it -> it.isSelected == true }
 
 
     val storeId = myInfo.value?.storeId
 
 
+    val isChangingCurrency = remember { mutableStateOf(false) }
+    val isShowCurrencies = remember { mutableStateOf(false) }
     val isChangingLanguage = remember { mutableStateOf(false) }
     val isExpandLanguage = remember { mutableStateOf(false) }
 
@@ -99,7 +108,7 @@ fun AccountPage(
         }
     }
 
-    fun updateLanguage(lang:String){
+    fun updateLanguage(lang: String) {
         coroutine.launch {
             isChangingLanguage.value = true
             delay(100)
@@ -131,6 +140,10 @@ fun AccountPage(
 
     }
 
+    LaunchedEffect(isChangingLanguage.value) {
+        if(!isChangingLanguage.value)
+            isShowCurrencies.value=false
+    }
 
 
     CompositionLocalProvider(
@@ -178,7 +191,7 @@ fun AccountPage(
             it.calculateTopPadding()
             it.calculateBottomPadding()
 
-            if (isChangingLanguage.value) Dialog(
+            if (isChangingLanguage.value || isChangingCurrency.value) Dialog(
                 onDismissRequest = {})
             {
                 Box(
@@ -222,6 +235,96 @@ fun AccountPage(
                     R.drawable.location_address_list, {
                         nav.navigate(Screens.EditeOrAddNewAddress)
                     })
+                HorizontalDivider(
+                    modifier = Modifier
+                        .height(1.dp)
+                        .fillMaxWidth()
+                        .background(CustomColor.neutralColor200)
+                )
+                AccountCustomBottom(
+                    stringResource(R.string.my_store),
+                    R.drawable.store, {
+                        nav.navigate(
+                            Screens.Store(
+                                storeId?.toString(),
+                                false
+                            )
+                        )
+                    })
+
+                HorizontalDivider(
+                    modifier = Modifier
+//                        .padding(top = 5.dp)
+                        .height(1.dp)
+                        .fillMaxWidth()
+                        .background(CustomColor.neutralColor200)
+                )
+
+                if (myInfo.value?.storeId != null) {
+
+                    AccountCustomBottom(
+                        stringResource(R.string.order_for_my_store),
+                        R.drawable.order_belong_to_store,
+                        {
+                            orderItemsViewModel.getMyOrderItemBelongToMyStore(
+                                pageNumber = mutableIntStateOf(1),
+                                isLoading = mutableStateOf(false)
+                            )
+                            nav.navigate(Screens.OrderForMyStore)
+                        })
+
+
+                    HorizontalDivider(
+                        modifier = Modifier
+                            .padding(top = 5.dp)
+                            .height(1.dp)
+                            .fillMaxWidth()
+                            .background(CustomColor.neutralColor200)
+                    )
+                }
+
+                AccountCustomBottom(
+                    stringResource(R.string.exchange_currency),
+                    R.drawable.currency_exchange,
+                    {
+                        isShowCurrencies.value = true
+                    },
+//                    isShownArrowIcon = false,
+                    additionalComponent = {
+                        Box {
+                            DropdownMenu(
+                                containerColor = Color.White,
+                                expanded = isShowCurrencies.value,
+                                onDismissRequest = { isShowCurrencies.value = false })
+                            {
+                                currencies.value?.forEach { lang ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                lang.name,
+                                                fontFamily = General.satoshiFamily,
+                                                fontWeight = FontWeight.Medium,
+                                                fontSize = 18.sp,
+                                                color = CustomColor.neutralColor950,
+                                                textAlign = TextAlign.Center
+
+                                            )
+                                        },
+                                        onClick = {
+                                            isChangingLanguage.value = true
+
+                                            productViewModel.setDefaultCurrency(
+                                                lang.symbol,
+                                                isChangingLanguage
+                                            )
+
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    })
+
                 HorizontalDivider(
                     modifier = Modifier
                         .height(1.dp)
@@ -278,7 +381,7 @@ fun AccountPage(
                                         },
                                         onClick = {
                                             updateLanguage(lang)
-                                          }
+                                        }
                                     )
                                 }
                             }
@@ -294,47 +397,6 @@ fun AccountPage(
                         .background(CustomColor.neutralColor200)
                 )
 
-
-                AccountCustomBottom(
-                    stringResource(R.string.my_store),
-                    R.drawable.store, {
-                        nav.navigate(
-                            Screens.Store(
-                                storeId?.toString(),
-                                false
-                            )
-                        )
-                    })
-
-                HorizontalDivider(
-                    modifier = Modifier
-//                        .padding(top = 5.dp)
-                        .height(1.dp)
-                        .fillMaxWidth()
-                        .background(CustomColor.neutralColor200)
-                )
-                if (myInfo.value?.storeId != null) {
-
-                    AccountCustomBottom(
-                        stringResource(R.string.order_for_my_store),
-                        R.drawable.order_belong_to_store,
-                        {
-                            orderItemsViewModel.getMyOrderItemBelongToMyStore(
-                                pageNumber = mutableIntStateOf(1),
-                                isLoading = mutableStateOf(false)
-                            )
-                            nav.navigate(Screens.OrderForMyStore)
-                        })
-
-
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(top = 5.dp)
-                            .height(1.dp)
-                            .fillMaxWidth()
-                            .background(CustomColor.neutralColor200)
-                    )
-                }
                 LogoutButton(stringResource(R.string.logout), R.drawable.logout, {
                     authViewModel.logout()
                     nav.navigate(Screens.AuthGraph)
