@@ -15,6 +15,6 @@ public interface IProductServices
     Task<Result<int>> GetProductsPagesForAdmin(Guid adminId,int lenght);
     Task<Result<ProductDto?>> CreateProducts(Guid userId,CreateProductDto productDto);
     Task<Result<ProductDto?>> UpdateProducts(Guid userId,UpdateProductDto productDto);
-    Task<Result<bool>> DeleteProducts(Guid userId,Guid id);
+    Task<Result<bool>> DeleteProducts(Guid userId,Guid storeId,Guid id);
     
 }

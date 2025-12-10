@@ -77,6 +77,7 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.eccomerce_app.ui.component.TextNumberInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.viewModel.CurrencyViewModel
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.SubCategoryViewModel
 import com.example.eccomerce_app.viewModel.VariantViewModel
@@ -96,6 +97,7 @@ fun CreateProductScreen(
     subCategoryViewModel: SubCategoryViewModel,
     variantViewModel: VariantViewModel,
     productViewModel: ProductViewModel,
+    currencyViewModel: CurrencyViewModel
 
     ) {
     val context = LocalContext.current
@@ -108,6 +110,7 @@ fun CreateProductScreen(
 
     val products = productViewModel.products.collectAsState()
     val variants = variantViewModel.variants.collectAsState()
+    val currencies = currencyViewModel.currencies.collectAsState()
 
     val subCategory = subCategoryViewModel.subCategories.collectAsState()
     val storeSubCategory = subCategory.value?.filter { it.storeId == storeIdHolder }
@@ -135,11 +138,15 @@ fun CreateProductScreen(
     val productVariantPercentage = remember { mutableStateOf(TextFieldValue("")) }
 
 
+    val productCurrency = remember { mutableStateOf<String?>(null) }
+
+
     val selectedSubCategoryId = remember { mutableStateOf<UUID?>(null) }
     val selectedVariantId = remember { mutableStateOf<UUID?>(null) }
 
 
     val isExpandedSubCategory = remember { mutableStateOf(false) }
+    val isExandedCurrency = remember { mutableStateOf(false) }
     val isExpandedVariant = remember { mutableStateOf(false) }
     val isSendingData = remember { mutableStateOf(false) }
 
@@ -147,7 +154,12 @@ fun CreateProductScreen(
     val animated = animateDpAsState(
         if (isExpandedSubCategory.value) ((storeSubCategory?.size ?: 1) * 45).dp else 0.dp
     )
+
+    val currencyAnimated = animateDpAsState(
+        if (isExandedCurrency.value) ((currencies.value?.size ?: 1) * 45).dp else 0.dp
+    )
     val rotation = animateFloatAsState(if (isExpandedSubCategory.value) 180f else 0f)
+    val currencyRotation = animateFloatAsState(if (isExandedCurrency.value) 180f else 0f)
     val animatedVariant = animateDpAsState(
         if (isExpandedVariant.value) ((variants.value?.size ?: 1) * 45).dp else 0.dp
     )
@@ -210,9 +222,10 @@ fun CreateProductScreen(
             errorMessage = context.getString(R.string.product_description_is_required)
         else if (price.value.text.trim().isEmpty())
             errorMessage = context.getString(R.string.product_price_is_required)
+        else if (productCurrency.value == null)
+            errorMessage = "You must Select Currency"
         else if (selectedSubCategoryId.value == null)
             errorMessage = context.getString(R.string.you_must_select_subcategory)
-
         if (errorMessage.isNotEmpty()) {
             coroutine.launch {
                 snackBarHostState.showSnackbar(errorMessage)
@@ -293,7 +306,7 @@ fun CreateProductScreen(
                                             subcategoryId = selectedSubCategoryId.value!!,
                                             storeId = storeIdHolder!!,
                                             price = price.value.text.toDouble(),
-                                            "",
+                                            symbol = productCurrency.value!!,
                                             productVariants = productVariants.value,
                                             images = images.value.map { it -> File(it) },
                                         )
@@ -304,6 +317,7 @@ fun CreateProductScreen(
                                     } else {
                                         thumbnail.value = null
                                         images.value = emptyList()
+                                        productCurrency.value=""
                                         productName.value = TextFieldValue("")
                                         price.value = TextFieldValue("")
                                         description.value = TextFieldValue("")
@@ -349,7 +363,7 @@ fun CreateProductScreen(
                                         price = if (price.value.text.isEmpty()) null
                                         else if (Validation.isValidMoney(price.value.text)) price.value.text.toDouble()
                                         else null,
-                                        symbol = null,
+                                        symbol =  productCurrency.value,
                                         productVariants = if (newProductVariant.isEmpty()) null
                                         else newProductVariant,
                                         images = if (newImages.isEmpty()) null else newImages.map { it ->
@@ -410,7 +424,8 @@ fun CreateProductScreen(
             ConstraintLayout(
                 modifier = Modifier
                     .fillMaxWidth()
-            ) {
+            )
+            {
                 val (imageRef, cameralRef) = createRefs()
                 Box(
                     modifier = Modifier
@@ -431,7 +446,8 @@ fun CreateProductScreen(
                             color = Color.White,
                         ),
                     contentAlignment = Alignment.Center
-                ) {
+                )
+                {
                     when (thumbnail.value == null) {
                         true -> {
                             Icon(
@@ -481,7 +497,8 @@ fun CreateProductScreen(
                         }
 
 
-                ) {
+                )
+                {
 
                     IconButton(
                         onClick = {
@@ -641,7 +658,8 @@ fun CreateProductScreen(
                         }
 
 
-                ) {
+                )
+                {
 
                     IconButton(
                         onClick = {
@@ -695,6 +713,86 @@ fun CreateProductScreen(
                 fontWeight = FontWeight.Bold,
                 maxLines = 6
             )
+
+            Text(
+                "Currency",
+                fontFamily = General.satoshiFamily,
+                fontWeight = FontWeight.Bold,
+                fontSize = (18).sp,
+                color = CustomColor.neutralColor950,
+                textAlign = TextAlign.Center,
+            )
+            Sizer(5)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        1.dp,
+                        CustomColor.neutralColor400,
+                        RoundedCornerShape(8.dp)
+                    )
+                    .clip(RoundedCornerShape(8.dp))
+            )
+            {
+                Row(
+                    modifier = Modifier
+                        .height(65.dp)
+                        .fillMaxWidth()
+
+                        .clickable {
+                            isExandedCurrency.value = !isExandedCurrency.value
+                        }
+                        .padding(horizontal = 5.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                )
+                {
+                    Text(
+                        productData?.symbol ?: (productCurrency.value ?:"Chose Currency")
+                    )
+                    Icon(
+                        Icons.Default.KeyboardArrowDown, "",
+                        modifier = Modifier.rotate(currencyRotation.value)
+                    )
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(currencyAnimated.value)
+                        .border(
+                            1.dp,
+                            CustomColor.neutralColor200,
+                            RoundedCornerShape(
+                                topStart = 0.dp,
+                                topEnd = 0.dp,
+                                bottomStart = 8.dp,
+                                bottomEnd = 8.dp
+                            )
+                        ),
+
+                    )
+                {
+                    currencies.value?.forEachIndexed { index, value ->
+                        Text(
+                            value.name,
+                            modifier = Modifier
+                                .height(50.dp)
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    productCurrency.value = value.symbol
+                                    isExandedCurrency.value=false
+                                }
+                                .padding(top = 12.dp, start = 5.dp)
+
+                        )
+                    }
+                }
+            }
+
+
+            Sizer(15)
 
             Text(
                 stringResource(R.string.subcategory),
@@ -759,7 +857,8 @@ fun CreateProductScreen(
                             )
                         ),
 
-                    ) {
+                    )
+                {
                     storeSubCategory?.forEachIndexed { index, value ->
                         Text(
                             value.name,
@@ -777,6 +876,8 @@ fun CreateProductScreen(
                     }
                 }
             }
+            Sizer(5)
+
             if (productVariants.value.isNotEmpty()) {
                 Sizer(5)
                 Text(

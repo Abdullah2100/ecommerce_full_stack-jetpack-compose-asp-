@@ -6,6 +6,7 @@ using api.Presentation.dto;
 using api.shared.mapper;
 using api.util;
 using ecommerc_dotnet.midleware.ConfigImplment;
+using Microsoft.CodeAnalysis.Elfie.Model;
 
 namespace api.application.Services;
 
@@ -87,13 +88,15 @@ public class ProductServices(
         int pageSize
     )
     {
-        List<ProductDto> products = (await unitOfWork.ProductRepository
-                .GetProducts(pageNum, pageSize))
-            .Select((de) => de.ToDto(config.getKey("url_file")))
-            .ToList();
+        var products = (await unitOfWork.ProductRepository
+            .GetProducts(pageNum, pageSize));
+        List<ProductDto> productDtos = products == null
+            ? new List<ProductDto>()
+            : products.Select((de) => de.ToDto(config.getKey("url_file")))
+                .ToList();
 
         return new Result<List<ProductDto>>(
-            data: products,
+            data: productDtos,
             message: "",
             isSuccessful: true,
             statusCode: 200
@@ -198,149 +201,162 @@ public class ProductServices(
         CreateProductDto productDto
     )
     {
-        User? user = await unitOfWork.UserRepository.GetUser(userId);
-
-        var isValidate = user.IsValidateFunc(false, true);
-
-        if (isValidate is not null)
+        try
         {
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: isValidate.Message,
-                isSuccessful: false,
-                statusCode: isValidate.StatusCode
-            );
-        }
+            User? user = await unitOfWork.UserRepository.GetUser(userId);
 
-        bool isExistCurrency = await unitOfWork.CurrencyRepository.isExist(productDto.Symbol);
+            var isValidate = user.IsValidateFunc(false, true);
 
-        if (!isExistCurrency)
-        {
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "Currency is Not Exist",
-                isSuccessful: false,
-                statusCode: 404
-            );
-        }
-
-
-        string? savedThumbnail = await fileServices.SaveFile(
-            productDto.Thumbnail,
-            EnImageType.Product);
-        List<string>? savedImage = await fileServices.SaveFile(
-            productDto.Images,
-            EnImageType.Product);
-
-        if (savedImage is null || savedThumbnail is null)
-        {
-            deleteProductImages(savedImage, savedThumbnail);
-
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "error while saving image ",
-                isSuccessful: false,
-                statusCode: 400
-            );
-        }
-
-
-        var id = ClsUtil.GenerateGuid();
-
-        List<ProductImage> images = savedImage.Select(pi => new ProductImage
+            if (isValidate is not null)
             {
-                Id = ClsUtil.GenerateGuid(),
-                Path = pi,
-                ProductId = id
-            })
-            .ToList();
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: isValidate.Message,
+                    isSuccessful: false,
+                    statusCode: isValidate.StatusCode
+                );
+            }
 
-        if ((images.Count) > 20)
-        {
-            deleteProductImages(savedImage, savedThumbnail);
-            return new Result<ProductDto?>
-            (
-                data: null,
-                message: "product image can maximum has 20 images",
-                isSuccessful: false,
-                statusCode: 404
-            );
-        }
+            bool isExistCurrency = await unitOfWork.CurrencyRepository.isExist(productDto.Symbol);
+
+            if (!isExistCurrency)
+            {
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: "Currency is Not Exist",
+                    isSuccessful: false,
+                    statusCode: 404
+                );
+            }
 
 
-        List<ProductVariant>? productVariants = null;
-        if (productDto.ProductVariants is not null)
-            productVariants = productDto
-                .ProductVariants!.Select(pv =>
-                    new ProductVariant
-                    {
-                        Id = ClsUtil.GenerateGuid(),
-                        Name = pv.Name,
-                        Percentage = pv.Percentage,
-                        ProductId = id,
-                        VariantId = pv.VariantId,
-                        OrderProductsVariants = null
-                    })
+            string? savedThumbnail = await fileServices.SaveFile(
+                productDto.Thumbnail,
+                EnImageType.Product);
+            List<string>? savedImage = await fileServices.SaveFile(
+                productDto.Images,
+                EnImageType.Product);
+
+            if (savedImage is null || savedThumbnail is null)
+            {
+                deleteProductImages(savedImage, savedThumbnail);
+
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: "error while saving image ",
+                    isSuccessful: false,
+                    statusCode: 400
+                );
+            }
+
+
+            var id = ClsUtil.GenerateGuid();
+
+            List<ProductImage> images = savedImage.Select(pi => new ProductImage
+                {
+                    Id = ClsUtil.GenerateGuid(),
+                    Path = pi,
+                    ProductId = id
+                })
                 .ToList();
 
-        if (productVariants is not null && productVariants.Count > 20)
-        {
-            deleteProductImages(savedImage, savedThumbnail);
+            if ((images.Count) > 20)
+            {
+                deleteProductImages(savedImage, savedThumbnail);
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: "product image can maximum has 20 images",
+                    isSuccessful: false,
+                    statusCode: 404
+                );
+            }
+
+
+            List<ProductVariant>? productVariants = null;
+            if (productDto.ProductVariants is not null)
+                productVariants = productDto
+                    .ProductVariants!.Select(pv =>
+                        new ProductVariant
+                        {
+                            Id = ClsUtil.GenerateGuid(),
+                            Name = pv.Name,
+                            Percentage = pv.Percentage,
+                            ProductId = id,
+                            VariantId = pv.VariantId,
+                            OrderProductsVariants = null
+                        })
+                    .ToList();
+
+            if (productVariants is not null && productVariants.Count > 20)
+            {
+                deleteProductImages(savedImage, savedThumbnail);
+
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: "productVariant  can maximum has 20 images",
+                    isSuccessful: false,
+                    statusCode: 404
+                );
+            }
+
+            var product = new Product
+            {
+                Id = id,
+                Name = productDto.Name,
+                Description = productDto.Description,
+                SubcategoryId = productDto.SubcategoryId,
+                StoreId = user!.Store!.Id,
+                Price = productDto.Price,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = null,
+                Thumbnail = savedThumbnail,
+                Symbol =productDto.Symbol, 
+            };
+
+            unitOfWork.ProductRepository.Add(product);
+            unitOfWork.ProductImageRepository.AddProductImage(images);
+            if (productVariants is not null)
+                unitOfWork.ProductVariantRepository.AddProductVariants(productVariants);
+            int result = await unitOfWork.SaveChanges();
+
+            if (result == 0)
+            {
+                deleteProductImages(savedImage, savedThumbnail);
+
+                return new Result<ProductDto?>
+                (
+                    data: null,
+                    message: "error while adding product",
+                    isSuccessful: false,
+                    statusCode: 400
+                );
+            }
+
+            product = await unitOfWork.ProductRepository.GetProduct(product.Id);
 
             return new Result<ProductDto?>
             (
-                data: null,
-                message: "productvarient  can maximum has 20 images",
-                isSuccessful: false,
-                statusCode: 404
+                data: product?.ToDto(config.getKey("url_file")),
+                message: "",
+                isSuccessful: true,
+                statusCode: 201
             );
         }
-
-        var product = new Product
+        catch (Exception ex)
         {
-            Id = id,
-            Name = productDto.Name,
-            Description = productDto.Description,
-            SubcategoryId = productDto.SubcategoryId,
-            StoreId = user!.Store!.Id,
-            Price = productDto.Price,
-            CreatedAt = DateTime.Now,
-            UpdatedAt = null,
-            Thumbnail = savedThumbnail,
-            Symbol = productDto.Symbol
-        };
-
-        unitOfWork.ProductRepository.Add(product);
-        unitOfWork.ProductImageRepository.AddProductImage(images);
-        if (productVariants is not null)
-            unitOfWork.ProductVariantRepository.AddProductVariants(productVariants);
-        int result = await unitOfWork.SaveChanges();
-
-        if (result == 0)
-        {
-            deleteProductImages(savedImage, savedThumbnail);
-
             return new Result<ProductDto?>
             (
                 data: null,
-                message: "error while adding product",
-                isSuccessful: false,
-                statusCode: 400
-            );
+                message: "",
+                isSuccessful: true,
+                statusCode: 201
+            );  
         }
-
-        product = await unitOfWork.ProductRepository.GetProduct(product.Id);
-
-        return new Result<ProductDto?>
-        (
-            data: product?.ToDto(config.getKey("url_file")),
-            message: "",
-            isSuccessful: true,
-            statusCode: 201
-        );
     }
 
 
@@ -514,7 +530,7 @@ public class ProductServices(
         product.Thumbnail = savedThumbnail ?? product.Thumbnail;
         product.ProductVariants = productVariants;
         product.ProductImages = savedImage;
-        product.Symbol = productDto.Symbol?? product.Symbol;
+        product.Symbol = productDto.Symbol ?? product.Symbol;
 
         unitOfWork.ProductRepository.Update(product);
         result = await unitOfWork.SaveChanges();
@@ -545,6 +561,7 @@ public class ProductServices(
 
     public async Task<Result<bool>> DeleteProducts(
         Guid userId,
+        Guid storeId,
         Guid id
     )
     {
@@ -565,7 +582,7 @@ public class ProductServices(
 
         Product? product = await unitOfWork.ProductRepository.GetProduct(id, user.Store.Id);
 
-        if (product is null || id != product.Id)
+        if (product is null || id != product.Id || product.Store.Id != storeId)
         {
             return new Result<bool>
             (

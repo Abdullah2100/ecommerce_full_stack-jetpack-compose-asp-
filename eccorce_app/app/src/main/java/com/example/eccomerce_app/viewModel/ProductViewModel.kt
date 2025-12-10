@@ -15,6 +15,8 @@ import com.example.eccomerce_app.data.repository.ProductRepository
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,22 +45,24 @@ class ProductViewModel(
     }
 
     fun setDefaultCurrency(symbol:String, isCompleteUpdate: MutableState<Boolean>) {
-        scop.launch(Dispatchers.IO + _coroutineException) {
+        scop.launch(Dispatchers.IO + SupervisorJob()) {
+            delay(100)
+             currencyDao.setDeSelectCurrency()
             currencyDao.setSelectedCurrency(symbol)
-            val result = convertProductCurrencyToSavedCurrency()
-             isCompleteUpdate.value = result;
+             async{convertProductCurrencyToSavedCurrency()}.await()
+             isCompleteUpdate.value = false;
         }
     }
 
     //this if user change the currency from setting
     private suspend fun convertProductCurrencyToSavedCurrency(): Boolean{
         val currencyList = currencyDao.getSavedCurrencies()
-        if(!_products.value.isNullOrEmpty()){
-           val defaultCurrency= currencyList.firstOrNull{it->it.id==0}
-            val targetCurrency = currencyList.firstOrNull{it->it.isSelected==true}
+        if(!_products.value.isNullOrEmpty()&& currencyList.isNotEmpty()){
+           val defaultCurrency= currencyList.firstOrNull{it->it.isDefault}
+            val targetCurrency = currencyList.firstOrNull{it-> it.isSelected }
 
             val productToNewCurrency = _products.value?.map { data->
-                if(!data.symbol.equals(defaultCurrency!!.symbol)) {
+                if(data.symbol != defaultCurrency?.symbol) {
                     val currentCurrency = currencyList.firstOrNull{it->it.symbol==data.symbol}
                     if(currentCurrency!=null){
                         val changer = (data.price/currentCurrency.value)*targetCurrency!!.value
@@ -67,7 +71,7 @@ class ProductViewModel(
                     else {
                         data
                     }
-                }else if(data.symbol.equals(defaultCurrency.symbol)){
+                }else if(data.symbol == defaultCurrency.symbol){
                     val changer = (data.price)*targetCurrency!!.value
                     data.copy(price = changer,symbol = targetCurrency.symbol)
 
@@ -88,21 +92,21 @@ class ProductViewModel(
     // to convert them to local currency saved
     private suspend fun convertProductCurrencyToSavedCurrency(products:List<ProductModel>?=null): List<ProductModel>?{
         val currencyList = currencyDao.getSavedCurrencies()
-        val targetCurrency = currencyList.firstOrNull{it->it.isSelected==true}
+        val targetCurrency = currencyList.firstOrNull{it-> it.isSelected }
         if(!products.isNullOrEmpty()&&targetCurrency!=null){
             val defaultCurrency= currencyList.firstOrNull{it->it.id==0}
 
             val productToNewCurrency = products.map { data->
-                if(!data.symbol.equals(defaultCurrency!!.symbol)) {
+                if(!data.symbol.equals(defaultCurrency?.symbol)) {
                     val currentCurrency = currencyList.firstOrNull{it->it.symbol==data.symbol}
                     if(currentCurrency!=null){
-                        val changer = (data.price/currentCurrency.value)*targetCurrency!!.value
+                        val changer = (data.price/currentCurrency.value)*targetCurrency.value
                         data.copy(price = changer,symbol = targetCurrency.symbol)
                     } else {
                         data
                     }
-                }else if(data.symbol.equals(defaultCurrency.symbol)){
-                    val changer = (data.price)*targetCurrency!!.value
+                }else if(data.symbol.equals(defaultCurrency?.symbol)){
+                    val changer = (data.price)*targetCurrency.value
                     data.copy(price = changer,symbol = targetCurrency.symbol)
 
                 } else data
@@ -171,9 +175,12 @@ class ProductViewModel(
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
-                    val addressResponse = data.map { it.toProduct() }.toList()
+                    val productsResponse = data.map { it.toProduct() }.toList()
 
-                    holder.addAll(addressResponse)
+                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+
+                    holder.addAll(productWithSavedCurrency)
+
                     if (_products.value != null) {
                         holder.addAll(_products.value!!)
                     }

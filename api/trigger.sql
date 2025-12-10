@@ -8,7 +8,7 @@ insert into "GeneralSettings"("Id","Name","Value","CreatedAt")
 VALUES(uuid_generate_v4(),'one_kilo_price',150,CURRENT_TIMESTAMP);
 
 insert into "Currency"("Id","Name","Value","Symbol","IsDefault","CreatedAt") 
-values(uuid_generate_v4(),'usa dolar',1,"$",true,CURRENT_TIMESTAMP);
+values(uuid_generate_v4(),'usa dolar',1,'$',true,CURRENT_TIMESTAMP);
 
 
 CREATE OR REPLACE FUNCTION get_monthly_stats()

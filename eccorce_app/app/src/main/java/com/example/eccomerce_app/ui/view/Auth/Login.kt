@@ -64,7 +64,7 @@ fun LoginScreen(
     val isEmailError = remember { mutableStateOf(false) }
     val isPasswordError = remember { mutableStateOf(false) }
 
-    val userNameOrEmail = remember { mutableStateOf(TextFieldValue("salime@gmail.com")) }
+    val userNameOrEmail = remember { mutableStateOf(TextFieldValue("ali535@gmail.com")) }
     val password = remember { mutableStateOf(TextFieldValue("12AS@#fs")) }
 
 

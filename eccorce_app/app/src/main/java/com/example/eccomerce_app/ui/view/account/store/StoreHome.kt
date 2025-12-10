@@ -197,16 +197,20 @@ fun StoreScreen(
     val reachedBottom = remember { derivedStateOf { lazyState.reachedBottom() } }
 
 
-    val storeId = if (copyStoreId == null) null else UUID.fromString(copyStoreId)
+    val storeId = remember {
+        mutableStateOf<UUID?>(
+            if (copyStoreId == null) null else UUID.fromString(copyStoreId)
+        )
+    }
 
 
     val myStoreId = myInfo.value?.storeId
     val stores = storeViewModel.stores.collectAsState()
-    val storeData = stores.value?.firstOrNull { it.id == (storeId ?: myStoreId) }
+    val storeData = stores.value?.firstOrNull { it.id == (storeId.value ?: myStoreId) }
     val storeBanners = banners.value?.filter { it.storeId == storeId }
-    val storeSubCategories = subcategories.value?.filter { it.storeId == storeId }
+    val storeSubCategories = subcategories.value?.filter { it.storeId == (storeId.value?:myStoreId) }
     val storeProduct =
-        if (products.value != null && storeId != null) products.value!!.filter { it.storeId == storeId }
+        if (products.value != null && myStoreId != null) products.value!!.filter { it.storeId == (myStoreId) }
         else emptyList()
     val productFilterBySubCategory = if (selectedSubCategoryId.value == null) storeProduct
     else storeProduct.filter { it.subcategoryId == selectedSubCategoryId.value }
@@ -312,7 +316,8 @@ fun StoreScreen(
 
     val onImageSelection = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
-    ) { uri ->
+    )
+    { uri ->
         if (uri != null) {
             val fileHolder = uri.toCustomFil(context = context)
             if (fileHolder != null) {
@@ -328,7 +333,7 @@ fun StoreScreen(
                                 storeViewModel.setStoreCreateData(
                                     wallpaperImage = fileHolder,
                                     updateStoreOperation = storeOperation,
-                                    storeId = storeId
+                                    storeId = storeId.value
                                 )
                             }
 
@@ -336,7 +341,7 @@ fun StoreScreen(
                                 storeViewModel.setStoreCreateData(
                                     smallImage = fileHolder,
                                     updateStoreOperation = storeOperation,
-                                    storeId = storeId
+                                    storeId = storeId.value
                                 )
                             }
                         }
@@ -412,6 +417,7 @@ fun StoreScreen(
                         userViewModel.updateMyStoreId(
                             id
                         )
+                        storeId.value = id
                         getStoreInfoByStoreId(id)
                     })
             }.await()
@@ -517,9 +523,7 @@ fun StoreScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (storeId != null) {
-            getStoreInfoByStoreId(storeId)
-        }
+        getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID())
     }
 
     LaunchedEffect(reachedBottom.value) {
@@ -527,13 +531,16 @@ fun StoreScreen(
             when (selectedSubCategoryId.value == null) {
                 true -> {
                     productViewModel.getProducts(
-                        page, storeId = storeId!!, isLoadingMore
+                        page, storeId = storeId.value ?: UUID.randomUUID(), isLoadingMore
                     )
                 }
 
                 else -> {
                     productViewModel.getProducts(
-                        page, storeId = storeId!!, selectedSubCategoryId.value!!, isLoadingMore
+                        page,
+                        storeId = storeId.value!!,
+                        selectedSubCategoryId.value!!,
+                        isLoadingMore
                     )
                 }
             }
@@ -550,7 +557,7 @@ fun StoreScreen(
     }
 
 
-
+   Log.d("thisData",subcategories.value.toString())
 
     Scaffold(
         snackbarHost = {
@@ -1002,9 +1009,11 @@ fun StoreScreen(
                 }
 
 
-        }, modifier = Modifier
+        },
+        modifier = Modifier
             .fillMaxSize()
-            .background(Color.White), topBar = {
+            .background(Color.White),
+        topBar = {
             CenterAlignedTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White
@@ -1081,7 +1090,12 @@ fun StoreScreen(
                     }
                     FloatingActionButton(
                         onClick = {
-                            nav.navigate(Screens.CreateProduct(storeId.toString(), null))
+                            nav.navigate(
+                                Screens.CreateProduct(
+                                    (storeId.value ?: myInfo.value?.storeId ?: UUID.randomUUID()).toString(),
+                                    null
+                                )
+                            )
                         }, containerColor = CustomColor.alertColor_2_700
                     ) {
                         Icon(
@@ -1122,7 +1136,7 @@ fun StoreScreen(
                     isRefresh.value = true
                     page.intValue = 1;
                     delay(100)
-                    getStoreInfoByStoreId(storeId ?: UUID.randomUUID(), isRefresh)
+                    getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID(), isRefresh)
 
 
                 }
@@ -1497,7 +1511,7 @@ fun StoreScreen(
                                     storeViewModel.setStoreCreateData(
                                         storeTitle = it,
                                         updateStoreOperation = storeOperation,
-                                        storeId = storeId
+                                        storeId = storeId.value
                                     )
                                 },
                             )
@@ -1639,7 +1653,7 @@ fun StoreScreen(
                 item {
 
                     AnimatedVisibility(
-                        visible = (storeId != null || storeData != null)
+                        visible = (storeId.value != null || storeData != null)
                     ) {
 
 
@@ -1652,7 +1666,8 @@ fun StoreScreen(
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
+                            )
+                            {
                                 Text(
                                     stringResource(R.string.sub_category),
                                     fontFamily = General.satoshiFamily,
@@ -1866,7 +1881,7 @@ fun StoreScreen(
                                                             isSendingData.value = true
                                                             val result =
                                                                 productViewModel.deleteProduct(
-                                                                    storeId!!, it
+                                                                    storeId.value!!, it
                                                                 )
 
                                                             isSendingData.value = false

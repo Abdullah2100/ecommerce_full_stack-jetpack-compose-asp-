@@ -161,11 +161,6 @@
     <string name="banner_end_date">تاريخ نهاية العرض</string>
     <string name="banner_end_time">وقت نهاية العرض</string>
     <string name="create_banner">انشاء لوحة اعلانية</string>
-
-
-
-
-
-
     <string name="leftArrow">Left Arrow</string>
+    <string name="exchange_currency">تغير العملة</string>
 </resources>

@@ -115,12 +115,6 @@ fun NavController(
                 nav = nav,
                 userViewModel = userViewModel,
                 storeViewModel = storeViewModel,
-                orderViewModel = orderViewModel,
-                generalSettingViewModel = generalSettingViewModel,
-                bannerViewModel = bannerViewModel,
-                productViewModel = productViewModel,
-                variantViewModel = variantViewModel,
-                categoryViewModel = categoryViewModel,
                 mapViewModel = mapViewModel
             )
 
@@ -371,7 +365,9 @@ fun NavController(
                     nav = nav,
                     userViewModel = userViewModel,
                     orderItemsViewModel = orderItemViewModel,
-                    authViewModel = authViewModel
+                    authViewModel = authViewModel,
+                    productViewModel=productViewModel,
+                    currencyViewModel=currencyViewModel
 
                 )
             }
@@ -452,7 +448,8 @@ fun NavController(
                     productId = store.productId,
                     subCategoryViewModel = subCategoryViewModel,
                     variantViewModel = variantViewModel,
-                    productViewModel = productViewModel
+                    productViewModel = productViewModel,
+                    currencyViewModel = currencyViewModel
                 )
 
             }

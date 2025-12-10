@@ -266,8 +266,7 @@ public class ProductController(
             return Unauthorized("هناك مشكلة في التحقق");
         }
 
-        var result = await productServices.DeleteProducts(
-            userId, productId);
+        var result = await productServices.DeleteProducts(userId,storeId, productId);
 
         return result.IsSuccessful switch
         {
