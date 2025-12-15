@@ -5,10 +5,19 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: {
-    domains: ['localhost'],
+  images: { domains: ['localhost'] },
+  allowedDevOrigins: ['192.168.1.45', 'localhost', '0.0.0.0'],
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'http://localhost:5077/api/:path*',
+      },
+    ];
   },
-    allowedDevOrigins: ['192.168.1.45', 'localhost'],
+  env: {
+    NEXT_PUBLIC_PASE_URL: '',
+  },
 };
 
 export default nextConfig;

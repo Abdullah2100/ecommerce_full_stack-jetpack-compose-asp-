@@ -14,7 +14,7 @@ public interface IOrderRepository:IRepository<Order>
     
     Task<bool> IsExist(Guid id);
     Task<bool> IsCanCancelOrder(Guid id);
-    Task<bool> IsValidTotalPrice(decimal totalPrice,List<CreateOrderItemDto> items);
+    Task<bool> IsValidTotalPrice(decimal totalPrice,List<CreateOrderItemDto> items,string symbol);
     
     //delivery
     Task<IEnumerable<Order>> GetOrderNoBelongToAnyDelivery(int pageNum,int pageSize);

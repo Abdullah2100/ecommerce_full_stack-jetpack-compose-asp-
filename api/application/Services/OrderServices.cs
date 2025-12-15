@@ -46,7 +46,7 @@ public class OrderServices(
             );
         }
 
-        if (!(await unitOfWork.OrderRepository.IsValidTotalPrice(orderDto.TotalPrice, orderDto.Items)))
+        if (!(await unitOfWork.OrderRepository.IsValidTotalPrice(orderDto.TotalPrice, orderDto.Items,orderDto.Symbol)))
         {
             return new Result<OrderDto?>
             (
@@ -68,6 +68,7 @@ public class OrderServices(
             Status = 1,
             CreatedAt = DateTime.Now,
             UpdatedAt = null,
+            Symbol = orderDto.Symbol
         };
 
         unitOfWork.OrderRepository.Add(order);

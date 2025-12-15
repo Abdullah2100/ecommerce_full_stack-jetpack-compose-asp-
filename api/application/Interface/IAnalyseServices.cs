@@ -5,5 +5,5 @@ namespace api.application.Interface;
 
 public interface IAnalyseServices
 {
-    Task<Result<AnalayesOrderDto?>> GetMonthAnalysis(Guid adminId);
+    Task<Result<AnalyzesOrderDto?>> GetMonthAnalysis(Guid adminId);
 }

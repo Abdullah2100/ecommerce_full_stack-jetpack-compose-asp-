@@ -12,14 +12,14 @@ public class AnalyseServices(
     IMessageService messageService
     ):IAnalyseServices
 {
-    public async Task<Result<AnalayesOrderDto?>> GetMonthAnalysis(Guid adminId)
+    public async Task<Result<AnalyzesOrderDto?>> GetMonthAnalysis(Guid adminId)
     {
         User? user = await unitOfWork.UserRepository.GetUser(adminId);
         
         var isValide = user.IsValidateFunc(true);
         if (isValide is not null)
         {
-            return new Result<AnalayesOrderDto?>(
+            return new Result<AnalyzesOrderDto?>(
                 data: null,
                 message: isValide.Message,
                 isSuccessful: false,
@@ -30,7 +30,7 @@ public class AnalyseServices(
         var  result = await unitOfWork.AnalyseRepository.GetMonthAnalysis();
         if (result is  null)
         {
-            return new Result<AnalayesOrderDto?>(
+            return new Result<AnalyzesOrderDto?>(
                 data: null,
                 message: "Could not calculate analayes",
                 isSuccessful: false,
@@ -38,7 +38,7 @@ public class AnalyseServices(
             );
         }
         
-        return new Result<AnalayesOrderDto?>(
+        return new Result<AnalyzesOrderDto?>(
             data: result,
             message: null,
             isSuccessful: true,

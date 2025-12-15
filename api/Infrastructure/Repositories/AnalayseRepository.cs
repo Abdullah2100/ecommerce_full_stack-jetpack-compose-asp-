@@ -10,7 +10,7 @@ public class AnalyseRepository(
     AppDbContext context
 ) : IAnalyseRepository
 {
-    public async Task<AnalayesOrderDto?> GetMonthAnalysis()
+    public async Task<AnalyzesOrderDto?> GetMonthAnalysis()
     {
         try
         {
@@ -18,14 +18,14 @@ public class AnalyseRepository(
             {
                 cmd.CommandText = "SELECT * FROM get_monthly_stats()";
                 await context.Database.OpenConnectionAsync();
-                AnalayesOrderDto? info = null;
+                AnalyzesOrderDto? info = null;
                 using (var reader = await cmd.ExecuteReaderAsync())
                 {
                     if (reader.HasRows)
                     {
                         if (reader.Read())
                         {
-                            info = new AnalayesOrderDto
+                            info = new AnalyzesOrderDto
                             {
                                 totalFee = (decimal?)reader["totalFee"],
                                 totalOrders = (long?)reader["totalOrder"],

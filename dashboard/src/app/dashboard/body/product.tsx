@@ -5,6 +5,11 @@ import { getProductPages, getProductAtPage } from "@/lib/api/product";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 import iProductResponseDto from "@/dto/response/iProductResponseDto";
+import { getCurrencies } from "@/lib/api/currency";
+import { ICurrency } from "@/model/ICurrency";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { updateCurrency } from "@/util/globle";
 
 const Product = () => {
     const queryClient = useQueryClient()
@@ -15,14 +20,22 @@ const Product = () => {
     })
 
     const [currnetPage, setCurrentPage] = useState(1);
+    const [currentCurrency, setCurrentCurrency] = useState<ICurrency | undefined>(undefined);
     const [selectedProduct, setSelectedProduct] = useState<iProductResponseDto | null>(null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-    const { data, refetch, isPlaceholderData } = useQuery({
+    const { data, } = useQuery({
         queryKey: ['products', currnetPage],
         queryFn: () => getProductAtPage(currnetPage)
 
     })
+
+    const { data: currencies, isError } = useQuery(
+        {
+            queryKey: ['currency'],
+            queryFn: () => getCurrencies()
+        }
+    )
 
     useEffect(() => {
         queryClient.prefetchQuery({
@@ -80,12 +93,40 @@ const Product = () => {
     if (data === undefined) return;
 
 
+
+
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                     Products
                 </h1>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className={` justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors text-black`}
+                        >
+                            {currentCurrency?.name ?? "Select Currency"}
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                        align="start"
+                        className="w-[140px]">
+                        {currencies?.map((statusItem, sIndex) => (
+                            <DropdownMenuItem
+                                key={sIndex}
+                                onClick={() => {
+                                    setCurrentCurrency(statusItem)
+                                }}
+                            >
+                                {statusItem.name}
+                            </DropdownMenuItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
             </div>
 
             <div className="w-full overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
@@ -125,7 +166,7 @@ const Product = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 font-medium text-foreground">
-                                        ${value.price.toFixed(2)}
+                                        {currentCurrency?.symbol ?? value.symbol}{updateCurrency(value.price, currentCurrency?.symbol ?? "", currentCurrency, currencies ?? [])}
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-2">

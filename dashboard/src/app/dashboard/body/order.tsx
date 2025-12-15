@@ -10,10 +10,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import iOrderStatusUpdateRequestDto from "@/dto/request/iOrderStatusUpdateRequestDto";
 import useOrder from "@/stores/order";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import iOrderItemResponseDto from "@/dto/response/iOrderItemResponseDto";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 import Image from "next/image";
+import { getCurrencies } from "@/lib/api/currency";
+import { ICurrency } from "@/model/ICurrency";
 
 const Order = () => {
   const {
@@ -26,6 +28,10 @@ const Order = () => {
     currentPage,
   } = useOrder();
 
+  const [selectedItem, setNewSelectedItem] = useState<iOrderItemResponseDto[] | undefined>(undefined)
+  const [currentIndex, changeCurrentIndex] = useState<number>(0)
+  const [currentCurrency, setCurrentCurrency] = useState<ICurrency | undefined>(undefined);
+
   const chageOrderStatus = useMutation({
     mutationFn: (orderStatus: iOrderStatusUpdateRequestDto) =>
       updateOrderStatus(orderStatus),
@@ -37,9 +43,12 @@ const Order = () => {
     },
   });
 
-  const [selectedItem, setNewSelectedItem] = useState<iOrderItemResponseDto[] | undefined>(undefined)
-  const [currentIndex, changeCurrentIndex] = useState<number>(0)
-
+  const { data: currencies, isError } = useQuery(
+    {
+      queryKey: ['currency'],
+      queryFn: () => getCurrencies()
+    }
+  )
   useEffect(() => {
     getOrdersAt(1);
     getOrderStatus()
@@ -54,6 +63,32 @@ const Order = () => {
         <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
           Orders
         </h1>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={` justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors text-black`}
+            >
+              {currentCurrency?.name ?? "Select Currency"}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            className="w-[140px]">
+            {currencies?.map((statusItem, sIndex) => (
+              <DropdownMenuItem
+                key={sIndex}
+                onClick={() => {
+                  setCurrentCurrency(statusItem)
+                }}
+              >
+                {statusItem.name}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
       </div>
       {selectedItem !== undefined &&
         <>
@@ -162,7 +197,9 @@ const Order = () => {
                           {value.status}
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start" className="w-[140px]">
+                      <DropdownMenuContent
+                        align="start"
+                        className="w-[140px]">
                         {orderStatus.map((statusItem, sIndex) => (
                           <DropdownMenuItem
                             key={sIndex}

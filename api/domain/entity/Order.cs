@@ -11,6 +11,8 @@ public class Order
     public decimal Latitude { get; set; }
     public Guid UserId { get; set; }
     public decimal TotalPrice { get; set; }
+    
+    public string Symbol { get; set; }
     public int Status { get; set; }
     
     public decimal DistanceToUser { get; set; } = 0;

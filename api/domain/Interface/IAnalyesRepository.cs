@@ -4,5 +4,5 @@ namespace api.domain.Interface;
 
 public interface IAnalyseRepository
 {
-    Task<AnalayesOrderDto?> GetMonthAnalysis();
+    Task<AnalyzesOrderDto?> GetMonthAnalysis();
 }

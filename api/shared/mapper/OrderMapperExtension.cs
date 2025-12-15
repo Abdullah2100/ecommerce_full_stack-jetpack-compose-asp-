@@ -16,6 +16,7 @@ public static class OrderMapperExtension
             Latitude = order.Latitude,
             Status = order.Status.ToOrderStatusName(),
             TotalPrice = order.TotalPrice,
+            Symbol = order.Symbol,
             UserPhone = order.User.Phone,
             OrderItems = order
                 .Items

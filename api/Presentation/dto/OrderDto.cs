@@ -8,6 +8,8 @@ namespace api.Presentation.dto
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public decimal TotalPrice { get; set; }
+        
+        public string Symbol { get; set; }
         public decimal DeliveryFee { get; set; }
         public String Name { get; set; }
         public String UserPhone { get; set; }
@@ -26,7 +28,8 @@ namespace api.Presentation.dto
         public decimal Longitude { get; set; }
         public decimal Latitude { get; set; }
         public decimal TotalPrice { get; set; }
-        public decimal RealPrice { get; set; }
+        
+        public string Symbol { get; set; }
         public decimal DeliveryFee { get; set; }
         public String Name { get; set; }
         public String UserPhone { get; set; }
@@ -39,6 +42,8 @@ namespace api.Presentation.dto
         [Required] public decimal Longitude { get; set; }
         [Required] public decimal Latitude { get; set; }
         [Required] public decimal TotalPrice { get; set; }
+        public required string Symbol { get; set; }
+
         [Required] public List<CreateOrderItemDto> Items { get; set; }
     }
 
@@ -61,7 +66,7 @@ namespace api.Presentation.dto
     }
 
 
-    public class AnalayesOrderDto
+    public class AnalyzesOrderDto
     {
         public decimal? totalFee { get; set; }
         public long? totalOrders { get; set; }

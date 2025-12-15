@@ -440,7 +440,7 @@
             <mxRectangle width="30" height="30" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="U9mIYZyOK90ie27PtQow-3" value="&lt;div&gt;&lt;pre style=&quot;font-family: &amp;quot;JetBrains Mono&amp;quot;, monospace; font-size: 9pt;&quot;&gt;&lt;span&gt;&lt;font style=&quot;color: rgb(51, 0, 0);&quot;&gt;Symbol&lt;/font&gt;&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;whiteSpace=wrap;html=1;" vertex="1" parent="U9mIYZyOK90ie27PtQow-1">
+        <mxCell id="U9mIYZyOK90ie27PtQow-3" value="&lt;pre style=&quot;font-family: &amp;quot;JetBrains Mono&amp;quot;, monospace; font-size: 9pt;&quot;&gt;&lt;span&gt;&lt;font style=&quot;color: rgb(51, 0, 0);&quot;&gt;s&lt;/font&gt;&lt;/span&gt;ymbol       nvarchar(10)&lt;/pre&gt;" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;whiteSpace=wrap;html=1;" vertex="1" parent="U9mIYZyOK90ie27PtQow-1">
           <mxGeometry x="30" width="270" height="30" as="geometry">
             <mxRectangle width="270" height="30" as="alternateBounds" />
           </mxGeometry>

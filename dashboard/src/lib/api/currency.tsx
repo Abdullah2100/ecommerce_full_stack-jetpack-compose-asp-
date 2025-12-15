@@ -1,19 +1,20 @@
+import { ICurrency } from "@/model/ICurrency";
+import { Util } from "@/util/globle";
 import axios from "axios";
-import { iLoginData } from "../../app/login/page";
 
-
-
-
-export async function login({ name, password }: iLoginData) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + '/api/User/login';
+export async function getCurrencies(pageNumber: number = 1) {
+    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Currencies/all/${pageNumber}`;
     console.log(`funtion is Called ${url}`)
     try {
-        return await axios.post(url,
-            {
-                username: name,
-                password: password
+        const result = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`
             }
-        )
+        })
+
+        let data = result.data as ICurrency[]
+        console.log("this the data currencies", JSON.stringify(data))
+        return data
     } catch (error) {
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";
@@ -28,6 +29,4 @@ export async function login({ name, password }: iLoginData) {
 
         throw new Error(errorMessage);
     }
-
 }
-

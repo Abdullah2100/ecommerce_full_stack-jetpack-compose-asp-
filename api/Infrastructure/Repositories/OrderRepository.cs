@@ -149,7 +149,7 @@ public class OrderRepository(AppDbContext context)
             );
     }
 
-    public async Task<bool> IsValidTotalPrice(decimal totalPrice, List<CreateOrderItemDto> items)
+    public async Task<bool> IsValidTotalPrice(decimal totalPrice, List<CreateOrderItemDto> items,string symbol)
     {
         bool isAmbiguous = false;
         decimal realPrice = 0;
@@ -157,6 +157,7 @@ public class OrderRepository(AppDbContext context)
         foreach (var item in items)
         {
             var product = await context.Products.FindAsync(item.ProductId);
+            var currencies = await context.Currencies.ToListAsync();
             decimal varientPrice = 1;
             //itrate throw every productvarientid
             for (var i = 0; i < item.ProductVariant?.Count; i++)
@@ -165,6 +166,7 @@ public class OrderRepository(AppDbContext context)
                 var productVariantPrice =
                     await context.ProductVariants.FirstOrDefaultAsync(product =>
                         product.ProductId == product.Id && product.Id == item.ProductVariant[i]);
+                
                 if (productVariantPrice is null)
                 {
                     isAmbiguous = true;
@@ -172,9 +174,7 @@ public class OrderRepository(AppDbContext context)
                 }
 
                 varientPrice = varientPrice * productVariantPrice.Percentage;
-            }
-
-            ;
+            };
 
             if (isAmbiguous == true)
             {
@@ -187,7 +187,7 @@ public class OrderRepository(AppDbContext context)
                 break;
             }
 
-            realPrice += ((varientPrice * product.Price) * item.Quantity);
+            realPrice += ConvertPriceFromCurrencyToAnother(((varientPrice * product.Price) * item.Quantity),product.Symbol,symbol,currencies);
         }
 
 
@@ -318,6 +318,28 @@ public class OrderRepository(AppDbContext context)
         result.DeliveryId = null;
     }
 
+    public decimal ConvertPriceFromCurrencyToAnother(decimal price, string productSymbol,string currentSymbol, List<Currency> currencies)
+    {
+
+            var  currentCurrency = currencies.First(x => x.Symbol == currentSymbol);
+            var  productCurrency = currencies.First(x => x.Symbol == productSymbol);
+
+            switch (currentCurrency.IsDefault && !productCurrency.IsDefault) {
+                case true:
+                    return price / (productCurrency.Value);
+                default:
+                {
+                    switch (currentCurrency== productCurrency) {
+                        case true: return price;
+                        default:
+                        {
+                           return (price/productCurrency.Value)* currentCurrency.Value;
+                        }
+                    }
+                }
+            }
+
+    }
 
     public void Add(Order entity)
     {

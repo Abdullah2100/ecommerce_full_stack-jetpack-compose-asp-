@@ -78,9 +78,10 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins("http://localhost:3000")
-            .AllowAnyMethod() // Allows any HTTP methods (GET, POST, etc.)
+            .AllowAnyMethod()           
             .AllowAnyHeader()
             .AllowCredentials();
+        
     });
 });
 
@@ -137,20 +138,14 @@ app.UseStaticFiles(new StaticFileOptions
         Path.Combine(builder.Environment.ContentRootPath, "images")),
     RequestPath = "/StaticFiles"
 });
-
-
 app.UseRouting();  
-
 app.UseCors(corsName);
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapHub<BannerHub>("/bannerHub");
 app.MapHub<OrderHub>("/orderHub"); 
 app.MapHub<OrderItemHub>("/orderItemHub"); 
 app.MapHub<StoreHub>("/storeHub"); 
-
 app.ConfigureExceptionHandler();
 app.Run();
