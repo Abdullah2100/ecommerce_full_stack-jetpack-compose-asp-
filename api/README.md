@@ -58,11 +58,11 @@ To run this project locally, you will need:
     ```
     *(Note: Ensure your `DbContext` is correctly configured before running this.)*
 
-4. **Copy the trigger.sql content  in psql**
+4. **migration trigger.sql **
    ```bash
-   sudo -i -u postgres;
-   psql 
-   \c ecommerce_db;```
+    dotnet ef migrations add trigger.sql
+    dotnet ef database update
+```
   ### past file at that command 
 
 
