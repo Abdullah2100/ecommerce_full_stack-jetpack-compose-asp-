@@ -5,7 +5,6 @@ import { iUserUpdateInfoDto } from "../../dto/response/iUserUpdateInfoDto";
 
 async function getMyInfo() {
     const url = process.env.NEXT_PUBLIC_PASE_URL + '/api/User/me';
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -51,7 +50,6 @@ async function updateUser({
         userData.append("newPassword", newPassword)
 
     const url = process.env.NEXT_PUBLIC_PASE_URL + '/api/User';
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.put(url,
             userData, {
@@ -85,7 +83,6 @@ async function updateUser({
 
 async function getUserPages() {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/User/pages`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -112,7 +109,6 @@ async function getUserPages() {
 
 async function getUserAtPage(pageNumber: number) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/User/${pageNumber}`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -139,8 +135,6 @@ async function getUserAtPage(pageNumber: number) {
 
 async function changeUserStatus(userId: string) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/User/status/${userId}`;
-    console.log(`funtion is Called ${url}`)
-    console.log(`token ${userId}`)
     try {
         const result = await axios.delete(url, {
             headers: {

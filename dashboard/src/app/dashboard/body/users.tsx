@@ -48,7 +48,6 @@ const Users = () => {
 
     if (data == undefined) return;
 
-    console.log("users info", JSON.stringify(data))
 
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">

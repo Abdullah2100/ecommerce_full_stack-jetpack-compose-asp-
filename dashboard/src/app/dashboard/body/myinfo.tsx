@@ -36,11 +36,9 @@ const MyInfoPage = () => {
         {
             mutationFn: (userData: iUserUpdateInfoDto) => updateFun(userData),
             onError: (e) => {
-                console.error('Mutation onError triggered:', e)
                 toast.error(e.message)
             },
             onSuccess: (data) => {
-                console.log('Mutation onSuccess triggered, result:', data)
                 toast.success("تم التعديل بنجاح");
                 refetch();
                 setUserUpdate(prev => ({

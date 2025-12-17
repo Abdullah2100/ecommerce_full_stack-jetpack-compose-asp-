@@ -48,7 +48,6 @@ const Stores = () => {
     )
 
     if (data == null) return;
-    console.log("this store data", JSON.stringify(data))
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
             <div className="flex justify-between items-center">
@@ -116,7 +115,6 @@ const Stores = () => {
                                             className="h-7 text-xs"
                                             onClick={() => {
                                                 // Mock toggle logic
-                                                console.log(`Toggle store ${value.id}`);
                                                 changeStoreStatusFun.mutate(value.id)
                                             }}
                                         >

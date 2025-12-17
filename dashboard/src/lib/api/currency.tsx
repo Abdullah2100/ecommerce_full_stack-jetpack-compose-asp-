@@ -4,7 +4,6 @@ import axios from "axios";
 
 export async function getCurrencies(pageNumber: number = 1) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Currencies/all/${pageNumber}`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -13,7 +12,6 @@ export async function getCurrencies(pageNumber: number = 1) {
         })
 
         let data = result.data as ICurrency[]
-        console.log("this the data currencies", JSON.stringify(data))
         return data
     } catch (error) {
         // Extract meaningful error message

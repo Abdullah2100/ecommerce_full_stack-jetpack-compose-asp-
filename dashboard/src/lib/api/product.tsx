@@ -4,7 +4,6 @@ import { Util } from "@/util/globle";
 
 async function getProductPages() {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Product/pages`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -32,7 +31,6 @@ async function getProductPages() {
 
 async function getProductAtPage(pageNumber: number) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Product/${pageNumber}`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
