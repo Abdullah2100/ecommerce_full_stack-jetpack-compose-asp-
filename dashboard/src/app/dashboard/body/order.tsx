@@ -55,7 +55,6 @@ const Order = () => {
   }, []);
 
   if (orders == null) return;
-  console.log(`funtion is Called ${JSON.stringify(orders)}`);
 
   return (
     <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
@@ -204,7 +203,6 @@ const Order = () => {
                           <DropdownMenuItem
                             key={sIndex}
                             onClick={() => {
-                              console.log(`Update  ${sIndex}`);
 
                               chageOrderStatus.mutate({
                                 id: value.id,

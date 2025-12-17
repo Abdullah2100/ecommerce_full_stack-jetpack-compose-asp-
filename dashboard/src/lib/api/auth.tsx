@@ -6,7 +6,6 @@ import { iLoginData } from "../../app/login/page";
 
 export async function login({ name, password }: iLoginData) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + '/api/User/login';
-    console.log(`funtion is Called ${url}`)
     try {
         return await axios.post(url,
             {

@@ -6,17 +6,16 @@ import iCategoryDto from "@/dto/response/iCategoryDto";
 
 
 
- async function getCategory(pageNumber: number) {
+async function getCategory(pageNumber: number) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category/all/${pageNumber}`;
-    console.log(`funtion is Called ${url}`)
     try {
-         const result = await axios.get(url, {
+        const result = await axios.get(url, {
             headers: {
                 'Authorization': `Bearer ${Util.token}`
             }
         })
-        
-        let data =result.data as iCategory[]
+
+        let data = result.data as iCategory[]
         return data
     } catch (error) {
         // Extract meaningful error message
@@ -36,9 +35,8 @@ import iCategoryDto from "@/dto/response/iCategoryDto";
 }
 
 
-  async function createCategory(data: iCategoryDto) {
+async function createCategory(data: iCategoryDto) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category`;
-    console.log(`funtion is Called ${url}`)
     try {
 
         const dataHolder = new FormData();
@@ -77,11 +75,10 @@ import iCategoryDto from "@/dto/response/iCategoryDto";
 }
 
 
-  async function deleteCategory(id: string) {
+async function deleteCategory(id: string) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category/${id}`;
-    console.log(`funtion is Called ${url}`)
     try {
-        const  result = await axios.delete(url, {
+        const result = await axios.delete(url, {
             headers: {
                 'Authorization': `Bearer ${Util.token}`
             },
@@ -112,9 +109,8 @@ import iCategoryDto from "@/dto/response/iCategoryDto";
 }
 
 
-  async function updateCategory(data: iCategoryDto) {
+async function updateCategory(data: iCategoryDto) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category`;
-    console.log(`funtion is Called ${url}`)
     try {
 
         const dataHolder = new FormData();

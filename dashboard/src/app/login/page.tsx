@@ -15,17 +15,16 @@ export interface iLoginData {
     password: string;
 }
 
-const  Login = ()=> {
-   const rout = useRouter() 
+const Login = () => {
+    const rout = useRouter()
     const [data, setData] = useState<iLoginData>({
-        name:'', //'ali55@gmail.com',
-        password:'',// '12AS@#fs'
+        name: '', //'ali55@gmail.com',
+        password: '',// '12AS@#fs'
     });
 
     const loginFun = useMutation({
         mutationFn: (data: iLoginData) => login({ name: data.name, password: data.password }),
         onError: (e) => {
-            // console.log(`error is ${e}`)
             toast.error(e.message)
         },
         onSuccess: (result) => {

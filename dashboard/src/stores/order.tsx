@@ -63,8 +63,6 @@ const useOrder = create<IOrder>((set, get) => ({
   getOrderStatus: async () => {
     const url =
       process.env.NEXT_PUBLIC_PASE_URL + `/api/Order/orderStatusDefinition`;
-
-    console.log(`funtion is Called ${url}`);
     try {
       const result = await axios.get(url, {
         headers: {
@@ -92,7 +90,6 @@ const useOrder = create<IOrder>((set, get) => ({
     orderStatus: iOrderStatusUpdateRequestDto
   ): Promise<string> => {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Order`;
-    console.log(`funtion is Called ${url}`);
     try {
       const result = await axios.put(
         url,

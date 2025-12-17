@@ -6,7 +6,7 @@ namespace api.shared.mapper;
 public static class ProductMapperExtension
 {
    
-    public static ProductDto? ToDto(this Product product,string url)
+    public static ProductDto ToDto(this Product product,string url)
     {
         try
         {
@@ -31,12 +31,12 @@ public static class ProductMapperExtension
         catch (Exception ex)
         {
             Console.WriteLine(ex.Message);
-            return null;
+            return new ProductDto();
         }
       
     }
  
-    public static AdminProductsDto? ToAdminDto(this Product product,string url)
+    public static AdminProductsDto ToAdminDto(this Product product,string url)
     {
         try
         {

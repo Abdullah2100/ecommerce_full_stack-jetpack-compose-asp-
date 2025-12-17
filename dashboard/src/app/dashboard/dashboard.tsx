@@ -38,11 +38,10 @@ const Dashboard = ({ }: DashboardContentProps) => {
     if (connection != undefined) {
       connection
         .start()
-        .then(() => console.log("SignalR Connected!"))
-        .catch((e) => console.log("Connection failed: ", e));
+        .then(() => { })
+        .catch((e) => { });
 
       connection.on("createdOrder", (user, message) => {
-        console.log(`orders ${JSON.stringify(user)}`)
         changeHasNewOrderStatus(true);
         play();
       });
@@ -51,7 +50,6 @@ const Dashboard = ({ }: DashboardContentProps) => {
   }, [connection]);
 
   useEffect(() => {
-    console.log(`the selected index is ${selectedIndex}`);
   }, [selectedIndex]);
 
   return (

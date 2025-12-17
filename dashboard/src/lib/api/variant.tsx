@@ -2,9 +2,8 @@ import axios from "axios";
 import { Util } from "@/util/globle";
 import { iVarient } from "@/model/iVarient";
 
- async function getVarient(pageNumber: number) {
+async function getVarient(pageNumber: number) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant/all/${pageNumber}`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -29,9 +28,8 @@ import { iVarient } from "@/model/iVarient";
 
 }
 
- async function getVarientPageLenght() {
+async function getVarientPageLenght() {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant/pages`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {
@@ -56,9 +54,8 @@ import { iVarient } from "@/model/iVarient";
 
 }
 
- async function deleteVarient(id: string) {
+async function deleteVarient(id: string) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant/${id}`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.delete(url, {
             headers: {
@@ -90,9 +87,8 @@ import { iVarient } from "@/model/iVarient";
 
 }
 
-  async function createVarient(data: iVarient) {
+async function createVarient(data: iVarient) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.post(url, {
             id: data.id,
@@ -126,9 +122,8 @@ import { iVarient } from "@/model/iVarient";
 
 }
 
- async function updateVarient(data: iVarient) {
+async function updateVarient(data: iVarient) {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.put(url, {
             id: data.id,

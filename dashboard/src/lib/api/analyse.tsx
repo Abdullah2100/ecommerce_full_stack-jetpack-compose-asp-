@@ -4,7 +4,6 @@ import axios from "axios";
 
 export async function getAnalyse() {
     const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/analyse/currentMonth`;
-    console.log(`funtion is Called ${url}`)
     try {
         const result = await axios.get(url, {
             headers: {

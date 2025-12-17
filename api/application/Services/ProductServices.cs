@@ -90,9 +90,7 @@ public class ProductServices(
     {
         var products = (await unitOfWork.ProductRepository
             .GetProducts(pageNum, pageSize));
-        List<ProductDto> productDtos = products == null
-            ? new List<ProductDto>()
-            : products.Select((de) => de.ToDto(config.getKey("url_file")))
+        List<ProductDto> productDtos =  products.Select((de) => de.ToDto(config.getKey("url_file")))
                 .ToList();
 
         return new Result<List<ProductDto>>(
@@ -134,19 +132,11 @@ public class ProductServices(
         }
 
 
-        List<AdminProductsDto?> products = (await unitOfWork.ProductRepository
+        List<AdminProductsDto> products = (await unitOfWork.ProductRepository
                 .GetProducts(pageNum, pageSize))
             .Select((de) => de.ToAdminDto(config.getKey("url_file")))
             .ToList();
 
-        if (products.Count == 0 || products.Any(x => x == null))
-            return new Result<List<AdminProductsDto>>
-            (
-                data: new List<AdminProductsDto>(),
-                message: "No products found",
-                isSuccessful: false,
-                statusCode: 400
-            );
 
         return new Result<List<AdminProductsDto>>(
             data: products,
@@ -176,20 +166,11 @@ public class ProductServices(
 
         var productPageLength = await unitOfWork.ProductRepository.GetProductPages();
 
-        if (productPageLength is null)
-        {
-            return new Result<int>
-            (
-                data: 0,
-                message: "no pages found",
-                isSuccessful: false,
-                statusCode: 404
-            );
-        }
+        var productsPerPage = productPageLength != null ? (int)Math.Ceiling((double)productPageLength / length) : 0;
 
         return new Result<int>
         (
-            data: (int)Math.Ceiling((double)productPageLength / length),
+            data: productsPerPage,
             message: "",
             isSuccessful: true,
             statusCode: 200
@@ -315,7 +296,7 @@ public class ProductServices(
                 CreatedAt = DateTime.Now,
                 UpdatedAt = null,
                 Thumbnail = savedThumbnail,
-                Symbol =productDto.Symbol, 
+                Symbol = productDto.Symbol,
             };
 
             unitOfWork.ProductRepository.Add(product);
@@ -355,7 +336,7 @@ public class ProductServices(
                 message: "",
                 isSuccessful: true,
                 statusCode: 201
-            );  
+            );
         }
     }
 
