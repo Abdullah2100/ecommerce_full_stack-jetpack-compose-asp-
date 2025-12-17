@@ -150,7 +150,7 @@ public class ProductServices(
     {
         User? admin = await unitOfWork.UserRepository.GetUser(adminId);
 
-        var isValidate = admin.IsValidateFunc(false, true);
+        var isValidate = admin.IsValidateFunc(false);
 
         if (isValidate is not null)
         {
