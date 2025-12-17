@@ -107,6 +107,37 @@ public class UserController(
             _ => StatusCode(result.StatusCode, result.Message)
         };
     }
+    //this to get user per pages like we hav 20 pages of user 25 user at one per page 
+    
+    [HttpGet("pages")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserPages()
+    {
+        StringValues authorizationHeader = HttpContext.Request.Headers["Authorization"];
+        Claim? id = authenticationService.GetPayloadFromToken("id",
+            authorizationHeader.ToString().Replace("Bearer ", ""));
+
+        Guid? adminId = null;
+        if (Guid.TryParse(id?.Value, out Guid outId))
+        {
+            adminId = outId;
+        }
+
+        if (adminId is null)
+        {
+            return Unauthorized("هناك مشكلة في التحقق");
+        }
+
+        var result = await userServices.GetUsersPages( adminId.Value);
+
+        return result.IsSuccessful switch
+        {
+            true => StatusCode(result.StatusCode, result.Data),
+            _ => StatusCode(result.StatusCode, result.Message)
+        };
+    }
 
 
     [HttpDelete("status/{userId:guid}")]

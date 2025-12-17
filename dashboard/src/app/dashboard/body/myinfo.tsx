@@ -17,21 +17,6 @@ const MyInfoPage = () => {
         queryFn: () => getMyInfo()
     })
 
-    const [userUpdate, setUserUpdate] = useState<iUserUpdateInfoDto>({
-        name: data?.name ?? null,
-        phone: data?.phone ?? null,
-        password: null,
-        newPassword: null,
-        thumbnail: null
-    });
-    const [thumbnailFile, setThumbnailFile] = useState<File | undefined>(undefined);
-    const [previewImage, setPreviewImage] = useState(convertImageToValidUrl(data?.thumbnail ?? ""));
-
-    const inputRef = useRef<HTMLInputElement>(null);
-
-
-
-
     const updateUserData = useMutation(
         {
             mutationFn: (userData: iUserUpdateInfoDto) => updateFun(userData),
@@ -50,6 +35,23 @@ const MyInfoPage = () => {
             }
         }
     )
+
+    const [userUpdate, setUserUpdate] = useState<iUserUpdateInfoDto>({
+        name: data?.name ?? null,
+        phone: data?.phone ?? null,
+        password: null,
+        newPassword: null,
+        thumbnail: null
+    });
+
+    const [isDraggable, setDraggable] = useState(false)
+    const [thumbnailFile, setThumbnailFile] = useState<File | undefined>(undefined);
+    const [previewImage, setPreviewImage] = useState(convertImageToValidUrl(data?.thumbnail ?? ""));
+
+    const inputRef = useRef<HTMLInputElement>(null);
+
+
+
 
 
     if (data == undefined) return;
@@ -75,8 +77,29 @@ const MyInfoPage = () => {
                         }}
                     />
 
-                    <div className="relative group cursor-pointer" onClick={() => inputRef.current?.click()}>
-                        <div className="h-32 w-32 rounded-full border-4 border-background shadow-xl overflow-hidden ring-2 ring-border group-hover:ring-primary transition-all">
+                    <div
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            setDraggable(true);
+                            console.log('is draggable now ')
+                        }}
+                        onDragLeave={() => {
+                            console.log("not draggable any more")
+                            setDraggable(false)
+                        }}
+                        onDrop={(e) => {
+                            e.preventDefault();
+
+                            const file = e.dataTransfer.files[0];
+                            if (file) {
+                                setThumbnailFile(file);
+                                setPreviewImage(URL.createObjectURL(file));
+                            }
+                        }}
+
+                        className="relative group cursor-pointer" onClick={() => inputRef.current?.click()}>
+                        <div className={`h-32 w-32 rounded-full border-4 border-background shadow-xl overflow-hidden ring-2 ring-border 
+                           ${isDraggable ? 'border-dashed border-primary' : 'group-hover:ring-primary'}  transition-all`}>
                             <Image
                                 src={previewImage}
                                 alt="Profile"

@@ -204,7 +204,7 @@ public class UserService(
         User? user = await unitOfWork.UserRepository
             .GetUser(id);
 
-        var isValide = user.IsValidateFunc(false);
+        var isValide = user.IsValidateFunc();
         if (isValide is not null)
         {
             return new Result<List<UserInfoDto>?>(
@@ -227,6 +227,32 @@ public class UserService(
             isSuccessful: true,
             statusCode: 200
         );
+    }
+
+    public async Task<Result<int?>> GetUsersPages(Guid id,int pageLenght)
+    {
+        User? user = await unitOfWork.UserRepository
+            .GetUser(id);
+
+        var isValide = user.IsValidateFunc();
+        if (isValide is not null)
+        {
+            return new Result<int?>(
+                isSuccessful: false,
+                data: null,
+                message: isValide.Message,
+                statusCode: isValide.StatusCode
+            );
+        }
+
+        var userPages = await unitOfWork.UserRepository.GetUserCount();
+        var pageUserCount = userPages>0?(int)Math.Ceiling((double)userPages/pageLenght):0;
+        return new Result<int?>(
+            isSuccessful: true,
+            data: pageLenght,
+            message:  "",
+            statusCode: 200
+        ); 
     }
 
     public async Task<Result<bool>> BlockOrUnBlockUser(Guid id, Guid userId)

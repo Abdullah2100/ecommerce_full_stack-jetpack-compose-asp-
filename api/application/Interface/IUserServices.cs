@@ -12,6 +12,7 @@ public interface IUserServices
     public Task<Result<UserInfoDto?>> GetMe(Guid id);
 
     public Task<Result<List<UserInfoDto>?>> GetUsers(int page, Guid id);
+    public Task<Result<int?>> GetUsersPages(Guid id,int pageLenght=25);
 
     public Task<Result<bool>> BlockOrUnBlockUser(Guid id,Guid userId);
     

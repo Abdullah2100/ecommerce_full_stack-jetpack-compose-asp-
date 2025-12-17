@@ -18,8 +18,12 @@ export interface iLoginData {
 const Login = () => {
     const rout = useRouter()
     const [data, setData] = useState<iLoginData>({
-        name: '', //'ali55@gmail.com',
-        password: '',// '12AS@#fs'
+        name:
+            //'',
+            'ali535@gmail.com',
+        password:
+            //'',
+            '12AS@#fs'
     });
 
     const loginFun = useMutation({
