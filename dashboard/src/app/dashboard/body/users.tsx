@@ -1,7 +1,6 @@
-import { mockUsers } from "@/lib/mockData";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { getUserPages, getUserAtPage, changeUserStatus } from "@/lib/api/user";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
@@ -165,7 +164,6 @@ const Users = () => {
                     ))}
                 </div>
             </div>
-            <ToastContainer />
         </div>
     );
 };

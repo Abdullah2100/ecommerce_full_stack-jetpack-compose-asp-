@@ -1,17 +1,21 @@
 import React from 'react';
 import { DollarSign, Users, ShoppingBag, Package, MapPin } from "lucide-react";
 import { Card } from '@/components/ui/card/card';
-import { mockAnalytics } from '@/lib/mockData';
 import { useQuery } from '@tanstack/react-query';
 import { getAnalyse } from '@/lib/api/analyse';
 
 const Analytics = () => {
-    const { totalRevenue, totalOrders, totalUsers, totalProducts, revenueData } = mockAnalytics;
+ const { data, isLoading, isError } = useQuery({
+
+        queryKey: ["analytics"],
+        queryFn: () => getAnalyse(),
+
+    });
 
     const stats = [
         {
             title: "Total Revenue",
-            value: `$${totalRevenue.toLocaleString()}`,
+            value: `$${data?.totalFee.toLocaleString()}`,
             change: "+20.1% from last month",
             icon: DollarSign,
             color: "text-green-500",
@@ -19,7 +23,7 @@ const Analytics = () => {
         },
         {
             title: "Total Orders",
-            value: totalOrders.toLocaleString(),
+            value: data?.totalOrders.toLocaleString(),
             change: "+180.1% from last month",
             icon: ShoppingBag,
             color: "text-blue-500",
@@ -27,7 +31,7 @@ const Analytics = () => {
         },
         {
             title: "Total Users",
-            value: totalUsers.toLocaleString(),
+            value: data?.usersCount.toLocaleString(),
             change: "+19% from last month",
             icon: Users,
             color: "text-orange-500",
@@ -35,7 +39,7 @@ const Analytics = () => {
         },
         {
             title: "Total Delivery Distance",
-            value: totalProducts.toLocaleString(),
+            value: data?.totalDeliveryDistance.toLocaleString(),
             change: "+201 since last hour",
             icon: MapPin,
             color: "text-purple-500",
@@ -43,7 +47,7 @@ const Analytics = () => {
         },
         {
             title: "Total Product",
-            value: totalProducts.toLocaleString(),
+            value: data?.productCount.toLocaleString(),
             change: "+201 since last hour",
             icon: Package,
             color: "text-purple-500",
@@ -51,12 +55,7 @@ const Analytics = () => {
         },
     ];
 
-    const { data, isLoading, isError } = useQuery({
-
-        queryKey: ["analytics"],
-        queryFn: () => getAnalyse(),
-
-    });
+   
 
     if (isLoading || isError) return null;
 

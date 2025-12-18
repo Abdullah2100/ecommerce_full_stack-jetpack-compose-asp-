@@ -6,7 +6,6 @@ import {
   IAdminReposeDto,
   IOrderResponseDto,
 } from "@/dto/response/iOrderResponseDto";
-import { ToastOptions } from "react-toastify";
 
 interface IOrder {
   currentPage: number;

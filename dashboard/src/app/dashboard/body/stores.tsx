@@ -1,6 +1,5 @@
-import { mockStores } from "@/lib/mockData";
 import { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -147,7 +146,6 @@ const Stores = () => {
                     ))}
                 </div>
             </div>
-            <ToastContainer />
         </div>
     );
 };

@@ -59,6 +59,7 @@ async function updateUser({
             }
         })
         if (result.status == 200) {
+            console.log("result.data ", result.data);
             return true
         } else {
             return false

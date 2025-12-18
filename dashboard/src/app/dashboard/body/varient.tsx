@@ -3,7 +3,7 @@ import InputWithTitle from "@/components/ui/input/inputWithTitle";
 import { Label } from "@/components/ui/label";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import { iVarient } from "../../../model/iVarient";
 import { Button } from "@/components/ui/button";
 import { EditeIcon } from "../../../../public/images/editeIcon";
@@ -156,7 +156,6 @@ const Variant = () => {
                     </div>
                 </div>
             </div>}
-            <ToastContainer />
 
         </div>
     );

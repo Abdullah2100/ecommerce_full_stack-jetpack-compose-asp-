@@ -7,6 +7,7 @@ import Category from "./category"
 import Product from "./product"
 import Order from "./order"
 import Analytics from "./analytics"
+import { ToastContainer } from "react-toastify";
 
 interface iMainPageProp {
     currentPage: number
@@ -36,6 +37,7 @@ const Main = ({ currentPage }: iMainPageProp) => {
                     return null;
             }
         })()}
+ <ToastContainer />
     </div>
     )
 }

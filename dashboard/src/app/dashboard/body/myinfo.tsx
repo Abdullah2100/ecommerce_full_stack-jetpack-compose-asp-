@@ -1,18 +1,16 @@
-import { mockMyInfo } from "@/lib/mockData";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import edite from '../../../../public/images/edite.svg';
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { iUserUpdateInfoDto } from "@/dto/response/iUserUpdateInfoDto";
 import { getMyInfo, updateUser as updateFun } from "@/lib/api/user";
 import { toast } from "react-toastify";
-import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
+ 
 
 const MyInfoPage = () => {
     // const data = mockMyInfo;
 
-    const { data, refetch } = useQuery({
+    const { data, refetch, isSuccess } = useQuery({
         queryKey: ['myinfo'],
         queryFn: () => getMyInfo()
     })
@@ -24,6 +22,7 @@ const MyInfoPage = () => {
                 toast.error(e.message)
             },
             onSuccess: (data) => {
+                console.log("user updated ", data);
                 toast.success("تم التعديل بنجاح");
                 refetch();
                 setUserUpdate(prev => ({
@@ -46,15 +45,22 @@ const MyInfoPage = () => {
 
     const [isDraggable, setDraggable] = useState(false)
     const [thumbnailFile, setThumbnailFile] = useState<File | undefined>(undefined);
-    const [previewImage, setPreviewImage] = useState(convertImageToValidUrl(data?.thumbnail ?? ""));
-
+    const [previewImage, setPreviewImage] = useState<undefined | string>();
     const inputRef = useRef<HTMLInputElement>(null);
 
 
+    useEffect(() => {
+        if (data?.thumbnail !== undefined) {
+            setPreviewImage(data?.thumbnail);
+        }
+        console.log("data changed ", data);
+    }
+        , [previewImage, data]);
 
 
+    if (data === undefined) return null;
 
-    if (data == undefined) return;
+
 
     return (
         <div className="flex flex-col w-full h-full space-y-8 p-6 animate-in fade-in duration-500 max-w-2xl mx-auto">
@@ -100,18 +106,20 @@ const MyInfoPage = () => {
                         className="relative group cursor-pointer" onClick={() => inputRef.current?.click()}>
                         <div className={`h-32 w-32 rounded-full border-4 border-background shadow-xl overflow-hidden ring-2 ring-border 
                            ${isDraggable ? 'border-dashed border-primary' : 'group-hover:ring-primary'}  transition-all`}>
-                            <Image
-                                src={previewImage}
+                            {previewImage && <Image
+                                src={previewImage ?? ""}
                                 alt="Profile"
                                 fill
                                 className="object-cover"
-                            />
+                            />}
+
                         </div>
-                        <div className="absolute bottom-0 right-0 p-2 bg-primary rounded-full shadow-lg transform translate-x-1/4 translate-y-1/4 border-4 border-background">
+                        {/* <div className="absolute bottom-0 right-0 p-2 bg-primary rounded-full shadow-lg transform translate-x-1/4 translate-y-1/4 border-4 border-background">
                             <div className="relative h-4 w-4">
-                                <Image src={edite} alt="Edit" fill className="object-contain brightness-0 invert" />
+                                <Image 
+                                src={edite} alt="Edit" fill className="object-contain brightness-0 invert" />
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                     <div className="text-center">
                         <h2 className="text-xl font-semibold">{data.name}</h2>
@@ -167,6 +175,7 @@ const MyInfoPage = () => {
                     </div>
                 </div>
             </div>
+
         </div>
     );
 }

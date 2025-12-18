@@ -1,4 +1,3 @@
-import { mockCategories } from "@/lib/mockData";
 import { useState, useRef } from "react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { ToastContainer } from "react-toastify";
 import Image from "next/image";
 import { getProductPages, getProductAtPage } from "@/lib/api/product";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
@@ -317,7 +316,6 @@ const Product = () => {
                 </div>
             )}
 
-            <ToastContainer />
         </div>
     );
 };
