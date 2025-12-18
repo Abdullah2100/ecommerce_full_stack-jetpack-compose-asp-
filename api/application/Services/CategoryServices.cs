@@ -150,6 +150,9 @@ public class CategoryServices(
             image = await fileServicee 
                 .SaveFile(categoryDto!.Image!,
                     EnImageType.Category);
+            
+            fileServicee.DeleteFile(category.Image);
+
         }
 
         category.Name = categoryDto?.Name ?? category.Name;
@@ -169,6 +172,7 @@ public class CategoryServices(
                 statusCode: 400
             );
         }
+
 
         return new Result<CategoryDto?>
         (

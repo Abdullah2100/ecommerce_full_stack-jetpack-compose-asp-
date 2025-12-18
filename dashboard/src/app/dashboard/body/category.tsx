@@ -165,12 +165,13 @@ const Category = () => {
                       <td className="px-6 py-4 text-muted-foreground font-mono text-xs">{index + 1}</td>
                       <td className="px-6 py-4">
                         <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-border/50 shadow-sm group-hover:scale-105 transition-transform">
-                          <Image
+                         {value.image&& <Image
                             src={convertImageToValidUrl(value.image)}
                             alt={value.name}
                             fill
                             className="object-cover"
                           />
+                         }
                         </div>
                       </td>
                       <td className="px-6 py-4 font-medium text-foreground group-hover:text-primary transition-colors">

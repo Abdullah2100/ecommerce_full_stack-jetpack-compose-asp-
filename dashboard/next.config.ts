@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  images: { domains: ['localhost'] },
+  images: { domains: ['localhost','72.60.232.89'] },
   allowedDevOrigins: [
     '192.168.1.45', 
     'localhost', 

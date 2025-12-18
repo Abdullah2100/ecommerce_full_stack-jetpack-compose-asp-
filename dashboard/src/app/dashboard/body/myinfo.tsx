@@ -49,13 +49,13 @@ const MyInfoPage = () => {
     const inputRef = useRef<HTMLInputElement>(null);
 
 
-    useEffect(() => {
-        if (data?.thumbnail !== undefined) {
-            setPreviewImage(data?.thumbnail);
-        }
-        console.log("data changed ", data);
-    }
-        , [previewImage, data]);
+    // useEffect(() => {
+    //     if (data?.thumbnail !== undefined) {
+    //         setPreviewImage(data?.thumbnail);
+    //     }
+    //     console.log("data changed ", data);
+    // }
+    //     , [previewImage, data]);
 
 
     if (data === undefined) return null;
@@ -97,6 +97,7 @@ const MyInfoPage = () => {
                             e.preventDefault();
 
                             const file = e.dataTransfer.files[0];
+                            console.log("dropped file ", file);
                             if (file) {
                                 setThumbnailFile(file);
                                 setPreviewImage(URL.createObjectURL(file));
@@ -106,8 +107,8 @@ const MyInfoPage = () => {
                         className="relative group cursor-pointer" onClick={() => inputRef.current?.click()}>
                         <div className={`h-32 w-32 rounded-full border-4 border-background shadow-xl overflow-hidden ring-2 ring-border 
                            ${isDraggable ? 'border-dashed border-primary' : 'group-hover:ring-primary'}  transition-all`}>
-                            {previewImage && <Image
-                                src={previewImage ?? ""}
+                            { <Image
+                                src={previewImage ?? data?.thumbnail??""}
                                 alt="Profile"
                                 fill
                                 className="object-cover"
