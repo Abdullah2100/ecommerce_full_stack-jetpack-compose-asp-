@@ -107,3 +107,4 @@ local.properties
 
 google-services.json
 appsettings.json
+appsettings.Development.json
