@@ -479,7 +479,8 @@ fun NavController(
                     subCategoryViewModel = subCategoryViewModel,
                     productViewModel = productViewModel,
                     isCanNavigateToStore = store.isCanNavigateToStore,
-                    userViewModel = userViewModel
+                    userViewModel = userViewModel,
+                    currencyViewModel = currencyViewModel
                 )
 
             }

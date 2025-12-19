@@ -4,7 +4,7 @@ import { iUserInfo } from "../../model/iUserInfo";
 import { iUserUpdateInfoDto } from "../../dto/response/iUserUpdateInfoDto";
 
 async function getMyInfo() {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + '/api/User/me';
+    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/me';
     try {
         const result = await axios.get(url, {
             headers: {
@@ -49,7 +49,7 @@ async function updateUser({
     if (newPassword != null && newPassword != undefined)
         userData.append("newPassword", newPassword)
 
-    const url = process.env.NEXT_PUBLIC_PASE_URL + '/api/User';
+    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User';
     try {
         const result = await axios.put(url,
             userData, {
@@ -83,7 +83,7 @@ async function updateUser({
 }
 
 async function getUserPages() {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/User/pages`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/User/pages`;
     try {
         const result = await axios.get(url, {
             headers: {
@@ -109,7 +109,7 @@ async function getUserPages() {
 }
 
 async function getUserAtPage(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/User/${pageNumber}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/User/${pageNumber}`;
     try {
         const result = await axios.get(url, {
             headers: {
@@ -135,7 +135,7 @@ async function getUserAtPage(pageNumber: number) {
 }
 
 async function changeUserStatus(userId: string) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/User/status/${userId}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/User/status/${userId}`;
     try {
         const result = await axios.delete(url, {
             headers: {

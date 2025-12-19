@@ -3,7 +3,7 @@ import { Util } from "@/util/globle";
 import axios from "axios";
 
 export async function getCurrencies(pageNumber: number = 1) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Currencies/all/${pageNumber}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Currencies/all/${pageNumber}`;
     try {
         const result = await axios.get(url, {
             headers: {

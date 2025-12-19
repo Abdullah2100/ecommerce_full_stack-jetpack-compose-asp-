@@ -1,12 +1,55 @@
+
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { Ban, LockOpen, Pencil } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { changeStoreStatus, getStoreAtPage, getStorePages } from "@/lib/api/store";
+
+import { changeStoreStatus, createStore, getStoreAtPage, getStorePages, updateStore } from "@/lib/api/store";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
+import { Dialog } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InputWithLabelAndError } from "@/components/ui/input/InputWithLabelAndError";
+import { createStoreSchema, updateStoreSchema } from "@/zod/storeSchem";
+import { InputImageWithLabelAndError } from "@/components/ui/input/inputImageWithLableAndError";
+import iStore from "@/model/iStore";
+
+
+
 
 const Stores = () => {
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingStore, setEditingStore] = useState<iStore | null>(null);
+
+    const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(editingStore ? updateStoreSchema : createStoreSchema)
+    });
+
+    useEffect(() => {
+        if (!isDialogOpen) {
+            reset();
+            setEditingStore(null);
+        }
+    }, [isDialogOpen, reset]);
+
+    useEffect(() => {
+        if (editingStore) {
+            setValue("name", editingStore.name);
+            setValue("longitude", editingStore.longitude);
+            setValue("latitude", editingStore.latitude);
+        }
+    }, [editingStore, setValue]);
+
+    useEffect(() => {
+        register("wallpaperImage");
+        register("smallImage");
+    }, [register]);
+
 
     const queryClient = useQueryClient()
     const { data: storePages } = useQuery({
@@ -15,9 +58,10 @@ const Stores = () => {
 
     })
 
+
     const [currnetPage, setCurrentPage] = useState(1);
 
-    const { data, refetch, isPlaceholderData } = useQuery({
+    const { data, refetch } = useQuery({
         queryKey: ['stores', currnetPage],
         queryFn: () => getStoreAtPage(currnetPage)
 
@@ -40,11 +84,60 @@ const Stores = () => {
             onSuccess: (res) => {
                 refetch()
                 toast.success("تم التعديل بنجاح")
-
-
             }
         }
     )
+
+    const createStoreMutation = useMutation(
+        {
+            mutationFn: (data: FormData) => createStore(data),
+            onError: (e) => {
+                toast.error(e.message)
+            },
+            onSuccess: (res) => {
+                refetch()
+                toast.success("تم إنشاء المتجر بنجاح")
+                setIsDialogOpen(false);
+            }
+        }
+    )
+
+    const updateStoreMutation = useMutation(
+        {
+            mutationFn: (data: FormData) => updateStore(data),
+            onError: (e: any) => {
+                toast.error(e.message)
+            },
+            onSuccess: (res) => {
+                refetch()
+                toast.success("تم تحديث المتجر بنجاح")
+                setIsDialogOpen(false);
+            }
+        }
+    )
+
+    const handleFormSubmit = (data: any) => {
+        const formData = new FormData();
+        if (editingStore) {
+            formData.append('Id', editingStore.id);
+        }
+        formData.append('Name', data.name);
+        if (data.wallpaperImage) formData.append('WallpaperImage', data.wallpaperImage);
+        if (data.smallImage) formData.append('SmallImage', data.smallImage);
+        formData.append('Longitude', data.longitude.toString());
+        formData.append('Latitude', data.latitude.toString());
+
+        if (editingStore) {
+            updateStoreMutation.mutate(formData);
+        } else {
+            createStoreMutation.mutate(formData);
+        }
+    }
+
+    const openEditDialog = (store: iStore) => {
+        setEditingStore(store);
+        setIsDialogOpen(true);
+    }
 
     if (data == null) return;
     return (
@@ -53,7 +146,66 @@ const Stores = () => {
                 <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-pink-600 bg-clip-text text-transparent">
                     Stores
                 </h1>
+                <Dialog
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    trigger={
+                        <Button
+                            onClick={() => { setEditingStore(null); setIsDialogOpen(true); }}
+                            size="sm" className="bg-primary text-white w-[100px]">
+                            Create Store
+                        </Button>
+                    }
+                    title={editingStore ? "Update Store" : "Create New Store"}
+                    footer={
+                        <Button
+                            onClick={handleSubmit(handleFormSubmit)}
+                            type="submit" form="create-store-form" disabled={createStoreMutation.isPending || updateStoreMutation.isPending}>
+                            {editingStore ? "Update" : "Create"}
+                        </Button>
+                    }
+                >
+                    <form id="create-store-form" className="space-y-4 overflow-y-auto ">
+                        <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...register("name")}
+                                label="Store Name" error={errors.name} />
+                        </div>
+                        <div>
+                            <InputImageWithLabelAndError
+                                key={editingStore ? `edit-wp-${editingStore.id}` : 'create-wp'}
+                                initialPreviews={editingStore ? [convertImageToValidUrl(editingStore.wallpaperImage)] : []}
+                                height={200}
+                                onChange={(files) => { setValue("wallpaperImage", files[0], { shouldValidate: true }) }}
+                                label="Wallpaper Image" error={errors.wallpaperImage} />
+                        </div>
+
+                        <div>
+                            <InputImageWithLabelAndError
+                                key={editingStore ? `edit-sm-${editingStore.id}` : 'create-sm'}
+                                initialPreviews={editingStore ? [convertImageToValidUrl(editingStore.smallImage)] : []}
+                                height={200}
+                                onChange={(files) => { setValue("smallImage", files[0], { shouldValidate: true }) }}
+                                label="Small Image" error={errors.smallImage} />
+                        </div>
+
+                        <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...register("longitude")}
+                                label="Longitude" error={errors.longitude} />
+                        </div>
+                        <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...register("latitude")}
+                                label="Latitude" error={errors.latitude} />
+                        </div>
+                    </form>
+                </Dialog>
             </div>
+
 
             <div className="w-full overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
                 <div className="overflow-x-auto">
@@ -107,19 +259,28 @@ const Stores = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <Button
-
-                                            variant={!value.isBlocked ? "destructive" : "default"}
-                                            size="sm"
-                                            className="h-7 text-xs"
-                                            onClick={() => {
-                                                // Mock toggle logic
-                                                changeStoreStatusFun.mutate(value.id)
-                                            }}
-                                        >
-                                            {!value.isBlocked ? 'Block' : 'Unblock'}
-                                        </Button>
+                                        <div className="flex justify-end gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => openEditDialog(value)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button
+                                                variant={!value.isBlocked ? "destructive" : "default"}
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => {
+                                                    changeStoreStatusFun.mutate(value.id)
+                                                }}
+                                            >
+                                                {value.isBlocked ? <LockOpen className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                                            </Button>
+                                        </div>
                                     </td>
+
                                 </tr>
                             ))}
                         </tbody>

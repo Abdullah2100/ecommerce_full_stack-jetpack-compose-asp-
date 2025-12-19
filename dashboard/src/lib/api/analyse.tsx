@@ -3,7 +3,7 @@ import { Util } from "@/util/globle";
 import axios from "axios";
 
 export async function getAnalyse() {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/analyse/currentMonth`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/analyse/currentMonth`;
     try {
         const result = await axios.get(url, {
             headers: {

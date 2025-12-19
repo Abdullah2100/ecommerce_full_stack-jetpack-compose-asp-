@@ -3,7 +3,7 @@ import { Util } from "@/util/globle";
 import { iVarient } from "@/model/iVarient";
 
 async function getVarient(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant/all/${pageNumber}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant/all/${pageNumber}`;
     try {
         const result = await axios.get(url, {
             headers: {
@@ -29,7 +29,7 @@ async function getVarient(pageNumber: number) {
 }
 
 async function getVarientPageLenght() {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant/pages`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant/pages`;
     try {
         const result = await axios.get(url, {
             headers: {
@@ -55,7 +55,7 @@ async function getVarientPageLenght() {
 }
 
 async function deleteVarient(id: string) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant/${id}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant/${id}`;
     try {
         const result = await axios.delete(url, {
             headers: {
@@ -88,7 +88,7 @@ async function deleteVarient(id: string) {
 }
 
 async function createVarient(data: iVarient) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant`;
     try {
         const result = await axios.post(url, {
             id: data.id,
@@ -123,7 +123,7 @@ async function createVarient(data: iVarient) {
 }
 
 async function updateVarient(data: iVarient) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Variant`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant`;
     try {
         const result = await axios.put(url, {
             id: data.id,

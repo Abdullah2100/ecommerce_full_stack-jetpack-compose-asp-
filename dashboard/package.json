@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.1.1",
     "@microsoft/signalr": "^9.0.6",
     "@next/env": "^15.3.3",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",

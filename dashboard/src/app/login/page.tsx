@@ -32,7 +32,7 @@ const Login = () => {
             toast.error(e.message)
         },
         onSuccess: (result) => {
-            const resultData = result.data as iAuthResult;
+            const resultData = result as iAuthResult;
             Util.token = resultData.refreshToken;
             rout.push("/dashboard");
         }

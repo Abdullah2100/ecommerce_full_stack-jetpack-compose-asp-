@@ -3,7 +3,7 @@ import iProductResponseDto from "../../dto/response/iProductResponseDto";
 import { Util } from "@/util/globle";
 
 async function getProductPages() {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Product/pages`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product/pages`;
     try {
         const result = await axios.get(url, {
             headers: {
@@ -30,7 +30,7 @@ async function getProductPages() {
 
 
 async function getProductAtPage(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Product/${pageNumber}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product/${pageNumber}`;
     try {
         const result = await axios.get(url, {
             headers: {

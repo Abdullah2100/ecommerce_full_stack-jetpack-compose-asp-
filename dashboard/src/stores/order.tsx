@@ -30,7 +30,7 @@ const useOrder = create<IOrder>((set, get) => ({
   getOrdersAt: async (pageNum: number) => {
     // if (pageNum === get().currentPage) return;
     set({ orders: [] });
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Order/all/${pageNum}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Order/all/${pageNum}`;
     try {
       const result = await axios.get(url, {
         headers: {
@@ -61,7 +61,7 @@ const useOrder = create<IOrder>((set, get) => ({
   },
   getOrderStatus: async () => {
     const url =
-      process.env.NEXT_PUBLIC_PASE_URL + `/api/Order/orderStatusDefinition`;
+      process.env.NEXT_PUBLIC_BASE_URL + `/api/Order/orderStatusDefinition`;
     try {
       const result = await axios.get(url, {
         headers: {
@@ -88,7 +88,7 @@ const useOrder = create<IOrder>((set, get) => ({
   updateOrderStatus: async (
     orderStatus: iOrderStatusUpdateRequestDto
   ): Promise<string> => {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Order`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Order`;
     try {
       const result = await axios.put(
         url,

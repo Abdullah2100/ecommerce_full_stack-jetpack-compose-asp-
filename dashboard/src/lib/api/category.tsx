@@ -7,7 +7,7 @@ import iCategoryDto from "@/dto/response/iCategoryDto";
 
 
 async function getCategory(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category/all/${pageNumber}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category/all/${pageNumber}`;
     try {
         const result = await axios.get(url, {
             headers: {
@@ -36,7 +36,7 @@ async function getCategory(pageNumber: number) {
 
 
 async function createCategory(data: iCategoryDto) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category`;
     try {
 
         const dataHolder = new FormData();
@@ -76,7 +76,7 @@ async function createCategory(data: iCategoryDto) {
 
 
 async function deleteCategory(id: string) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category/${id}`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category/${id}`;
     try {
         const result = await axios.delete(url, {
             headers: {
@@ -110,7 +110,7 @@ async function deleteCategory(id: string) {
 
 
 async function updateCategory(data: iCategoryDto) {
-    const url = process.env.NEXT_PUBLIC_PASE_URL + `/api/Category`;
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category`;
     try {
 
         const dataHolder = new FormData();
