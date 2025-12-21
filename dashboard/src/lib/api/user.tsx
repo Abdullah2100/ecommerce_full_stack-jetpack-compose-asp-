@@ -49,6 +49,7 @@ async function updateUser({
     if (newPassword != null && newPassword != undefined)
         userData.append("newPassword", newPassword)
 
+    console.log(`this the data is ${JSON.stringify(userData)}`)
     const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User';
     try {
         const result = await axios.put(url,
@@ -161,10 +162,66 @@ async function changeUserStatus(userId: string) {
 }
 
 
+async function createUser(userData: any) {
+
+    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/signup';
+    try {
+        const result = await axios.post(url, userData, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`
+            }
+        })
+        return result.data as boolean
+    } catch (error) {
+        // Extract meaningful error message
+        let errorMessage = "An unexpected error occurred";
+
+        if (axios.isAxiosError(error)) {
+            // Server responded with error message
+            errorMessage = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            // Other JavaScript errors
+            errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
+    }
+
+}
+
+async function  updateUserData(userData:any) {
+
+    
+    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/signup';
+    try {
+        const result = await axios.post(url, userData, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`
+            }
+        })
+        return result.data as boolean
+    } catch (error) {
+        // Extract meaningful error message
+        let errorMessage = "An unexpected error occurred";
+
+        if (axios.isAxiosError(error)) {
+            // Server responded with error message
+            errorMessage = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            // Other JavaScript errors
+            errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
+    }
+
+}
+
 export {
     updateUser,
     getMyInfo,
     changeUserStatus,
     getUserPages,
-    getUserAtPage
+    getUserAtPage,
+    createUser
 }

@@ -12,14 +12,15 @@ const nextConfig: NextConfig = {
     '0.0.0.0',
     '72.60.232.89'
   ],
-  // async rewrites() {
-  //   return [
-  //     {
-  //       source: '/api/:path*',
-  //       destination: 'http://72.60.232.89:5077/api/:path*',
-  //     },
-  //   ];
-  // },
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        //destination: 'http://72.60.232.89:5077/api/:path*',
+        destination: 'http://localhost:5077/api/:path*',
+      },
+    ];
+  },
 };
 
 
