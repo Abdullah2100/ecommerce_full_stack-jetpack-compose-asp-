@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 type IInputImageWithLabelAndErrorProps = {
     label: string;
-    error?: FieldError;
+    error?: String|undefined;
     isSingle?: boolean;
     isBorderEnable?: boolean;
     height: number;
@@ -118,7 +118,7 @@ export const InputImageWithLabelAndError = React.forwardRef<
             />
 
             {error && (
-                <p className="text-red-500 text-xs mt-2">{error.message as string}</p>
+                <p className="text-red-500 text-xs mt-2">{error}</p>
             )}
 
 

@@ -30,26 +30,6 @@ const Stores = () => {
         resolver: zodResolver(editingStore ? updateStoreSchema : createStoreSchema)
     });
 
-    useEffect(() => {
-        if (!isDialogOpen) {
-            reset();
-            setEditingStore(null);
-        }
-    }, [isDialogOpen, reset]);
-
-    useEffect(() => {
-        if (editingStore) {
-            setValue("name", editingStore.name);
-            setValue("longitude", editingStore.longitude);
-            setValue("latitude", editingStore.latitude);
-        }
-    }, [editingStore, setValue]);
-
-    useEffect(() => {
-        register("wallpaperImage");
-        register("smallImage");
-    }, [register]);
-
 
     const queryClient = useQueryClient()
     const { data: storePages } = useQuery({
@@ -66,13 +46,6 @@ const Stores = () => {
         queryFn: () => getStoreAtPage(currnetPage)
 
     })
-
-    useEffect(() => {
-        queryClient.prefetchQuery({
-            queryKey: ['stores', currnetPage],
-            queryFn: () => getStoreAtPage(currnetPage),
-        })
-    }, [currnetPage])
 
 
     const changeStoreStatusFun = useMutation(
@@ -139,6 +112,29 @@ const Stores = () => {
         setIsDialogOpen(true);
     }
 
+       useEffect(() => {
+        if (!isDialogOpen) {
+            reset();
+            setEditingStore(null);
+        }
+    }, [isDialogOpen, reset]);
+
+    useEffect(() => {
+        if (editingStore) {
+            setValue("name", editingStore.name);
+            setValue("longitude", editingStore.longitude);
+            setValue("latitude", editingStore.latitude);
+        }
+    }, [editingStore, setValue]);
+
+ useEffect(() => {
+        queryClient.prefetchQuery({
+            queryKey: ['stores', currnetPage],
+            queryFn: () => getStoreAtPage(currnetPage),
+        })
+    }, [currnetPage])
+
+
     if (data == null) return;
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
@@ -160,7 +156,8 @@ const Stores = () => {
                     footer={
                         <Button
                             onClick={handleSubmit(handleFormSubmit)}
-                            type="submit" form="create-store-form" disabled={createStoreMutation.isPending || updateStoreMutation.isPending}>
+                            type="submit" form="create-store-form"
+                             disabled={createStoreMutation.isPending || updateStoreMutation.isPending}>
                             {editingStore ? "Update" : "Create"}
                         </Button>
                     }
@@ -170,14 +167,16 @@ const Stores = () => {
                             <InputWithLabelAndError
                                 type="text"
                                 {...register("name")}
-                                label="Store Name" error={errors.name} />
+                                label="Store Name" error={errors.name?.message} />
                         </div>
                         <div>
                             <InputImageWithLabelAndError
                                 key={editingStore ? `edit-wp-${editingStore.id}` : 'create-wp'}
                                 initialPreviews={editingStore ? [convertImageToValidUrl(editingStore.wallpaperImage)] : []}
                                 height={200}
-                                onChange={(files) => { setValue("wallpaperImage", files[0], { shouldValidate: true }) }}
+                                onChange={
+                                    () =>  register("wallpaperImage") 
+                                }
                                 label="Wallpaper Image" error={errors.wallpaperImage} />
                         </div>
 
@@ -186,7 +185,9 @@ const Stores = () => {
                                 key={editingStore ? `edit-sm-${editingStore.id}` : 'create-sm'}
                                 initialPreviews={editingStore ? [convertImageToValidUrl(editingStore.smallImage)] : []}
                                 height={200}
-                                onChange={(files) => { setValue("smallImage", files[0], { shouldValidate: true }) }}
+                                onChange={
+                                    () => register("smallImage")
+                                }
                                 label="Small Image" error={errors.smallImage} />
                         </div>
 
@@ -194,13 +195,13 @@ const Stores = () => {
                             <InputWithLabelAndError
                                 type="text"
                                 {...register("longitude")}
-                                label="Longitude" error={errors.longitude} />
+                                label="Longitude" error={errors.longitude?.message} />
                         </div>
                         <div>
                             <InputWithLabelAndError
                                 type="text"
                                 {...register("latitude")}
-                                label="Latitude" error={errors.latitude} />
+                                label="Latitude" error={errors.latitude?.message} />
                         </div>
                     </form>
                 </Dialog>

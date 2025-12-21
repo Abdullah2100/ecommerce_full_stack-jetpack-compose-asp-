@@ -2,11 +2,39 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
-import { getUserPages, getUserAtPage, changeUserStatus } from "@/lib/api/user";
+import { getUserPages, getUserAtPage, changeUserStatus, createUser, updateUser } from "@/lib/api/user";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
+import { Dialog } from "@/components/ui/dialog";
+import { createUserSchema, updateUserSchema } from "@/zod/userSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InputWithLabelAndError } from "@/components/ui/input/InputWithLabelAndError";
+import { useForm } from "react-hook-form";
+import { iUserInfo } from "@/model/iUserInfo";
+import { Ban, LockOpen, Pencil } from "lucide-react";
+import { InputImageWithLabelAndError } from "@/components/ui/input/inputImageWithLableAndError";
+import { iUserUpdateInfoDto } from "@/dto/response/iUserUpdateInfoDto";
 
 const Users = () => {
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isUpdate, setIsUpdate] = useState(false);
+    const [user, setUser] = useState<undefined | iUserInfo>(undefined);
+
+    const { register,
+        handleSubmit,
+        reset,
+        formState: { errors } } = useForm({
+            resolver: zodResolver(createUserSchema)
+        });
+
+    const { register: updateRegister,
+        handleSubmit: updateHandleSubbmi,
+        setValue,
+        reset: updateReset,
+        formState: { errors: updateError } } = useForm({
+            resolver: zodResolver(updateUserSchema)
+        });
+
     const queryClient = useQueryClient()
     const { data: userPages } = useQuery({
         queryKey: ['usersPage'],
@@ -22,12 +50,6 @@ const Users = () => {
 
     })
 
-    useEffect(() => {
-        queryClient.prefetchQuery({
-            queryKey: ['users', currnetPage],
-            queryFn: () => getUserAtPage(currnetPage),
-        })
-    }, [currnetPage])
 
 
     const changeUserStatusFun = useMutation(
@@ -45,6 +67,76 @@ const Users = () => {
         }
     )
 
+
+    const createUserMutation = useMutation({
+        mutationFn: (data: any) => createUser(data),
+        onError: (e) => {
+            toast.error(e.message)
+        },
+        onSuccess: (res) => {
+            refetch()
+            toast.success("User created successfully")
+            setIsDialogOpen(false);
+        }
+    })
+
+    const updateUserMutation = useMutation({
+        mutationFn: (data: iUserUpdateInfoDto) => updateUser(data),
+        onError: (e) => {
+            toast.error(e.message)
+        },
+        onSuccess: (res) => {
+            refetch()
+            toast.success("User created successfully")
+            setIsDialogOpen(false);
+        }
+    })
+
+    const handleFormSubmit = (data: any) => {
+         
+        if (isUpdate) {
+                        console.log(`this the file d update ${JSON.stringify(data)}`)
+
+            updateUserMutation.mutate({
+                name:data?.name?.length > 0 && data.name !== user?.name?data.name:null,
+                phone:data?.phone?.length > 0 && data.phone !== user?.phone?data.phone:null,
+                password:data?.password?.length > 0?data.password:null,
+                newPassword:data?.newPassword?.length > 0?data.newPassword:null,
+                thumbnail:data?.thumbnail!=undefined?data.thumbnail:null
+            });
+        } else {
+            createUserMutation.mutate({
+                'name': data.name,
+                'phone': data.phone,
+                'email': data.email,
+                'password': data.password
+            });
+        }
+    }
+
+    useEffect(() => {
+        queryClient.prefetchQuery({
+            queryKey: ['users', currnetPage],
+            queryFn: () => getUserAtPage(currnetPage),
+        })
+    }, [currnetPage])
+
+    useEffect(() => {
+        if (isDialogOpen === false) {
+            reset();
+            updateReset()
+
+        } else {
+            setValue("name", user?.name ?? "");
+            setValue("phone", user?.phone ?? "");
+            setValue("email", user?.email ?? "")
+        }
+    }, [isDialogOpen]);
+
+
+
+
+
     if (data == undefined) return;
 
 
@@ -54,6 +146,119 @@ const Users = () => {
                 <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-indigo-600 bg-clip-text text-transparent">
                     Users
                 </h1>
+                <Dialog
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                    trigger={
+                        <Button
+                            onClick={() => {
+                                setIsDialogOpen(true);
+                            }}
+                            size="sm" className="bg-primary text-white w-[100px]">
+                            Create User
+                        </Button>
+                    }
+                    title={isUpdate ? "Update Store" : "Create New User"}
+                    footer={<>
+                        {isUpdate ? <Button
+                            onClick={updateHandleSubbmi(handleFormSubmit)}
+                            type="submit" form="create-store-form"
+                            disabled={createUserMutation.isPending || updateUserMutation.isPending}
+                        >
+                            {isUpdate ? 'Update' : "Create"}
+                        </Button> :
+                            <Button
+                                onClick={handleSubmit(handleFormSubmit)}
+                                type="submit" form="create-store-form"
+                                disabled={createUserMutation.isPending || updateUserMutation.isPending}
+                            >
+                                {isUpdate ? 'Update' : "Create"}
+                            </Button>}</>
+                    }
+                >
+                    <form id="create-store-form" className="space-y-4 overflow-y-auto ">
+                        {isUpdate ? <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...updateRegister("name")}
+                                label="Name" error={updateError.name?.message} />
+                        </div> :
+                            <div>
+                                <InputWithLabelAndError
+                                    type="text"
+                                    {...register("name")}
+                                    label="Name" error={errors.name?.message} />
+                            </div>}
+
+
+                        {isUpdate ? <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...updateRegister("phone")}
+                                label="Phone" error={updateError.phone?.message} />
+                        </div> :
+                            <div>
+                                <InputWithLabelAndError
+                                    type="text"
+                                    {...register("phone")}
+                                    label="Phone" error={errors.phone?.message} />
+                            </div>}
+                        {isUpdate ? <div>
+                            <InputWithLabelAndError
+                                isDisable={isUpdate}
+                                type="text"
+                                {...updateRegister("email")}
+                                label="Email" error={updateError.email?.message} />
+                        </div> :
+                            <div>
+                                <InputWithLabelAndError
+                                    isDisable={isUpdate}
+                                    type="text"
+                                    {...register("email")}
+                                    label="Email" error={errors.email?.message} />
+                            </div>
+                        }
+
+                        {isUpdate && user &&
+                            <InputImageWithLabelAndError
+                                key={`edit-sm-${user.id}`}
+                                initialPreviews={user ? [convertImageToValidUrl(user.thumbnail)] : []}
+                                height={200}
+                                onChange={(files: File[]) => {
+                                    if (files && files.length > 0) {
+                                        setValue("thumbnail", files[0]);
+
+                                    }
+                                    updateRegister("thumbnail")
+                                }}
+                                label="Small Image" 
+                                error={updateError.thumbnail?.message} />}
+
+                        {isUpdate ? <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...updateRegister("password")}
+                                label="Password" 
+                                error={updateError.password?.message} />
+                        </div> :
+                            <div>
+                                <InputWithLabelAndError
+                                    isDisable={isUpdate}
+                                    type="text"
+                                    {...register("password")}
+                                    label="Email" 
+                                    error={errors.password?.message} />
+                            </div>}
+                        {isUpdate && <div>
+                            <InputWithLabelAndError
+                                type="text"
+                                {...updateRegister("newPassword")}
+                                label="Password" 
+                                error={updateError.newPassword?.message} />
+                        </div>}
+                    </form>
+                </Dialog>
+
             </div>
 
             <div className="w-full overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
@@ -125,17 +330,41 @@ const Users = () => {
                                         {value.isAdmin ? (
                                             <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-1 rounded">Current User</span>
                                         ) : (
-                                            <Button
-                                                variant={value.isActive ? "destructive" : "default"}
-                                                size="sm"
-                                                className="h-7 text-xs"
-                                                onClick={() => {
-                                                    // Mock toggle logic
-                                                    changeUserStatusFun.mutate(value.id)
-                                                }}
-                                            >
-                                                {value.isActive ? 'Block' : 'Unblock'}
-                                            </Button>
+                                            // <Button
+                                            //     variant={value.isActive ? "destructive" : "default"}
+                                            //     size="sm"
+                                            //     className="h-7 text-xs"
+                                            //     onClick={() => {
+                                            //         // Mock toggle logic
+                                            //         changeUserStatusFun.mutate(value.id)
+                                            //     }}
+                                            // >
+                                            //     {value.isActive ? 'Block' : 'Unblock'}
+                                            // </Button>
+                                            <div className="flex flex-row gap-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => {
+                                                        setUser(value)
+                                                        setIsUpdate(true)
+                                                        setIsDialogOpen(true)
+                                                    }}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant={!value.isActive ? "destructive" : "default"}
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => {
+                                                        changeUserStatusFun.mutate(value.id)
+                                                    }}
+                                                >
+                                                    {value.isActive ? <LockOpen className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                                                </Button>
+                                            </div>
                                         )}
                                     </td>
                                 </tr>
