@@ -225,4 +225,36 @@ public class StoreController(
             _ => StatusCode(result.StatusCode, result.Message)
         };
     }
+   
+    //this or admin page to get name of store while typing 
+    [HttpGet("name/{prefix:regex(^[[\\p{{L}}]]+$)}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetStores(string prefix)
+    {
+        StringValues authorizationHeader = HttpContext.Request.Headers["Authorization"];
+        Claim? id = authenticationService.GetPayloadFromToken("id",
+            authorizationHeader.ToString().Replace("Bearer ", ""));
+
+        Guid? adminId = null;
+        if (Guid.TryParse(id?.Value, out Guid outId))
+        {
+            adminId = outId;
+        }
+
+        if (adminId is null)
+        {
+            return Unauthorized("هناك مشكلة في التحقق");
+        }
+
+        var result = await storeServices.GetStores(adminId.Value, prefix, 25);
+
+        return result.IsSuccessful switch
+        {
+            true => StatusCode(result.StatusCode, result.Data),
+            _ => StatusCode(result.StatusCode, result.Message)
+        };
+    }
+
 }

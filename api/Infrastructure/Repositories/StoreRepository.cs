@@ -91,6 +91,15 @@ public class StoreRepository(AppDbContext context) : IStoreRepository
         return stores;
     }
 
+    public async Task<List<Store>> GetStores(string prefix, int length)
+    {
+        return await context
+            .Stores
+            .Where(x => x.Name.StartsWith(prefix))
+            .Take(length)
+            .ToListAsync();
+    }
+
     public async Task<int> GetStoresCount(int storePerPage)
     {
         int count = await context
