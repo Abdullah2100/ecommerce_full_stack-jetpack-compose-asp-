@@ -376,6 +376,39 @@ public class StoreServices(
         );
     }
 
+    public async Task<Result<List<StoreDto>?>> GetStores(Guid adminId, string prefix, int pageSize)
+    {
+        User? user = await unitOfWork.UserRepository
+            .GetUser(adminId);
+
+        var isValide = user.IsValidateFunc(true);
+
+        if (isValide is not null)
+        {
+            return new Result<List<StoreDto>?>(
+                isSuccessful: false,
+                data: null,
+                message: isValide.Message,
+                statusCode: isValide.StatusCode
+            );
+        }
+        
+        
+
+        List<StoreDto> stores = (await unitOfWork.StoreRepository
+                .GetStores(prefix, pageSize)
+            ).Select(st => st.ToDto(config.getKey("url_file")))
+            .ToList();
+        
+        return new Result<List<StoreDto>?>
+        (
+            data: stores,
+            message: "",
+            isSuccessful: true,
+            statusCode: 200
+        );
+    }
+
     public async Task<Result<bool?>> UpdateStoreStatus(Guid adminId, Guid storeId)
     {
         User? user = await unitOfWork.UserRepository

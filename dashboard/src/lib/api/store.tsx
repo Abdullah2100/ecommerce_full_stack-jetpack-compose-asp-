@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import { Util } from "@/util/globle";
 import iStore from "../../model/iStore";
@@ -28,6 +29,26 @@ async function getStorePages() {
         throw new Error(errorMessage);
     }
 
+}
+
+async function getStoresByName(name: string) {
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store/name/${name}`;
+    try {
+        const result = await axios.get(url, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`
+            }
+        });
+        return result.data as iStore[];
+    } catch (error) {
+        let errorMessage = "An unexpected error occurred";
+        if (axios.isAxiosError(error)) {
+            errorMessage = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        throw new Error(errorMessage);
+    }
 }
 
 async function getStoreAtPage(pageNumber: number) {
@@ -137,5 +158,6 @@ export {
     getStorePages,
     changeStoreStatus,
     createStore,
-    updateStore
+    updateStore,
+    getStoresByName
 }

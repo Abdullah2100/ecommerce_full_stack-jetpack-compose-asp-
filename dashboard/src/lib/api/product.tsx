@@ -1,3 +1,4 @@
+
 import axios from "axios";
 import iProductResponseDto from "../../dto/response/iProductResponseDto";
 import { Util } from "@/util/globle";
@@ -55,7 +56,73 @@ async function getProductAtPage(pageNumber: number) {
 
 }
 
+async function createProduct(data: FormData) {
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product`;
+    try {
+        const result = await axios.post(url, data, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return result.data;
+    } catch (error) {
+        let errorMessage = "An unexpected error occurred";
+        if (axios.isAxiosError(error)) {
+            errorMessage = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        throw new Error(errorMessage);
+    }
+}
+
+async function updateProduct(data: FormData) {
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product`;
+    try {
+        const result = await axios.put(url, data, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return result.data;
+    } catch (error) {
+        let errorMessage = "An unexpected error occurred";
+        if (axios.isAxiosError(error)) {
+            errorMessage = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        throw new Error(errorMessage);
+    }
+}
+
+async function deleteProduct(storeId: string, productId: string) {
+    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product/${storeId}/${productId}`;
+    try {
+        const result = await axios.delete(url, {
+            headers: {
+                'Authorization': `Bearer ${Util.token}`
+            }
+        });
+        return result.data;
+    } catch (error) {
+        let errorMessage = "An unexpected error occurred";
+        if (axios.isAxiosError(error)) {
+            errorMessage = error.response?.data || error.message;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+        throw new Error(errorMessage);
+    }
+}
+
+
 export {
     getProductAtPage,
-    getProductPages
+    getProductPages,
+    createProduct,
+    updateProduct,
+    deleteProduct
 }

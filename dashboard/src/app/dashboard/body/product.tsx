@@ -1,6 +1,7 @@
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { getProductPages, getProductAtPage } from "@/lib/api/product";
+import { createProduct, getProductPages, getProductAtPage, updateProduct, deleteProduct } from "@/lib/api/product";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 import iProductResponseDto from "@/dto/response/iProductResponseDto";
@@ -9,57 +10,194 @@ import { ICurrency } from "@/model/ICurrency";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { updateCurrency } from "@/util/globle";
+import { Dialog } from "@/components/ui/dialog";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createProductSchema, updateProductSchema } from "@/zod/productSchema";
+import { InputWithLabelAndError } from "@/components/ui/input/InputWithLabelAndError";
+import { InputImageWithLabelAndError } from "@/components/ui/input/inputImageWithLableAndError";
+import { getStoresByName } from "@/lib/api/store";
+import iStore from "@/model/iStore";
+import { getSubCategoriesByStoreId } from "@/lib/api/subCategory";
+import iSubCategory from "@/model/iSubCategory";
+import { getVarient } from "@/lib/api/variant";
+import iVariant from "@/model/iVariant";
+import { toast } from "react-toastify";
+import { Pencil, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input/input";
+import useDebounce from "@/hooks/useDebounce";
+
+type SelectedVariant = {
+    variantId: string;
+    variantName: string;
+    value: string;
+};
 
 const Product = () => {
-    const queryClient = useQueryClient()
+    const queryClient = useQueryClient();
+    const [currnetPage, setCurrentPage] = useState(1);
+    const [currentCurrency, setCurrentCurrency] = useState<ICurrency | undefined>(undefined);
+    const [selectedProduct, setSelectedProduct] = useState<iProductResponseDto | undefined>(undefined);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<iProductResponseDto | undefined>(undefined);
+
+    const [storeSearchTerm, setStoreSearchTerm] = useState("");
+    const debouncedStoreSearchTerm = useDebounce(storeSearchTerm, 300);
+    const [showStoreResults, setShowStoreResults] = useState(false);
+    const [selectedStore, setSelectedStore] = useState<iStore | undefined>(undefined);
+    const [selectedSubCategory, setSelectedSubCategory] = useState<iSubCategory | undefined>(undefined);
+    const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>([]);
+    const [currentVariant, setCurrentVariant] = useState<iVariant | undefined>(undefined);
+    const [variantValue, setVariantValue] = useState("");
+
+
+    const { data: stores } = useQuery({
+        queryKey: ['stores', debouncedStoreSearchTerm],
+        queryFn: () => getStoresByName(debouncedStoreSearchTerm),
+        enabled: !!debouncedStoreSearchTerm,
+    });
+
+    const { data: subCategories } = useQuery({
+        queryKey: ['subCategories', selectedStore?.id],
+        queryFn: () => getSubCategoriesByStoreId(selectedStore!.id, 1),
+        enabled: !!selectedStore,
+    });
+
+    const { data: variants } = useQuery({
+        queryKey: ['variants'],
+        queryFn: () => getVarient(1),
+    });
+
+    const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm({
+        resolver: zodResolver(editingProduct ? updateProductSchema : createProductSchema)
+    });
+
     const { data: userPages } = useQuery({
         queryKey: ['usersPage'],
         queryFn: () => getProductPages()
+    });
 
-    })
-
-    const [currnetPage, setCurrentPage] = useState(1);
-    const [currentCurrency, setCurrentCurrency] = useState<ICurrency | undefined>(undefined);
-    const [selectedProduct, setSelectedProduct] = useState<iProductResponseDto | null>(null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-    const { data, } = useQuery({
+    const { data, refetch } = useQuery({
         queryKey: ['products', currnetPage],
         queryFn: () => getProductAtPage(currnetPage)
+    });
 
-    })
+    const { data: currencies } = useQuery({
+        queryKey: ['currency'],
+        queryFn: () => getCurrencies()
+    });
 
-    const { data: currencies, isError } = useQuery(
-        {
-            queryKey: ['currency'],
-            queryFn: () => getCurrencies()
+    const createProductMutation = useMutation({
+        mutationFn: (data: FormData) => createProduct(data),
+        onError: (e: any) => toast.error(e.message),
+        onSuccess: () => {
+            refetch();
+            toast.success("Product created successfully");
+            setIsDialogOpen(false);
         }
-    )
+    });
 
-    useEffect(() => {
-        queryClient.prefetchQuery({
-            queryKey: ['products', currnetPage],
-            queryFn: () => getProductAtPage(currnetPage),
-        })
-    }, [currnetPage])
+    const updateProductMutation = useMutation({
+        mutationFn: (data: FormData) => updateProduct(data),
+        onError: (e: any) => toast.error(e.message),
+        onSuccess: () => {
+            refetch();
+            toast.success("Product updated successfully");
+            setIsDialogOpen(false);
+        }
+    });
 
-    // Keyboard navigation for dialog
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (!selectedProduct) return;
+    const deleteProductMutation = useMutation({
+        mutationFn: (productId: string) => deleteProduct(editingProduct!.storeId, productId),
+        onError: (e: any) => toast.error(e.message),
+        onSuccess: () => {
+            refetch();
+            toast.success("Product deleted successfully");
+            setIsDialogOpen(false);
+        }
+    });
 
-            if (e.key === 'Escape') {
-                closeImageDialog();
-            } else if (e.key === 'ArrowLeft') {
-                prevImage();
-            } else if (e.key === 'ArrowRight') {
-                nextImage();
+
+    const handleFormSubmit = (data: any) => {
+        const formData = new FormData();
+        if (editingProduct) {
+            formData.append('Id', editingProduct.id);
+            formData.append('StoreId', editingProduct.storeId)
+        } else {
+            formData.append('StoreId', selectedStore!.id);
+        }
+        formData.append('Name', data.name);
+        formData.append('Description', data.description);
+        formData.append('Price', data.price.toString());
+        formData.append('Symbol', data.symbol);
+        formData.append('SubcategoryId', selectedSubCategory!.id);
+
+        if (data.thumbnail?.[0]) {
+            formData.append('Thumbnail', data.thumbnail[0]);
+        }
+
+        if (data.images) {
+            for (let i = 0; i < data.images.length; i++) {
+                formData.append('Images', data.images[i]);
             }
-        };
+        }
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedProduct, currentImageIndex]);
+        selectedVariants.forEach((variant, index) => {
+            formData.append(`ProductVariants[${index}].VariantId`, variant.variantId);
+            formData.append(`ProductVariants[${index}].Value`, variant.value);
+        });
+
+
+        if (editingProduct) {
+            updateProductMutation.mutate(formData);
+        } else {
+            createProductMutation.mutate(formData);
+        }
+    }
+
+
+    useEffect(() => {
+        if (editingProduct) {
+            setValue("name", editingProduct.name);
+            setValue("description", editingProduct.description);
+            setValue("price", editingProduct.price);
+            setValue("symbol", editingProduct.symbol);
+
+            if (editingProduct.storeId && editingProduct.storeName) {
+                const storeForEdit = { id: editingProduct.storeId, name: editingProduct.storeName } as iStore;
+                setSelectedStore(storeForEdit);
+                setStoreSearchTerm(editingProduct.storeName);
+            }
+            // @ts-ignore
+            if (editingProduct.subcategoryId && editingProduct.subCategoryName) {
+                // @ts-ignore
+                const subCategoryForEdit = { id: editingProduct.subcategoryId, name: editingProduct.subCategoryName } as iSubCategory;
+                setSelectedSubCategory(subCategoryForEdit);
+            }
+            if (editingProduct.productVariants) {
+                const variantsForEdit = editingProduct.productVariants.map(pv => ({ variantId: pv.variantId, variantName: pv.variantName, value: pv.value }));
+                setSelectedVariants(variantsForEdit);
+            }
+
+        }
+    }, [editingProduct, setValue]);
+
+
+    useEffect(() => {
+        if (!isDialogOpen) {
+            reset();
+            setEditingProduct(undefined);
+            setSelectedStore(undefined);
+            setSelectedSubCategory(undefined);
+            setStoreSearchTerm("");
+            setSelectedVariants([]);
+            setCurrentVariant(undefined);
+            setVariantValue("");
+        }
+    }, [isDialogOpen, reset]);
+
 
     const openImageDialog = (product: iProductResponseDto) => {
         setSelectedProduct(product);
@@ -67,7 +205,7 @@ const Product = () => {
     };
 
     const closeImageDialog = () => {
-        setSelectedProduct(null);
+        setSelectedProduct(undefined);
         setCurrentImageIndex(0);
     };
 
@@ -89,9 +227,20 @@ const Product = () => {
         }
     };
 
+    const addVariant = () => {
+        if (currentVariant && variantValue && !selectedVariants.some(v => v.variantId === currentVariant.id)) {
+            setSelectedVariants([...selectedVariants, { variantId: currentVariant.id??'', variantName: currentVariant.name, value: variantValue }]);
+            setCurrentVariant(undefined);
+            setVariantValue("");
+        }
+    };
+
+    const removeVariant = (variantId: string) => {
+        setSelectedVariants(selectedVariants.filter(v => v.variantId !== variantId));
+    };
+
+
     if (data === undefined) return;
-
-
 
 
     return (
@@ -100,127 +249,257 @@ const Product = () => {
                 <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
                     Products
                 </h1>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className={` justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors text-black`}
-                        >
-                            {currentCurrency?.name ?? "Select Currency"}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        align="start"
-                        className="w-[140px]">
-                        {currencies?.map((statusItem, sIndex) => (
-                            <DropdownMenuItem
-                                key={sIndex}
-                                onClick={() => {
-                                    setCurrentCurrency(statusItem)
-                                }}
-                            >
-                                {statusItem.name}
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex gap-4">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className={` justify-between border-transparent bg-opacity-10 hover:bg-opacity-20 transition-colors text-black`}>
+                                {currentCurrency?.name ?? "Select Currency"}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                            align="start"
+                            className="w-[140px]">
+                            {currencies?.map((statusItem, sIndex) => (
+                                <DropdownMenuItem
+                                    key={sIndex}
+                                    onClick={() => {
+                                        setCurrentCurrency(statusItem)
+                                    }}>
+                                    {statusItem.name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
+                    <Dialog
+                        open={isDialogOpen}
+                        onOpenChange={setIsDialogOpen}
+                        trigger={
+                            <Button
+                                onClick={() => { setEditingProduct(undefined); setIsDialogOpen(true); }}
+                                size="sm" className="bg-primary text-white w-[120px]">
+                                Create Product
+                            </Button>
+                        }
+                        title={editingProduct ? "Update Product" : "Create New Product"}
+                        footer={
+                            <Button
+                                onClick={handleSubmit(handleFormSubmit)}
+                                type="submit" form="create-product-form"
+                                disabled={createProductMutation.isPending || updateProductMutation.isPending || !selectedSubCategory}>
+                                {editingProduct ? "Update" : "Create"}
+                            </Button>
+                        }
+                    >
+                        <form id="create-product-form" className="space-y-4 overflow-y-auto ">
+                            <fieldset disabled={!!editingProduct}>
+                                <div>
+                                    <label>Store</label>
+                                    <Input
+                                        type="text"
+                                        value={storeSearchTerm}
+                                        onChange={(e) => {
+                                            setStoreSearchTerm(e.target.value)
+                                            setSelectedStore(undefined)
+                                            setSelectedSubCategory(undefined)
+                                            setShowStoreResults(true)
+                                        }}
+                                        placeholder="Search for a store"
+                                    />
+                                    {showStoreResults && stores && (
+                                        <ul className="border rounded mt-1 max-h-40 overflow-y-auto">
+                                            {stores.map((store: iStore) => (
+                                                <li key={store.id} onClick={() => {
+                                                    setSelectedStore(store);
+                                                    setStoreSearchTerm(store.name);
+                                                    setShowStoreResults(false);
+                                                }} className="p-2 hover:bg-gray-200 cursor-pointer">
+                                                    {store.name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label>Subcategory</label>
+                                    <select
+                                        disabled={!selectedStore}
+                                        value={selectedSubCategory?.id ?? ""}
+                                        onChange={(e) => {
+                                            const subCategory = subCategories?.find(sc => sc.id === e.target.value);
+                                            setSelectedSubCategory(subCategory);
+                                        }}
+                                        className="w-full p-2 border rounded"
+                                    >
+                                        <option value="">Select a subcategory</option>
+                                        {subCategories?.map(sc => (
+                                            <option key={sc.id} value={sc.id}>{sc.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </fieldset>
+
+                            <fieldset disabled={!selectedSubCategory}>
+                                <InputWithLabelAndError
+                                    label="Name"
+                                    type="txt"
+
+                                    {...register("name")}
+                                    error={errors.name?.message}
+                                    {...register("name")}
+                                />
+
+                                <InputWithLabelAndError
+                                    label="Description"
+                                    type="txt"
+                                    {...register("description")}
+                                    error={errors.description?.message}
+                                    {...register("description")}
+                                />
+                                <div className="flex gap-2">
+                                    <InputWithLabelAndError
+                                        label="Price"
+
+                                        type="number"
+                                        error={errors.price?.message}
+                                        {...register("price")}
+                                    />
+
+                                    <InputWithLabelAndError
+                                        label="Symbol"
+                                        type="txt"
+
+                                        {...register("symbol")}
+                                        error={errors.symbol?.message}
+                                        {...register("symbol")}
+                                    />
+                                </div>
+
+                                <InputImageWithLabelAndError
+                                    key={editingProduct ? `edit-thumb-${editingProduct.id}` : 'create-thumb'}
+                                    initialPreviews={editingProduct?.thumbnail ? [convertImageToValidUrl(editingProduct.thumbnail)] : []}
+                                    label="Thumbnail"
+                                    error={errors.thumbnail?.message?.toString()}
+                                      height={300}
+                                    onChange={
+
+                                        (files: File[]) => {
+                                            if (files?.length > 0) {
+
+                                                register("thumbnail")
+                                                setValue("thumbnail", files[0])
+                                            }
+
+
+                                        }
+                                    }
+                                />
+
+                                <InputImageWithLabelAndError
+                                    key={editingProduct ? `edit-imgs-${editingProduct.id}` : 'create-imgs'}
+                                    initialPreviews={editingProduct ? editingProduct.productImages.map(i => convertImageToValidUrl(i.imageUrl)) : []}
+                                    label="Images"
+                                    error={errors.images?.message?.toString()}
+                                    isSingle={false}
+                                    height={300}
+                                    onChange={
+
+                                        (files: File[]) => {
+                                            if (files?.length > 0) {
+
+                                                register("images")
+                                                setValue("images", files)
+                                            }
+
+
+                                        }
+                                    }
+                                />
+                            </fieldset>
+
+
+                            <fieldset disabled={!selectedSubCategory}>
+                                <label>Variants</label>
+                                <div className="flex gap-2 items-center">
+                                    <select
+                                        value={currentVariant?.id ?? ""}
+                                        onChange={(e) => {
+                                            const variant = variants?.find(v => v.id === e.target.value);
+                                            if(variant!==undefined)
+                                            setCurrentVariant({id:variant?.id,name:variant.name});
+                                        }}
+                                        className="w-full p-2 border rounded"
+                                    >
+                                        <option value="">Select a variant</option>
+                                        {variants&&variants?.map(v => (
+                                            <option key={v.id} value={v.id}>{v.name}</option>
+                                        ))}
+                                    </select>
+                                    <Input
+                                        type="text"
+                                        placeholder="Value"
+                                        value={variantValue}
+                                        onChange={(e) => setVariantValue(e.target.value)}
+                                    />
+                                    <Button type="button" onClick={addVariant}>Add</Button>
+                                </div>
+                                <ul className="mt-2 space-y-2">
+                                    {selectedVariants.map(v => (
+                                        <li key={v.variantId} className="flex justify-between items-center p-2 border rounded">
+                                            <span>{v.variantName}: {v.value}</span>
+                                            <Button type="button" variant="destructive" size="sm" onClick={() => removeVariant(v.variantId)}>Remove</Button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </fieldset>
+                        </form>
+                    </Dialog>
+                </div>
             </div>
 
-            <div className="w-full overflow-hidden rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/30 text-muted-foreground uppercase text-xs font-semibold tracking-wider">
-                            <tr>
-                                <th className="px-6 py-4">#</th>
-                                <th className="px-6 py-4">Product</th>
-                                <th className="px-6 py-4">Price</th>
-                                <th className="px-6 py-4">Store</th>
-                                <th className="px-6 py-4">Category</th>
-                                <th className="px-6 py-4">Variants</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
+            <div className="border rounded-lg overflow-hidden w-full">
+                <div className="relative w-full overflow-auto">
+                    <table className="w-full caption-bottom text-sm">
+                        <thead className="[&_tr]:border-b">
+                            <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground w-[100px]">Image</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Store</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Price</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/50">
-                            {data !== undefined && data?.length > 0 && data.map((value, index) => (
-                                <tr key={index} className="group hover:bg-muted/30 transition-all duration-200">
-                                    <td className="px-6 py-4 text-muted-foreground font-mono text-xs">{index + 1}</td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-4">
-                                            <div className="relative h-12 w-12 rounded-lg overflow-hidden border border-border/50 shadow-sm   transition-transform">
-                                                <Image
-                                                    src={convertImageToValidUrl(value.thumbnail)}
-                                                    alt={value.name}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                            <span
-                                                onClick={() => openImageDialog(value)}
-                                                className="font-medium text-foreground group-hover:text-primary transition-colors cursor-pointer hover:underline"
-                                            >
-                                                {value.name}
-                                            </span>
+                        <tbody className="[&_tr:last-child]:border-0">
+                            {data?.map((product, pIndex) => (
+                                <tr key={pIndex} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                                    <td className="p-4 align-middle">
+                                        <Image
+                                            onClick={() => openImageDialog(product)}
+                                            alt={product.name}
+                                            className="aspect-square rounded-md object-cover cursor-pointer"
+                                            height="64"
+                                            src={convertImageToValidUrl(product.thumbnail)}
+                                            width="64" />
+                                    </td>
+                                    <td className="p-4 align-middle font-medium">{product.name}</td>
+                                    <td className="p-4 align-middle">{product.storeName}</td>
+                                    <td className="p-4 align-middle">{`${product.price} ${currentCurrency?.symbol}`}</td>
+                                    <td className="p-4 align-middle">
+                                        <div className="flex gap-2">
+                                            <Button variant="outline" size="icon" onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="destructive" size="icon" onClick={() => {
+                                                setEditingProduct(product);
+                                                deleteProductMutation.mutate(product.id)
+                                            }}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 font-medium text-foreground">
-                                        {currentCurrency?.symbol ?? value.symbol}{updateCurrency(value.price, currentCurrency?.symbol ?? "", currentCurrency, currencies ?? [])}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
-                                                {value.storeName.charAt(0)}
-                                            </div>
-                                            <span className="text-muted-foreground">{value.storeName}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
-                                            {value.subcategory}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-2">
-                                            {value.productVariants !== undefined && value.productVariants.length > 0 ? (
-                                                value.productVariants
-                                                    .filter(group => group && group.length > 0) // Only show groups with items
-                                                    .map((group, gIndex) => (
-                                                        <div key={gIndex} className="flex items-start gap-2">
-                                                            {/* Display the variant type name prominently */}
-                                                            <span className="text-xs font-bold text-foreground bg-secondary/50 px-2 py-1 rounded-md min-w-[60px] text-center">
-                                                                {group[0].variantName}
-                                                            </span>
-                                                            {/* Display all values in this variant group */}
-                                                            <div className="flex flex-wrap gap-1.5 items-center">
-                                                                {group.map((variant, vIndex) => (
-                                                                    variant.variantName === "Color" ?
-                                                                        <div
-                                                                            key={`${gIndex}-${vIndex}`}
-                                                                            style={{ backgroundColor: variant.name }}
-                                                                            className="w-6 h-6 rounded-md border-1 border-border/50 shadow-sm"
-                                                                            title={variant.name}
-                                                                        />
-                                                                        :
-                                                                        <span
-                                                                            key={`${gIndex}-${vIndex}`}
-                                                                            className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-accent text-accent-foreground border border-border/50"
-                                                                        >
-                                                                            {variant.name}
-                                                                        </span>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                            ) : (
-                                                <span className="text-muted-foreground text-xs italic">No variants</span>
-                                            )}
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button className="text-muted-foreground hover:text-primary transition-colors">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-more-horizontal"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></svg>
-                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -229,94 +508,37 @@ const Product = () => {
                 </div>
             </div>
 
-            {/* pagination number */}
-            <div className="flex justify-center mt-6">
-                <div className="flex gap-2">
-                    {Array.from({ length: Number(userPages) || 0 }, (_, i) => (
-                        <button
-                            key={i}
-                            onClick={() => setCurrentPage(i + 1)}
-                            className={`
-                                h-9 w-9 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200
-                                ${currnetPage === i + 1
-                                    ? 'bg-primary text-primary-foreground shadow-md scale-105'
-                                    : 'bg-card border border-border hover:bg-accent hover:text-accent-foreground'
-                                }
-                            `}
-                        >
-                            {i + 1}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* Image Dialog Modal */}
             {selectedProduct && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-300"
-                    onClick={closeImageDialog}
-                >
-                    <div
-                        className="relative w-full max-w-4xl mx-4 bg-card rounded-2xl shadow-2xl border border-border/50 overflow-hidden animate-in zoom-in-95 duration-300"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-
-                        <div className="flex items-center justify-between p-6 border-b border-border/50 bg-muted/30">
-                            <button
-                                onClick={closeImageDialog}
-                                className="h-10 w-10 flex items-center justify-center rounded-lg hover:bg-muted transition-colors"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <div className="relative bg-muted/20 p-8">
-                            <div className="relative w-full aspect-square max-h-[500px] rounded-xl overflow-hidden bg-background border border-border/50 shadow-lg">
-                                <Image
-                                    src={convertImageToValidUrl(getProductImages(selectedProduct)[currentImageIndex])}
-                                    alt={`${selectedProduct.name} - Image ${currentImageIndex + 1}`}
-                                    fill
-                                    className="object-contain"
-                                    priority
-                                />
-                            </div>
-
-                            {/* Navigation Arrows - Only show if multiple images */}
-                            {getProductImages(selectedProduct).length > 1 && (
-                                <>
-                                    <button
-                                        onClick={prevImage}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center rounded-full bg-background/90 border border-border/50 shadow-lg hover:bg-background hover:scale-110 transition-all duration-200"
-                                    >
-                                        <svg
-                                            style={{ color: currentImageIndex > 0 ? 'black' : 'gray' }}
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="15 18 9 12 15 6"></polyline>
-                                        </svg>
-                                    </button>
-                                    <button
-                                        onClick={nextImage}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 flex items-center justify-center rounded-full bg-background/90 border border-border/50 shadow-lg hover:bg-background hover:scale-110 transition-all duration-200"
-                                    >
-                                        <svg
-                                            style={{ color: currentImageIndex + 1 < selectedProduct.productImages.length ? 'black' : 'gray' }}
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <polyline points="9 18 15 12 9 6"></polyline>
-                                        </svg>
-                                    </button>
-                                </>
-                            )}
-                        </div>
-
-
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={closeImageDialog}>
+                    <div className="relative" onClick={(e) => e.stopPropagation()}>
+                        <Image
+                            alt={selectedProduct.name}
+                            className="max-w-screen-xl max-h-screen-xl object-contain"
+                            height={window.innerHeight * 0.8}
+                            src={ selectedProduct.thumbnail}
+                            width={window.innerWidth * 0.8}
+                        />
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="absolute top-1/2 left-4 -translate-y-1/2"
+                            onClick={prevImage}
+                        >
+                            {"<"}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            className="absolute top-1/2 right-4 -translate-y-1/2"
+                            onClick={nextImage}
+                        >
+                            {">"}
+                        </Button>
                     </div>
                 </div>
             )}
-
         </div>
     );
-};
+}
+
 export default Product;

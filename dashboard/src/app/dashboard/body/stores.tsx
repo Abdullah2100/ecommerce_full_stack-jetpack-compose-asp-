@@ -175,9 +175,16 @@ const Stores = () => {
                                 initialPreviews={editingStore ? [convertImageToValidUrl(editingStore.wallpaperImage)] : []}
                                 height={200}
                                 onChange={
-                                    () =>  register("wallpaperImage") 
+                                    (files: File[]) => {
+                                        if(files?.length>0){
+
+                                            register("wallpaperImage")
+                                            setValue("wallpaperImage",files[0])
+                                        }
+                                
                                 }
-                                label="Wallpaper Image" error={errors.wallpaperImage} />
+                                }
+                                label="Wallpaper Image" error={errors.wallpaperImage?.message} />
                         </div>
 
                         <div>
@@ -186,9 +193,15 @@ const Stores = () => {
                                 initialPreviews={editingStore ? [convertImageToValidUrl(editingStore.smallImage)] : []}
                                 height={200}
                                 onChange={
-                                    () => register("smallImage")
+                                    (files: File[]) => {
+                                        if(files?.length>0){
+
+                                            register("smallImage")
+                                            setValue("smallImage",files[0])
+                                        }
+                                    }
                                 }
-                                label="Small Image" error={errors.smallImage} />
+                                label="Small Image" error={errors.smallImage?.message} />
                         </div>
 
                         <div>
