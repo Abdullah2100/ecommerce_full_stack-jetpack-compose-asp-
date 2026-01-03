@@ -7,10 +7,12 @@ public interface IOrderRepository:IRepository<Order>
 {
     Task<IEnumerable<Order>> GetOrders(Guid userId,int pageNum,int pageSize);
     Task<IEnumerable<Order>> GetOrders(int page,int lenght);
+    Task<IEnumerable<Order>> GetOrders(int randomNumber);
     
     Task<Order?> GetOrder(Guid id);
     
     Task<Order?> GetOrder(Guid id,Guid  userId);
+    Task<int> GetOrders();
     
     Task<bool> IsExist(Guid id);
     Task<bool> IsCanCancelOrder(Guid id);
@@ -22,5 +24,6 @@ public interface IOrderRepository:IRepository<Order>
     void  RemoveOrderFromDelivery(Guid id,Guid deliveryId);
     Task<bool> IsSavedDistanceToOrder(Guid id);
     void Delete(Guid id);
+    void Delete(List<Order> orders);
     
 }

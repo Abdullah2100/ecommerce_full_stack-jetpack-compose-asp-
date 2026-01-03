@@ -3,7 +3,7 @@ namespace api.domain.entity;
 public class ProductVariant
 {
     public Guid Id { get; set; }
-    public decimal Percentage { get; set; }
+    public ushort Percentage { get; set; }
     public Guid VariantId { get; set; }
     public string Name { get; set; }
     public Guid ProductId { get; set; }

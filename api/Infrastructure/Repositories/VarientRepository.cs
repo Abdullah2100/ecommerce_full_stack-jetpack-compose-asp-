@@ -45,12 +45,13 @@ public class VarientRepository(AppDbContext context) : IVarientRepository
 
     public async Task<List<Variant>> GetVarients(int page, int length)
     {
-        return await context
+        var variants = await context
             .Varients
             .AsNoTracking()
             .Skip((page - 1) * length)
             .Take(length)
             .ToListAsync();
+        return variants;
     }
 
     public async Task<int> GetVarientCount(int variantPerPage)

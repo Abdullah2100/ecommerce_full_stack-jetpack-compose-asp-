@@ -1,17 +1,12 @@
 
 import axios from "axios";
-import { Util } from "@/util/globle";
-import iSubCategory from "@/model/iSubCategory";
+import { api_auth } from "./api_config";
+import ISubCategory from "@/model/ISubCategory";
 
 async function getSubCategoriesByStoreId(storeId: string, pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/SubCategory/${storeId}/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        });
-        return result.data as iSubCategory[];
+        const result = await api_auth.get(`/api/SubCategory/${storeId}/${pageNumber}`);
+        return result.data as ISubCategory[];
     } catch (error) {
         let errorMessage = "An unexpected error occurred";
         if (axios.isAxiosError(error)) {

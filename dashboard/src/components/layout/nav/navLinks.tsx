@@ -73,10 +73,18 @@ export const useNavItems = ({ selectedIndex, setSelectedIndex, isNewOrder }: iNa
       isNewOrder: false,
       chageSelectedIndex: setSelectedIndex
     },
+     {
+      name: "Variant",
+      icon: varient,
+      currentIndex: 6,
+      selectedIndex: selectedIndex,
+      isNewOrder: false,
+      chageSelectedIndex: setSelectedIndex
+    },
     {
       name: "My Info",
       icon: myInfo,
-      currentIndex: 6,
+      currentIndex: 7,
       selectedIndex: selectedIndex,
       isNewOrder: false,
       chageSelectedIndex: setSelectedIndex

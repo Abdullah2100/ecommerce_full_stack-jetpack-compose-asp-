@@ -1,23 +1,22 @@
 import axios from "axios";
-import { iLoginData } from "../../app/login/page";
-import iAuthResult from "@/model/iAuthResult";
+import { api_json } from "./api_config";
+import { iLoginData } from "@/app/login/page";
+import IAuthResult from "@/model/IAuthResult";
 
 
 
 
 export async function login({ name, password }: iLoginData) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/login';
-    console.log('login ur is ', url);
 
     try {
-        var response = await axios.post(url,
+        var response = await api_json.post('/api/User/login',
             {
                 username: name,
                 password: password
             }
         )
 
-        return response.data as iAuthResult;
+        return response.data as IAuthResult;
     } catch (error) {
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";

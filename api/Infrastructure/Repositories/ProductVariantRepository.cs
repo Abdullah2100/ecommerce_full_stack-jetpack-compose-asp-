@@ -14,13 +14,15 @@ public class ProductVariantRepository(AppDbContext context) : IProductVariantRep
             .FirstOrDefaultAsync(or => or.ProductId == productId && or.Id == id);
     }
 
-    public void  AddProductVariants(ICollection<ProductVariant> productVariants)
+    public async Task SaveProductVariants(ICollection<ProductVariant> productVariants)
     {
         for (var i = 0; i < productVariants.Count; i++)
         {
-           context.ProductVariants.Add(productVariants.ElementAt(i));
+            if (productVariants.ElementAt(i)?.Id is not null)
+                await Task.Run(() => Update(productVariants.ElementAt(i)));
+            else
+                await Task.Run(() => Add(productVariants.ElementAt(i)));
         }
-
     }
 
 
@@ -32,20 +34,28 @@ public class ProductVariantRepository(AppDbContext context) : IProductVariantRep
 
     public void DeleteProductVariant(List<CreateProductVariantDto> productVariants, Guid productId)
     {
-        for (var i = 0; i < productVariants.Count; i++)
+        try
         {
-            var result = context.ProductVariants.Where(pv =>
-                pv.ProductId == productId && pv.VariantId == productVariants[i].VariantId &&
-                pv.Name == productVariants[i].Name
-            ).ToList();
-            context.ProductVariants.RemoveRange(result);
+            for (var i = 0; i < productVariants.Count; i++)
+            {
+                var result = context.ProductVariants
+                    .FirstOrDefault(pv =>
+                        pv.ProductId == productId && pv.VariantId == productVariants[i].VariantId &&
+                        pv.Name == productVariants[i].Name
+                    );
+                if (result is not null)
+                    context.ProductVariants.Remove(result);
+            }
         }
-
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{ex.Message}");
+        }
     }
 
     public void Add(ProductVariant entity)
     {
-       context.ProductVariants.Add(entity);
+        context.ProductVariants.Add(entity);
     }
 
     public void Update(ProductVariant entity)

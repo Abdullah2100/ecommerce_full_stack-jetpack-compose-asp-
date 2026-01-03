@@ -36,6 +36,20 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
             .ToListAsync(); 
     }
 
+    public async Task<int> GetCategoriesCount()
+    {
+       return await context.Categories.CountAsync();
+    }
+
+    public async Task<List<Category>> GetCategories(int randomNumber)
+    {
+       return await context
+           .Categories
+           .OrderBy(x => Guid.NewGuid())
+           .Take(randomNumber)
+           .ToListAsync();
+    }
+
     public async Task<bool> IsExist(Guid id)
     {
         return await context
@@ -66,5 +80,9 @@ public class CategoryRepository(AppDbContext context) : ICategoryRepository
         if (category is null) throw new ArgumentNullException();
         context.Categories.Remove(category);
     }
-    
+
+    public void Delete(List<Category> categories)
+    {
+       context.Categories.RemoveRange(categories); 
+    }
 }

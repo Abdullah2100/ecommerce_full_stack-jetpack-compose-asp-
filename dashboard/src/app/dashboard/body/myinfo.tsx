@@ -22,7 +22,6 @@ const MyInfoPage = () => {
                 toast.error(e.message)
             },
             onSuccess: (data) => {
-                console.log("user updated ", data);
                 toast.success("تم التعديل بنجاح");
                 refetch();
                 setUserUpdate(prev => ({
@@ -49,13 +48,12 @@ const MyInfoPage = () => {
     const inputRef = useRef<HTMLInputElement>(null);
 
 
-    // useEffect(() => {
-    //     if (data?.thumbnail !== undefined) {
-    //         setPreviewImage(data?.thumbnail);
-    //     }
-    //     console.log("data changed ", data);
-    // }
-    //     , [previewImage, data]);
+    useEffect(() => {
+        if (data?.thumbnail !== undefined) {
+            setPreviewImage(data?.thumbnail);
+        }
+    }
+        , [previewImage, data]);
 
 
     if (data === undefined) return null;
@@ -87,17 +85,14 @@ const MyInfoPage = () => {
                         onDragOver={(e) => {
                             e.preventDefault();
                             setDraggable(true);
-                            console.log('is draggable now ')
                         }}
                         onDragLeave={() => {
-                            console.log("not draggable any more")
                             setDraggable(false)
                         }}
                         onDrop={(e) => {
                             e.preventDefault();
 
                             const file = e.dataTransfer.files[0];
-                            console.log("dropped file ", file);
                             if (file) {
                                 setThumbnailFile(file);
                                 setPreviewImage(URL.createObjectURL(file));

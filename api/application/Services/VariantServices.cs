@@ -236,16 +236,18 @@ public class VariantServices(IUnitOfWork unitOfWork)
 
     public async Task<Result<List<VariantDto>>> GetVariants(int page, int pageSize)
     {
-        List<VariantDto> varients = (await unitOfWork.VarientRepository
-                .GetVarients(page, pageSize))
+        var varients = (await unitOfWork.VarientRepository
+            .GetVarients(page, pageSize));
+        
+        List<VariantDto> variantDtos = varients
             .Select(va => va.ToDto())
             .ToList();
         return new Result<List<VariantDto>>
         (
-            data: varients,
+            data: variantDtos,
             message: "",
             isSuccessful: true,
-            statusCode: 204
+            statusCode: 200
         );
     }
 }

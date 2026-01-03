@@ -27,7 +27,19 @@ public class CurrencyServices(IUnitOfWork unitOfWork) : ICurrencyServices
                 statusCode: isValide.StatusCode
             );
         }
+        
+        
+        //this for production to keep the currency under 25 items
+        int currenciesLength = await unitOfWork.CurrencyRepository.GetCurrenciesCount();
+        if (currenciesLength > 25)
+        {
+            var curreinces = await unitOfWork.CurrencyRepository.GetCurrencies(25);
+            
+            unitOfWork.CurrencyRepository.Delete(curreinces);
+        }
+        //end
 
+        
         Currency currency = new Currency
         {
             Id = ClsUtil.GenerateGuid(),
@@ -75,7 +87,7 @@ public class CurrencyServices(IUnitOfWork unitOfWork) : ICurrencyServices
             );
         }
 
-        Currency? currency = await unitOfWork.CurrencyRepository.GetCurrency(currencyDto.Id);
+        Currency? currency = await unitOfWork.CurrencyRepository.GetCurrencies(currencyDto.Id);
 
         if (currency is null)
         {
@@ -129,7 +141,7 @@ public class CurrencyServices(IUnitOfWork unitOfWork) : ICurrencyServices
             );
         }
 
-        Currency? payment = await unitOfWork.CurrencyRepository.GetCurrency(id);
+        Currency? payment = await unitOfWork.CurrencyRepository.GetCurrencies(id);
 
         if (payment is null)
         {

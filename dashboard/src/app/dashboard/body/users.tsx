@@ -10,7 +10,7 @@ import { createUserSchema, updateUserSchema } from "@/zod/userSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputWithLabelAndError } from "@/components/ui/input/InputWithLabelAndError";
 import { useForm } from "react-hook-form";
-import { iUserInfo } from "@/model/iUserInfo";
+import { IUserInfo } from "@/model/IUserInfo";
 import { Ban, LockOpen, Pencil } from "lucide-react";
 import { InputImageWithLabelAndError } from "@/components/ui/input/inputImageWithLableAndError";
 import { iUserUpdateInfoDto } from "@/dto/response/iUserUpdateInfoDto";
@@ -18,7 +18,7 @@ import { iUserUpdateInfoDto } from "@/dto/response/iUserUpdateInfoDto";
 const Users = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isUpdate, setIsUpdate] = useState(false);
-    const [user, setUser] = useState<undefined | iUserInfo>(undefined);
+    const [user, setUser] = useState<undefined | IUserInfo>(undefined);
 
     const { register,
         handleSubmit,
@@ -95,7 +95,6 @@ const Users = () => {
     const handleFormSubmit = (data: any) => {
          
         if (isUpdate) {
-                        console.log(`this the file d update ${JSON.stringify(data)}`)
 
             updateUserMutation.mutate({
                 name:data?.name?.length > 0 && data.name !== user?.name?data.name:null,

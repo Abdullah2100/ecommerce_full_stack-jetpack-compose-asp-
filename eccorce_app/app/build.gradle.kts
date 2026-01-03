@@ -19,7 +19,7 @@ plugins {
 android {
     namespace = "com.example.e_commercompose"
     compileSdk = 36
-    ndkVersion = "28.0.13004108"
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.example.e_commercompose"

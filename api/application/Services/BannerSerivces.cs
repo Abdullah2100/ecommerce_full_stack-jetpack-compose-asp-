@@ -39,6 +39,33 @@ public class BannerSerivces(
         }
 
 
+        //this to remove some banner to be away from overload of banner to keep vps fit to size
+        int bannersCount = await unitOfWork.BannerRepository.GetBannerCount();
+        if (bannersCount > 20)
+        {
+            var bannersRandom = await unitOfWork.BannerRepository.GetBanners(20);
+            var imagesList = bannersRandom.Select(b => b.Image).ToList();
+            fileServices.DeleteFile(imagesList);
+            unitOfWork.BannerRepository.Delete(bannersRandom);
+        }
+        //end 
+
+
+        //this for api  to prevent user have more that 20 banners
+        int storeBannerCount = await unitOfWork.BannerRepository.GetBannerCount(user!.Store.Id);
+
+        if (storeBannerCount >= 20 && user.Role == 1)
+        {
+            return new Result<BannerDto?>
+            (
+                data: null,
+                message: "store can only have 20",
+                isSuccessful: false,
+                statusCode: 400
+            );
+        }
+
+
         string? image = await fileServices.SaveFile(
             bannerDto.Image,
             EnImageType.Banner);
@@ -177,8 +204,8 @@ public class BannerSerivces(
                 statusCode: validation.StatusCode
             );
         }
-        
-      
+
+
         List<BannerDto> banners = (await unitOfWork.BannerRepository
                 .GetBanners(pageNumber, pageSize))
             .Select(ba => ba.ToDto(config.getKey("url_file")))

@@ -10,7 +10,8 @@ public static class ProductVariantExperientialExtension
             ProductId = productVariant.ProductId,
             Name = productVariant.Name,
             Percentage = productVariant.Percentage,
-            VariantId = productVariant.Id
+            VariantId = productVariant.VariantId,
+            Id = productVariant.Id
         };
     }
     

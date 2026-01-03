@@ -45,82 +45,90 @@ $$ LANGUAGE plpgsql;
 
 
 --triger for prevent deleted the OrderItems  after it is complated received
-CREATE OR REPLACE FUNCTION Fun_prevent_delete_orderItem()
-RETURNS Trigger As $$
-DECLARE
-isCanModifiOrder BOOLEAN :=false;
-BEGIN
+-- CREATE OR REPLACE FUNCTION Fun_prevent_delete_orderItem()
+-- RETURNS Trigger As $$
+-- DECLARE
+-- isCanModifiOrder BOOLEAN :=false;
+-- BEGIN
 
- SELECT "Status"<=4 into isCanModifiOrder FROM "Orders" where "Id"=OLD."OrderId";
+--  SELECT "Status"<=4 into isCanModifiOrder FROM "Orders" where "Id"=OLD."OrderId";
  
- if OLD."Status">3 and isCanModifiOrder THEN
-   RETURN NULL;
- END IF;
- return OLD;
-END
-$$ LANGUAGE plpgsql;
+--  if OLD."Status">3 and isCanModifiOrder THEN
+--    RETURN NULL;
+--  END IF;
+--  return OLD;
+-- END
+-- $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER tr_prevent_delete_orderItem
-BEFORE DELETE ON "OrderItems" FOR EACH ROW EXECUTE FUNCTION Fun_prevent_delete_orderItem();
+-- CREATE OR REPLACE TRIGGER tr_prevent_delete_orderItem
+-- BEFORE DELETE ON "OrderItems" FOR EACH ROW EXECUTE FUNCTION Fun_prevent_delete_orderItem();
 
+              
+              
+              
  --triger for prevent uppdate the order after it is complated
-CREATE OR REPLACE 
-FUNCTION fun_prevent_update_orderItem_to_less_state_of_previes()
-RETURNS Trigger As $$
-DECLARE
- 	isCanModifiOrderItem BOOLEAN :=false;
-BEGIN
- 	SELECT ("Status">= 4) 
-	INTO isCanModifiOrderItem 
-	FROM "Orders" WHERE "Id" = OLD."OrderId";
- 	IF  isCanModifiOrderItem = TRUE  THEN   -- this to prevent update on orderitme if the order is complate
-	    RETURN NULL;
-	END IF;
- 	RETURN NEW;
-END
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE 
+-- FUNCTION fun_prevent_update_orderItem_to_less_state_of_previes()
+-- RETURNS Trigger As $$
+-- DECLARE
+--  	isCanModifiOrderItem BOOLEAN :=false;
+-- BEGIN
+--  	SELECT ("Status">= 4) 
+-- 	INTO isCanModifiOrderItem 
+-- 	FROM "Orders" WHERE "Id" = OLD."OrderId";
+--  	IF  isCanModifiOrderItem = TRUE  THEN   -- this to prevent update on orderitme if the order is complate
+-- 	    RETURN NULL;
+-- 	END IF;
+--  	RETURN NEW;
+-- END
+-- $$ LANGUAGE plpgsql;
 
 
-CREATE OR REPLACE TRIGGER tr_prevent_update_orderItem 
-BEFORE UPDATE ON "OrderItems"   FOR EACH ROW EXECUTE FUNCTION fun_prevent_update_orderItem_to_less_state_of_previes();
+-- CREATE OR REPLACE TRIGGER tr_prevent_update_orderItem 
+-- BEFORE UPDATE ON "OrderItems"   FOR EACH ROW EXECUTE FUNCTION fun_prevent_update_orderItem_to_less_state_of_previes();
+
+
 
 
 --triger for prevent deleted the order after it is complated
-CREATE OR REPLACE FUNCTION Fun_prevent_delete_order()
-RETURNS Trigger As $$
-DECLARE
-orderStatus INT :=0;
-BEGIN
- 	SELECT "Status" into orderStatus FROM "Orders" where "Id"=OLD."Id";
-	IF orderStatus>4 THEN 
-		return null;
-	END IF;
- return OLD;
-END
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION Fun_prevent_delete_order()
+-- RETURNS Trigger As $$
+-- DECLARE
+-- orderStatus INT :=0;
+-- BEGIN
+--  	SELECT "Status" into orderStatus FROM "Orders" where "Id"=OLD."Id";
+-- 	IF orderStatus>4 THEN 
+-- 		return null;
+-- 	END IF;
+--  return OLD;
+-- END
+-- $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER tr_prevent_delete_order 
-BEFORE DELETE ON "Orders"   FOR EACH ROW EXECUTE FUNCTION Fun_prevent_delete_order();
+-- CREATE OR REPLACE TRIGGER tr_prevent_delete_order 
+-- BEFORE DELETE ON "Orders"   FOR EACH ROW EXECUTE FUNCTION Fun_prevent_delete_order();
+
+
+
 
 --triger for prevent uppdate the order after it is complated
-CREATE OR REPLACE FUNCTION fun_prevent_update_order_to_less_state_of_previes()
-RETURNS Trigger As $$
-DECLARE
+-- CREATE OR REPLACE FUNCTION fun_prevent_update_order_to_less_state_of_previes()
+-- RETURNS Trigger As $$
+-- DECLARE
 
-isThereOrderItemsNotSelected BOOLEAN :=false;
-BEGIN
-   -- prevent any update on status 
-    SELECT COUNT(*)>1 INTO isThereOrderItemsNotSelected FROM "OrderItems" WHERE "Status"<3;
+-- isThereOrderItemsNotSelected BOOLEAN :=false;
+-- BEGIN
+--    -- prevent any update on status 
+--     SELECT COUNT(*)>1 INTO isThereOrderItemsNotSelected FROM "OrderItems" WHERE "Status"<3;
 	
-	IF OLD."Status">4 OR isThereOrderItemsNotSelected  THEN -- prevent update in order if it is complate or the items is recived from delivery
-	    RETURN NULL;
-	END IF;
-	return NEW;
-END
-$$ LANGUAGE plpgsql;
+-- 	IF OLD."Status">4 OR isThereOrderItemsNotSelected  THEN -- prevent update in order if it is complate or the items is recived from delivery
+-- 	    RETURN NULL;
+-- 	END IF;
+-- 	return NEW;
+-- END
+-- $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER tr_prevent_delete_order 
-BEFORE UPDATE ON "Orders"   FOR EACH ROW EXECUTE FUNCTION fun_prevent_update_order_to_less_state_of_previes();
+-- CREATE OR REPLACE TRIGGER tr_prevent_delete_order 
+-- BEFORE UPDATE ON "Orders"   FOR EACH ROW EXECUTE FUNCTION fun_prevent_update_order_to_less_state_of_previes();
 
 
 
@@ -170,6 +178,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
 CREATE OR REPLACE FUNCTION calculate_order_item_price(OrderItemId UUID,product_price NUMERIC )
 RETURNS NUMERIC AS $$
 DECLARE
@@ -194,6 +203,7 @@ BEGIN
  
 END;
 $$ LANGUAGE plpgsql;
+
 
 
 CREATE OR REPLACE FUNCTION fun_remove_user_orderItem(userId UUID, OrderItemId UUID)
@@ -271,6 +281,8 @@ END;
 $$ LANGUAGE plpgsql;
 
 
+
+
 CREATE OR REPLACE FUNCTION fun_calculate_distance_between_user_and_stores(orderId UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
@@ -333,6 +345,8 @@ EXCEPTION
         RETURN FALSE;
 END;
 $$ LANGUAGE plpgsql;
+
+
 
 
 
@@ -403,6 +417,3 @@ EXCEPTION
    RETURN 	 QUERY SELECT NULL,NULL,NULL,NULL,NULL;
 END 
 $$ LANGUAGE plpgsql;
-
-
- 

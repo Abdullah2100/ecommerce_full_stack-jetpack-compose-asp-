@@ -1,4 +1,4 @@
-export default interface iAuthResult{
+export default interface IAuthResult{
      token:string, 
      refreshToken:string 
 }

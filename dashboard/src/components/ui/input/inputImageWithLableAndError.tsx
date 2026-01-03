@@ -90,12 +90,12 @@ export const InputImageWithLabelAndError = React.forwardRef<
                     <p className="text-xs text-gray-400 mt-1">or click to select files</p>
 
                     <div className="mt-3">
-                        {previews.length > 0 && (
+                        {previews?.length > 0 && (
                             <div
                                 className="flex gap-2 overflow-x-auto"
                                 style={{ height: `${height}px` }}
                             >
-                                {previews.map((src, idx) => (
+                                {previews?.map((src, idx) => (
                                     <div key={idx} className={`w-28 h-28 flex-shrink-0 overflow-hidden ${isBorderEnable ? "border" : ""} rounded-2xl p-2`}>
                                         <img src={src} alt={`preview-${idx}`} className="object-cover w-full h-full" />
                                     </div>

@@ -90,8 +90,8 @@ public class ProductServices(
     {
         var products = (await unitOfWork.ProductRepository
             .GetProducts(pageNum, pageSize));
-        List<ProductDto> productDtos =  products.Select((de) => de.ToDto(config.getKey("url_file")))
-                .ToList();
+        List<ProductDto> productDtos = products.Select((de) => de.ToDto(config.getKey("url_file")))
+            .ToList();
 
         return new Result<List<ProductDto>>(
             data: productDtos,
@@ -199,6 +199,25 @@ public class ProductServices(
                 );
             }
 
+            //this for production for keep the product under 40 product at the vps
+            int productCount = await unitOfWork.ProductRepository.GetProduct();
+            if (productCount > 40)
+            {
+                var productsList = (await unitOfWork.ProductRepository.GetProducts(40))?.ToList();
+                if (productsList is not null && productsList?.Count() > 0)
+                {
+                    var productImages = productsList?.Select(s => s.ProductImages?.Select(p => p.Path));
+                    var productImagesHolder = productImages?.SelectMany(value => value)?.ToList();
+                    if (productImagesHolder is not null)
+                    {
+                        fileServices.DeleteFile(productImagesHolder);
+                    }
+                    unitOfWork.ProductRepository.Delete(productsList);
+                    
+                }
+            }
+            //end
+
             bool isExistCurrency = await unitOfWork.CurrencyRepository.isExist(productDto.Symbol);
 
             if (!isExistCurrency)
@@ -302,7 +321,7 @@ public class ProductServices(
             unitOfWork.ProductRepository.Add(product);
             unitOfWork.ProductImageRepository.AddProductImage(images);
             if (productVariants is not null)
-                unitOfWork.ProductVariantRepository.AddProductVariants(productVariants);
+                unitOfWork.ProductVariantRepository.SaveProductVariants(productVariants);
             int result = await unitOfWork.SaveChanges();
 
             if (result == 0)
@@ -424,8 +443,8 @@ public class ProductServices(
         //delete preview productvarients
         if (productDto.DeletedProductVariants is not null)
         {
-            unitOfWork.ProductVariantRepository.DeleteProductVariant(productDto.DeletedProductVariants,
-                productDto.Id);
+           await Task.Run(()=>unitOfWork.ProductVariantRepository.DeleteProductVariant(productDto.DeletedProductVariants,
+                productDto.Id));
         }
 
         string? savedThumbnail = null;
@@ -500,6 +519,11 @@ public class ProductServices(
             );
         }
 
+        if (productVariants is not null)
+        {
+           await unitOfWork.ProductVariantRepository.SaveProductVariants(productVariants);
+        }
+
         //delete the previs images 
 
 
@@ -509,7 +533,6 @@ public class ProductServices(
         product.Price = productDto.Price ?? product.Price;
         product.UpdatedAt = DateTime.Now;
         product.Thumbnail = savedThumbnail ?? product.Thumbnail;
-        product.ProductVariants = productVariants;
         product.ProductImages = savedImage;
         product.Symbol = productDto.Symbol ?? product.Symbol;
 
@@ -593,6 +616,9 @@ public class ProductServices(
             {
                 fileServices.DeleteFile(image.Path);
             }
+
+        if(product.Thumbnail is not null)
+            fileServices.DeleteFile(product.Thumbnail);
 
         return new Result<bool>
         (

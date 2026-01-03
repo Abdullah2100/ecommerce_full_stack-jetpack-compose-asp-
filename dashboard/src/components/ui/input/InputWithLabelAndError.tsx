@@ -4,7 +4,8 @@ import { FieldError } from "react-hook-form";
 import React from "react";
 
 type IInputWithLabelAndErrorProps = {
-    label: string
+    label?: string |undefined,
+    placeholder?: string | undefined,
     error: string | undefined
     isDisable?:boolean
     type: string
@@ -12,11 +13,19 @@ type IInputWithLabelAndErrorProps = {
 };
 
 export const InputWithLabelAndError = React.forwardRef<HTMLInputElement, IInputWithLabelAndErrorProps>(
-    ({ label, error, onChange,isDisable=false ,type,...props }, ref) => {
+    ({ 
+        label, 
+        error, 
+        onChange,
+        isDisable=false ,
+        type ,
+        placeholder
+        ,...props }, ref) => {
         return (
             <div>
-                <Label className="mb-2" >{label}</Label>
+                {label&&<Label className="mb-2" >{label}</Label>}
                 <Input
+                placeholder={placeholder}
                 disabled={isDisable}
                     type={type}
                 {...props} ref={ref} onChange={onChange} />

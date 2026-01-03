@@ -13,9 +13,9 @@ namespace api.Presentation.dto
     
      public class CreateProductVariantDto
     {
-        [StringLength(maximumLength:50,MinimumLength =3 ,ErrorMessage= "name must not be empty")]
+        [StringLength(maximumLength:50,MinimumLength =1 ,ErrorMessage= "name must not be empty")]
         public string Name { get; set; }
-        public decimal Percentage { get; set; } = 1;
+        public ushort Percentage { get; set; } = 1;
         public Guid VariantId { get; set; }
     }
     

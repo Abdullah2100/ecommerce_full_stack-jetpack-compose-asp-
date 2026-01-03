@@ -92,6 +92,15 @@ public class OrderRepository(AppDbContext context)
         return orders;
     }
 
+    public async Task<IEnumerable<Order>> GetOrders(int randomNumber)
+    {
+        return await context
+            .Orders
+            .OrderBy(x => Guid.NewGuid())
+            .Take(randomNumber)
+            .ToListAsync();
+    }
+
     public async Task<Order?> GetOrder(Guid id)
     {
         var order = await context.Orders
@@ -131,6 +140,11 @@ public class OrderRepository(AppDbContext context)
             .ToListAsync();
 
         return order;
+    }
+
+    public async Task<int> GetOrders()
+    {
+       return await context.Orders.CountAsync();
     }
 
     public async Task<bool> IsExist(Guid id)
@@ -357,6 +371,10 @@ public class OrderRepository(AppDbContext context)
         context.Orders.RemoveRange(orders);
     }
 
+    public void Delete(List<Order> orders)
+    {
+       context.Orders.RemoveRange(orders); 
+    }
 
 
     public async Task<bool> IsSavedDistanceToOrder(Guid id)

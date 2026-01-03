@@ -1,16 +1,13 @@
 import axios from "axios";
-import { Util } from "@/util/globle";
-import { iVarient } from "@/model/iVarient";
+import { api_auth } from "./api_config";
+import IVariant from "@/model/IVariant";
 
 async function getVarient(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant/all/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
-        return result.data as iVarient[]
+        const result = await api_auth.get(`/api/Variant/all/${pageNumber}`)
+        const variants = result.data as IVariant[]
+        console.log(`variants: ${JSON.stringify(variants)}`);
+        return variants
     } catch (error) {
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";
@@ -29,13 +26,8 @@ async function getVarient(pageNumber: number) {
 }
 
 async function getVarientPageLenght() {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant/pages`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/Variant/pages`)
         return result.data as number
     } catch (error) {
         // Extract meaningful error message
@@ -55,12 +47,8 @@ async function getVarientPageLenght() {
 }
 
 async function deleteVarient(id: string) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant/${id}`;
     try {
-        const result = await axios.delete(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
+        const result = await api_auth.delete(`/api/Variant/${id}`, {
             validateStatus: (status) => status >= 200 && status < 300
         })
 
@@ -87,16 +75,10 @@ async function deleteVarient(id: string) {
 
 }
 
-async function createVarient(data: iVarient) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant`;
+async function createVarient(data: IVariant) {
     try {
-        const result = await axios.post(url, {
-            id: data.id,
+        const result = await api_auth.post(`/api/Variant`, {
             name: data.name
-        }, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
         })
 
         if (result.status == 204) {
@@ -122,16 +104,11 @@ async function createVarient(data: iVarient) {
 
 }
 
-async function updateVarient(data: iVarient) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Variant`;
+async function updateVarient(data: IVariant) {
     try {
-        const result = await axios.put(url, {
+        const result = await api_auth.put(`/api/Variant`, {
             id: data.id,
             name: data.name
-        }, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
         })
 
         if (result.status == 204) {

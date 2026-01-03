@@ -1,21 +1,16 @@
 import axios from "axios";
-import { Util } from "@/util/globle";
-import iCategory from "@/model/iCategory";
+import { api_auth } from "./api_config";
+import ICategory from "@/model/ICategory";
 import iCategoryDto from "@/dto/response/iCategoryDto";
 
 
 
 
 async function getCategory(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category/all/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/Category/all/${pageNumber}`)
 
-        let data = result.data as iCategory[]
+        let data = result.data as ICategory[]
         return data
     } catch (error) {
         // Extract meaningful error message
@@ -36,7 +31,6 @@ async function getCategory(pageNumber: number) {
 
 
 async function createCategory(data: iCategoryDto) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category`;
     try {
 
         const dataHolder = new FormData();
@@ -44,12 +38,7 @@ async function createCategory(data: iCategoryDto) {
         if (data.image != undefined)
             dataHolder.append("image", data.image)
 
-        const result = await axios.post(url, dataHolder, {
-
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
-        })
+        const result = await api_auth.post('/api/Category', dataHolder)
 
         if (result.status == 204) {
             return true
@@ -76,12 +65,8 @@ async function createCategory(data: iCategoryDto) {
 
 
 async function deleteCategory(id: string) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category/${id}`;
     try {
-        const result = await axios.delete(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
+        const result = await api_auth.delete(`/api/Category/${id}`, {
             validateStatus: (status) => status >= 200 && status < 300
         })
 
@@ -110,7 +95,6 @@ async function deleteCategory(id: string) {
 
 
 async function updateCategory(data: iCategoryDto) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Category`;
     try {
 
         const dataHolder = new FormData();
@@ -122,12 +106,7 @@ async function updateCategory(data: iCategoryDto) {
         if (data.image != undefined)
             dataHolder.append("image", data.image)
 
-        const result = await axios.put(url, dataHolder, {
-
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
-        })
+        const result = await api_auth.put('/api/Category', dataHolder)
 
         if (result.status == 204) {
             return true

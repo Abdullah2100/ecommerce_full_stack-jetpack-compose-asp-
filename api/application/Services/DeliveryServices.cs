@@ -124,14 +124,14 @@ public class DeliveryServices(
         var store = user.IsValidateFunc(isAdmin: false, isStore: true);
 
 
-        if (admin is not null && user.Role == 0 || store != null)
+        if (admin is not null && user?.Role == 0 || store != null)
         {
             return new Result<DeliveryDto?>
             (
                 data: null,
-                message: admin?.Message ?? store.Message,
+                message: admin?.Message ?? store?.Message,
                 isSuccessful: false,
-                statusCode: admin?.StatusCode ?? store.StatusCode
+                statusCode: admin?.StatusCode ?? store!.StatusCode
             );
         }
 

@@ -14,6 +14,7 @@ namespace api.Presentation.dto
         public Guid SubcategoryId { get; set; }
         public Guid CategoryId { get; set; }
         public Guid StoreId { get; set; }
+        public string StoreName { get; set; }
         public decimal Price { get; set; }
         public List<List<ProductVariantDto>>? ProductVariants { get; set; }
         public List<string> ProductImages { get; set; }

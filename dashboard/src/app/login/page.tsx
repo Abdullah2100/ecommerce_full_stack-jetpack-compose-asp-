@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation'
 import { Label } from '@/components/ui/label'
 import InputWithTitle from '@/components/ui/input/inputWithTitle'
 import { login } from '../../lib/api/auth'
-import iAuthResult from '../../model/iAuthResult'
+import IAuthResult from '../../model/IAuthResult'
 import { Button } from '@/components/ui/button'
 import { Util } from '@/util/globle'
 export interface iLoginData {
@@ -18,12 +18,8 @@ export interface iLoginData {
 const Login = () => {
     const rout = useRouter()
     const [data, setData] = useState<iLoginData>({
-        name:
-            //'',
-            'ali535@gmail.com',
-        password:
-            //'',
-            '12AS@#fs'
+        //name: '', password: ""
+        name: 'ali535@gmail.com', password: "12AS@#fs"
     });
 
     const loginFun = useMutation({
@@ -32,8 +28,8 @@ const Login = () => {
             toast.error(e.message)
         },
         onSuccess: (result) => {
-            const resultData = result as iAuthResult;
-            Util.token = resultData.refreshToken;
+            const resultData = result as IAuthResult;
+            Util.token = resultData.token;
             rout.push("/dashboard");
         }
     })

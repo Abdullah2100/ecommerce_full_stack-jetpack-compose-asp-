@@ -3,7 +3,9 @@ import { ICurrency } from "@/model/ICurrency";
 class Util {
   static token: string = "";
 }
+
 function replaceUrlWithNewUrl(url: string): string {
+  if (url === undefined || url.length === 0) return "";
   return url.replace("http://0.0.0.0", "http://localhost");
 }
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Util } from "@/util/globle";
+import { api_auth } from "../lib/api/api_config";
 import iOrderStatusUpdateRequestDto from "../dto/request/iOrderStatusUpdateRequestDto";
 import { create } from "zustand";
 import {
@@ -30,13 +30,8 @@ const useOrder = create<IOrder>((set, get) => ({
   getOrdersAt: async (pageNum: number) => {
     // if (pageNum === get().currentPage) return;
     set({ orders: [] });
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Order/all/${pageNum}`;
     try {
-      const result = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${Util.token}`,
-        },
-      });
+      const result = await api_auth.get(`/api/Order/all/${pageNum}`);
       let data = result.data as IAdminReposeDto;
       set({
         orders: [...data.orders],
@@ -60,14 +55,8 @@ const useOrder = create<IOrder>((set, get) => ({
     }
   },
   getOrderStatus: async () => {
-    const url =
-      process.env.NEXT_PUBLIC_BASE_URL + `/api/Order/orderStatusDefinition`;
     try {
-      const result = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${Util.token}`,
-        },
-      });
+      const result = await api_auth.get(`/api/Order/orderStatusDefinition`);
       let data = result.data as string[];
       set({ orderStatus: data });
     } catch (error) {
@@ -88,18 +77,14 @@ const useOrder = create<IOrder>((set, get) => ({
   updateOrderStatus: async (
     orderStatus: iOrderStatusUpdateRequestDto
   ): Promise<string> => {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Order`;
     try {
-      const result = await axios.put(
-        url,
+      const result = await api_auth.put(
+        `/api/Order`,
         {
           id: orderStatus.id,
           status: orderStatus.statsu,
         },
         {
-          headers: {
-            Authorization: `Bearer ${Util.token}`,
-          },
           validateStatus: (status) => status >= 200 && status < 300,
         }
       );

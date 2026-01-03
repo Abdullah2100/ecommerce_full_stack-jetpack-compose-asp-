@@ -9,14 +9,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { changeStoreStatus, createStore, getStoreAtPage, getStorePages, updateStore } from "@/lib/api/store";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 import { Dialog } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input/input";
-import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { InputWithLabelAndError } from "@/components/ui/input/InputWithLabelAndError";
 import { createStoreSchema, updateStoreSchema } from "@/zod/storeSchem";
 import { InputImageWithLabelAndError } from "@/components/ui/input/inputImageWithLableAndError";
-import iStore from "@/model/iStore";
+import IStore from "@/model/IStore";
 
 
 
@@ -24,7 +22,7 @@ import iStore from "@/model/iStore";
 const Stores = () => {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [editingStore, setEditingStore] = useState<iStore | null>(null);
+    const [editingStore, setEditingStore] = useState<IStore | null>(null);
 
     const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm({
         resolver: zodResolver(editingStore ? updateStoreSchema : createStoreSchema)
@@ -107,7 +105,7 @@ const Stores = () => {
         }
     }
 
-    const openEditDialog = (store: iStore) => {
+    const openEditDialog = (store: IStore) => {
         setEditingStore(store);
         setIsDialogOpen(true);
     }

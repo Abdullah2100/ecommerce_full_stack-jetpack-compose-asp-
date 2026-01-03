@@ -63,6 +63,30 @@ public class StoreRepository(AppDbContext context) : IStoreRepository
             .ToListAsync();
         return store;
     }
+ public async Task<List<Store>> GetStores(string prefix, int length)
+    {
+        
+      var stores =  await context
+            .Stores
+            .Include(st=>st.user)
+            .AsSplitQuery()
+            .AsNoTracking()
+            .Where(x => x.Name.StartsWith(prefix))
+            .Take(length)
+            .ToListAsync();
+        
+        foreach (var store in stores)
+        {
+            store.Addresses = await context
+                .Address
+                .AsNoTracking()
+                .Where(ad => ad.OwnerId == store.Id)
+                .ToListAsync();
+        }
+
+        return stores; 
+    }
+
 
     public async Task<List<Store>> GetStores(int page, int length)
     {
@@ -89,15 +113,6 @@ public class StoreRepository(AppDbContext context) : IStoreRepository
         }
 
         return stores;
-    }
-
-    public async Task<List<Store>> GetStores(string prefix, int length)
-    {
-        return await context
-            .Stores
-            .Where(x => x.Name.StartsWith(prefix))
-            .Take(length)
-            .ToListAsync();
     }
 
     public async Task<int> GetStoresCount(int storePerPage)

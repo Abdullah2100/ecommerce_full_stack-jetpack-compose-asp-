@@ -1,15 +1,10 @@
 import { IAnalayes } from "@/model/IAnalyse";
-import { Util } from "@/util/globle";
+import { api_auth } from "./api_config";
 import axios from "axios";
 
 export async function getAnalyse() {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/analyse/currentMonth`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get('/api/analyse/currentMonth')
 
         let data = result.data as IAnalayes
         return data

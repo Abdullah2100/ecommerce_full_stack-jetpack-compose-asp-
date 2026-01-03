@@ -1,16 +1,11 @@
 
 import axios from "axios";
-import iProductResponseDto from "../../dto/response/iProductResponseDto";
-import { Util } from "@/util/globle";
+import { api_auth } from "./api_config";
+import iProductResponseDto from "@/dto/response/iProductResponseDto";
 
 async function getProductPages() {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product/pages`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/Product/pages`)
         return result.data as number
     } catch (error) {
         // Extract meaningful error message
@@ -31,13 +26,8 @@ async function getProductPages() {
 
 
 async function getProductAtPage(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/Product/all/${pageNumber}`)
         return (result.data as iProductResponseDto[])
     } catch (error) {
         // Extract meaningful error message
@@ -57,19 +47,14 @@ async function getProductAtPage(pageNumber: number) {
 }
 
 async function createProduct(data: FormData) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product`;
     try {
-        const result = await axios.post(url, data, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const result = await api_auth.post(`/api/Product`, data);
         return result.data;
     } catch (error) {
         let errorMessage = "An unexpected error occurred";
         if (axios.isAxiosError(error)) {
-            errorMessage = error.response?.data || error.message;
+            const data = error.response?.data;
+            errorMessage = typeof data === 'object' ? JSON.stringify(data) : (data || error.message);
         } else if (error instanceof Error) {
             errorMessage = error.message;
         }
@@ -78,19 +63,14 @@ async function createProduct(data: FormData) {
 }
 
 async function updateProduct(data: FormData) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product`;
     try {
-        const result = await axios.put(url, data, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`,
-                'Content-Type': 'multipart/form-data'
-            }
-        });
+        const result = await api_auth.put(`/api/Product`, data);
         return result.data;
     } catch (error) {
         let errorMessage = "An unexpected error occurred";
         if (axios.isAxiosError(error)) {
-            errorMessage = error.response?.data || error.message;
+            const data = error.response?.data;
+            errorMessage = typeof data === 'object' ? JSON.stringify(data) : (data || error.message);
         } else if (error instanceof Error) {
             errorMessage = error.message;
         }
@@ -99,13 +79,8 @@ async function updateProduct(data: FormData) {
 }
 
 async function deleteProduct(storeId: string, productId: string) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Product/${storeId}/${productId}`;
     try {
-        const result = await axios.delete(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        });
+        const result = await api_auth.delete(`/api/Product/${storeId}/${productId}`);
         return result.data;
     } catch (error) {
         let errorMessage = "An unexpected error occurred";

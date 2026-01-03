@@ -1,6 +1,6 @@
 import { iAddress } from "./IAddress";
 
-export interface iUserInfo {
+export interface IUserInfo {
       id: string
       name: string,
       phone: string

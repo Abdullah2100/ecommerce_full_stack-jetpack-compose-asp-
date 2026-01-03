@@ -31,12 +31,19 @@ public class ProductRepository(
 
     public void Update(Product entity)
     {
-        var result = true;
-
-        var product = context.Products.Find(entity.Id);
-        if (product == null) throw new ArgumentNullException();
-
-        context.Products.Update(entity);
+        var product = new Product()
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Description = entity.Description,
+            SubcategoryId = entity.SubcategoryId,
+            Price = entity.Price,
+            UpdatedAt = entity.UpdatedAt,
+            Thumbnail = entity.Thumbnail,
+            Symbol = entity.Symbol,
+            StoreId = entity.StoreId
+        };
+        context.Products.Update(product);
     }
 
     public void Delete(Guid id)
@@ -45,6 +52,11 @@ public class ProductRepository(
         var product = context.Products.Find(id);
         if (product == null) throw new ArgumentNullException();
         context.Products.Remove(product);
+    }
+
+    public void Delete(List<Product> products)
+    {
+        context.Products.RemoveRange(products);
     }
 
     public async Task<Product?> GetProduct(Guid id)
@@ -69,6 +81,11 @@ public class ProductRepository(
             .Include(pro => pro.ProductVariants)
             .AsSplitQuery()
             .FirstOrDefaultAsync(p => p.Id == id && p.StoreId == storeId);
+    }
+
+    public Task<int> GetProduct()
+    {
+        return context.Products.CountAsync();
     }
 
     public async Task<int?> GetProductPages()
@@ -159,6 +176,15 @@ public class ProductRepository(
             Console.WriteLine(ex.Message);
             return new List<Product>();
         }
+    }
+
+    public async Task<IEnumerable<Product>> GetProducts(int randomNumber)
+    {
+        return await context
+            .Products
+            .OrderBy(x => Guid.NewGuid())
+            .Take(randomNumber)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Product>> GetProductsByCategory(

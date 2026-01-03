@@ -17,12 +17,25 @@ public class CurrencyRepository(AppDbContext context):ICurrencyRepository
         context.Update(entity);
     }
     
-    public async Task<Currency?> GetCurrency(Guid id )
+    public async Task<Currency?> GetCurrencies(Guid id )
     {
         Currency? element = await context.Payments
             .AsNoTracking()
             .FirstOrDefaultAsync(x=>x.Id == id);
     return element;
+    }
+
+    public Task<List<Currency> > GetCurrencies(int randomNumber)
+    {
+       return context.Currencies
+           .OrderBy(x => Guid.NewGuid())
+           .Take(randomNumber)
+           .ToListAsync();
+    }
+
+    public Task<int> GetCurrenciesCount()
+    {
+        return context.Currencies.CountAsync();
     }
 
     public async Task<List<Currency>> GetAll(int pageNum,int pageSize)
@@ -40,6 +53,11 @@ public class CurrencyRepository(AppDbContext context):ICurrencyRepository
 
         if (element is null) return;
         context.Payments.Remove(element);
+    }
+
+    public void Delete(List<Currency> currencies)
+    {
+        context.Currencies.RemoveRange(currencies);
     }
 
     public async Task<bool> isExist(string symbol)

@@ -1,5 +1,5 @@
 
-export default interface iSubCategory {
+export default interface ISubCategory {
     id: string;
     name: string;
     storeId: string;

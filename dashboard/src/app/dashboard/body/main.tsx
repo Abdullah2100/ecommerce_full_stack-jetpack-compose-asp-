@@ -8,6 +8,7 @@ import Product from "./product"
 import Order from "./order"
 import Analytics from "./analytics"
 import { ToastContainer } from "react-toastify";
+import Variant from "./varient";
 
 interface iMainPageProp {
     currentPage: number
@@ -32,6 +33,8 @@ const Main = ({ currentPage }: iMainPageProp) => {
                 case 5:
                     return <Category />
                 case 6:
+                    return <Variant />
+                case 7:
                     return <MyInfoPage />;
                 default:
                     return null;

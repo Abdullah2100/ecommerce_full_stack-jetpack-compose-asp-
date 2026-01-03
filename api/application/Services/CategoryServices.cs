@@ -13,7 +13,7 @@ public class CategoryServices(
     IWebHostEnvironment host,
     IConfig config,
     IUnitOfWork unitOfWork,
-    IFileServices fileServicee)
+    IFileServices fileService)
     : ICategoryServices
 {
     public async Task<Result<CategoryDto?>> CreateCategory(CreateCategoryDto categoryDto, Guid adminId)
@@ -44,7 +44,7 @@ public class CategoryServices(
             );
         }
 
-        string? imagePath = await fileServicee
+        string? imagePath = await fileService
             .SaveFile(categoryDto.Image,
                 EnImageType.Category);
 
@@ -126,6 +126,19 @@ public class CategoryServices(
                     statusCode: 400
                 );
             }
+        
+        
+        //this for production to prevent category create overload on vps to keep the size of vps fit 
+        int categoryCount =await unitOfWork.CategoryRepository.GetCategoriesCount();
+        
+        if (categoryCount > 20)
+        {
+            var bannersRandom = await unitOfWork.CategoryRepository.GetCategories(20);
+            var imagesList = bannersRandom.Select(b => b.Image).ToList();
+            fileService.DeleteFile(imagesList);
+            unitOfWork.CategoryRepository.Delete(bannersRandom);
+        }
+        //end
 
         Category? category = await unitOfWork.CategoryRepository.GetCategory(categoryDto.Id);
 
@@ -146,12 +159,12 @@ public class CategoryServices(
         if (categoryDto?.Image is not null)
         {
             if (categoryDto?.Image is not null)
-                fileServicee.DeleteFile(category.Image);
-            image = await fileServicee 
+                fileService.DeleteFile(category.Image);
+            image = await fileService 
                 .SaveFile(categoryDto!.Image!,
                     EnImageType.Category);
             
-            fileServicee.DeleteFile(category.Image);
+            fileService.DeleteFile(category.Image);
 
         }
 

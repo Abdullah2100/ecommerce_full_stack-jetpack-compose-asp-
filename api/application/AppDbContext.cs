@@ -50,14 +50,14 @@ public DbSet<Currency> Currencies { get; set; }
                 user.HasMany(ca => ca.Categories)
                     .WithOne(u => u.User)
                     .HasForeignKey(c => c.OwnerId)
-                    .HasPrincipalKey(u => u.Id)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasPrincipalKey(u => u.Id);
+                //    .OnDelete(DeleteBehavior.Restrict);
 
                 user.HasOne(u => u.Store)
                     .WithOne(st => st.user)
                     .HasForeignKey<Store>(st => st.UserId)
-                    .HasPrincipalKey<User>(u => u.Id)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .HasPrincipalKey<User>(u => u.Id);
+                //      .(DeleteBehavior.Restrict);
             }
         );
 
@@ -66,8 +66,8 @@ public DbSet<Currency> Currencies { get; set; }
             delev.HasOne(de => de.User)
                 .WithOne(u => u.Delivery)
                 .HasForeignKey<Delivery>(de => de.UserId)
-                .HasPrincipalKey<User>(u => u.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasPrincipalKey<User>(u => u.Id);
+            //      .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Category>(ca =>
@@ -77,8 +77,8 @@ public DbSet<Currency> Currencies { get; set; }
             ca.HasMany(cat => cat.SubCategories)
                 .WithOne(sub => sub.Category)
                 .HasForeignKey(sub => sub.CategoryId)
-                .HasPrincipalKey(cat => cat.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasPrincipalKey(cat => cat.Id);
+            //  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Store>(st =>
@@ -88,14 +88,14 @@ public DbSet<Currency> Currencies { get; set; }
             st.HasMany(std => std.SubCategories)
                 .WithOne(sub => sub.Store)
                 .HasForeignKey(sub => sub.StoreId)
-                .HasPrincipalKey(stc => stc.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasPrincipalKey(stc => stc.Id);
+          //      .OnDelete(DeleteBehavior.Restrict);
 
-            st.HasMany(sto => sto.Banners)
-                .WithOne(bn => bn.Store)
-                .HasForeignKey(ban => ban.StoreId)
-                .HasPrincipalKey(sto => sto.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+          st.HasMany(sto => sto.Banners)
+              .WithOne(bn => bn.Store)
+              .HasForeignKey(ban => ban.StoreId)
+              .HasPrincipalKey(sto => sto.Id);
+          //  .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<SubCategory>(sub => { });
@@ -111,8 +111,8 @@ public DbSet<Currency> Currencies { get; set; }
             pr.HasOne<SubCategory>(pro => pro.SubCategory)
                 .WithMany(sub => sub.Products)
                 .HasForeignKey(pro => pro.SubcategoryId)
-                .HasPrincipalKey(sub => sub.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasPrincipalKey(sub => sub.Id);
+              //  .OnDelete(DeleteBehavior.Restrict);
             pr.HasOne(pro => pro.Store)
                 .WithMany(st => st.Products)
                 .HasForeignKey(pro => pro.StoreId)
@@ -130,8 +130,8 @@ public DbSet<Currency> Currencies { get; set; }
             va.HasMany(var => var.ProductVariants)
                 .WithOne(var => var.Variant)
                 .HasForeignKey(var => var.VariantId)
-                .HasPrincipalKey(var => var.Id)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasPrincipalKey(var => var.Id);
+            //       .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Order>(or =>

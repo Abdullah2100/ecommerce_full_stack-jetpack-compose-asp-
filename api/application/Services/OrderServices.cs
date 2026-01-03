@@ -57,6 +57,19 @@ public class OrderServices(
             );
         }
 
+
+        //  this for production is used to keep order under 40 order on vps
+        int ordersCount = await unitOfWork.OrderRepository.GetOrders();
+
+        if (ordersCount > 40)
+        {
+            var orders = await unitOfWork.OrderRepository.GetOrders(40);
+            unitOfWork.OrderRepository.Delete(orders.ToList());
+        }
+        //end
+        
+        
+
         var id = ClsUtil.GenerateGuid();
         Order? order = new Order
         {

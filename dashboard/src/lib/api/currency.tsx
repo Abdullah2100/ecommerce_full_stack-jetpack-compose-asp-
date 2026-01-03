@@ -1,15 +1,10 @@
 import { ICurrency } from "@/model/ICurrency";
-import { Util } from "@/util/globle";
+import { api_auth } from "./api_config";
 import axios from "axios";
 
 export async function getCurrencies(pageNumber: number = 1) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Currencies/all/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/Currencies/all/${pageNumber}`)
 
         let data = result.data as ICurrency[]
         return data

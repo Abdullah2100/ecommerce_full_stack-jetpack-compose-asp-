@@ -58,11 +58,11 @@ To run this project locally, you will need:
     ```
     *(Note: Ensure your `DbContext` is correctly configured before running this.)*
 
-4. **migration trigger.sql **
+4. **Copy the trigger.sql content  in psql**
    ```bash
-    dotnet ef migrations add trigger.sql
-    dotnet ef database update
-```
+   sudo -i -u postgres;
+   psql 
+   \c ecommerce_db;```
   ### past file at that command 
 
 
@@ -129,3 +129,4 @@ Distributed under the **[MIT License](https://www.google.com/search?q=LICENSE)**
 ## 📞 Support and Contact
 
 If you have any questions, feel free to open a detailed **GitHub Issue**.
+# ecommerce_api

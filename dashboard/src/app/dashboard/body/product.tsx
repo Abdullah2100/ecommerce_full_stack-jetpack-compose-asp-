@@ -1,37 +1,49 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { createProduct, getProductPages, getProductAtPage, updateProduct, deleteProduct } from "@/lib/api/product";
+import {
+    createProduct,
+    getProductPages,
+    getProductAtPage,
+    updateProduct,
+    deleteProduct
+} from "@/lib/api/product";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import { convertImageToValidUrl } from "@/lib/utils/imageUtils";
 import iProductResponseDto from "@/dto/response/iProductResponseDto";
 import { getCurrencies } from "@/lib/api/currency";
 import { ICurrency } from "@/model/ICurrency";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { updateCurrency } from "@/util/globle";
 import { Dialog } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createProductSchema, updateProductSchema } from "@/zod/productSchema";
+import {
+    createProductSchema,
+    updateProductSchema
+} from "@/zod/productSchema";
 import { InputWithLabelAndError } from "@/components/ui/input/InputWithLabelAndError";
 import { InputImageWithLabelAndError } from "@/components/ui/input/inputImageWithLableAndError";
 import { getStoresByName } from "@/lib/api/store";
-import iStore from "@/model/iStore";
+import IStore from "@/model/IStore";
 import { getSubCategoriesByStoreId } from "@/lib/api/subCategory";
-import iSubCategory from "@/model/iSubCategory";
+import ISubCategory from "@/model/ISubCategory";
 import { getVarient } from "@/lib/api/variant";
-import iVariant from "@/model/iVariant";
+import IVariant from "@/model/IVariant";
 import { toast } from "react-toastify";
 import { Pencil, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input/input";
 import useDebounce from "@/hooks/useDebounce";
+import { SelectLableAndError } from "@/components/ui/input/selectLableAndError";
+import { IProductVariant } from "@/model/IProductVariant";
+import { productVariant } from "@/zod/productVariantSchema";
 
-type SelectedVariant = {
-    variantId: string;
-    variantName: string;
-    value: string;
-};
+
 
 const Product = () => {
     const queryClient = useQueryClient();
@@ -46,11 +58,12 @@ const Product = () => {
     const [storeSearchTerm, setStoreSearchTerm] = useState("");
     const debouncedStoreSearchTerm = useDebounce(storeSearchTerm, 300);
     const [showStoreResults, setShowStoreResults] = useState(false);
-    const [selectedStore, setSelectedStore] = useState<iStore | undefined>(undefined);
-    const [selectedSubCategory, setSelectedSubCategory] = useState<iSubCategory | undefined>(undefined);
-    const [selectedVariants, setSelectedVariants] = useState<SelectedVariant[]>([]);
-    const [currentVariant, setCurrentVariant] = useState<iVariant | undefined>(undefined);
-    const [variantValue, setVariantValue] = useState("");
+    const [selectedStore, setSelectedStore] = useState<IStore | undefined>(undefined);
+    const [selectedSubCategory, setSelectedSubCategory] = useState<ISubCategory | undefined>(undefined);
+
+    const [selectedProductVariants, setSelectedProductVariant] = useState<IProductVariant[] | undefined>([]);
+    const [deleteProductVariants, setDeleteProductVariant] = useState<IProductVariant[] | undefined>([]);
+    const [currentVariant, setCurrentVariant] = useState<IVariant | undefined>(undefined);
 
 
     const { data: stores } = useQuery({
@@ -74,12 +87,20 @@ const Product = () => {
         resolver: zodResolver(editingProduct ? updateProductSchema : createProductSchema)
     });
 
+    const {
+        register: productVariantRegeister,
+        handleSubmit: productVariantHandle,
+        reset: resetProductVariant,
+        formState: { errors: productVariantErrors } } = useForm({
+            resolver: zodResolver(productVariant)
+        });
+
     const { data: userPages } = useQuery({
         queryKey: ['usersPage'],
         queryFn: () => getProductPages()
     });
 
-    const { data, refetch } = useQuery({
+    const { data: products, refetch } = useQuery({
         queryKey: ['products', currnetPage],
         queryFn: () => getProductAtPage(currnetPage)
     });
@@ -106,48 +127,89 @@ const Product = () => {
             refetch();
             toast.success("Product updated successfully");
             setIsDialogOpen(false);
+            setDeleteProductVariant(undefined)
         }
     });
 
     const deleteProductMutation = useMutation({
-        mutationFn: (productId: string) => deleteProduct(editingProduct!.storeId, productId),
+        mutationFn: ({ productId, storeId }: { productId: string, storeId: string }) => deleteProduct(storeId, productId),
         onError: (e: any) => toast.error(e.message),
         onSuccess: () => {
             refetch();
             toast.success("Product deleted successfully");
             setIsDialogOpen(false);
+            setDeleteProductVariant(undefined)
         }
     });
 
 
     const handleFormSubmit = (data: any) => {
-        const formData = new FormData();
+        // Step 1: Build a plain object with only non-file fields
+        const productObj: any = {};
         if (editingProduct) {
-            formData.append('Id', editingProduct.id);
-            formData.append('StoreId', editingProduct.storeId)
+            productObj.Id = editingProduct.id;
+            productObj.StoreId = editingProduct.storeId;
         } else {
-            formData.append('StoreId', selectedStore!.id);
+            // productObj.StoreId = selectedStore?.id;
         }
-        formData.append('Name', data.name);
-        formData.append('Description', data.description);
-        formData.append('Price', data.price.toString());
-        formData.append('Symbol', data.symbol);
-        formData.append('SubcategoryId', selectedSubCategory!.id);
+        productObj.name = data.name;
+        productObj.description = data.description;
+        productObj.price = data.price;
+        productObj.symbol = data.symbol;
+        productObj.subcategoryId = selectedSubCategory?.id;
 
-        if (data.thumbnail?.[0]) {
+        // Step 2: Create FormData and append non-file fields
+        let formData = new FormData();
+        Object.keys(productObj).forEach(key => {
+            if (productObj[key] !== undefined && productObj[key] !== null) {
+                formData.append(key, productObj[key]);
+            }
+        });
+
+        // Step 3: Handle files (do NOT add to productObj)
+        if (data.thumbnail && data.thumbnail instanceof File) {
+            formData.append('Thumbnail', data.thumbnail);
+        } else if (data.thumbnail?.[0] && data.thumbnail[0] instanceof File) {
             formData.append('Thumbnail', data.thumbnail[0]);
         }
 
-        if (data.images) {
+        if (data?.images && Array.isArray(data.images) && data.images.length > 0) {
             for (let i = 0; i < data.images.length; i++) {
-                formData.append('Images', data.images[i]);
+                if (data.images[i] instanceof File) {
+                    formData.append('Images', data.images[i]);
+                }
             }
         }
 
-        selectedVariants.forEach((variant, index) => {
-            formData.append(`ProductVariants[${index}].VariantId`, variant.variantId);
-            formData.append(`ProductVariants[${index}].Value`, variant.value);
-        });
+        // Step 4: Handle variants
+        if (selectedProductVariants?.length !== 0)
+            selectedProductVariants?.forEach((variant, productVariantIndex) => {
+                const index = products?.findIndex(p => p.productVariants.findIndex(x => x.findIndex(d => d.name === variant.name)))
+                if (index === -1) {
+                    formData.append(`ProductVariants[${productVariantIndex}].VariantId`, variant.variantId!!.toString());
+                    formData.append(`ProductVariants[${productVariantIndex}].Name`, variant.name!!.toString());
+                    formData.append(`ProductVariants[${productVariantIndex}].Percentage`, variant.percentage!!.toString());
+                }
+                // else{
+                //     toast.error(`Please select variant: ${variants?.find(v => v.id === variant.variantId)?.name}`);
+                //   }
+                //     formData.append(`ProductVariants[${index}].VariantId`, variant.variantId!!.toString());
+                //     formData.append(`ProductVariants[${index}].Name`, variant.name!!.toString());
+                //     formData.append(`ProductVariants[${index}].Percentage`, variant.percentage!!.toString());
+
+            });
+
+        if (deleteProductVariants?.length !== 0) {
+            deleteProductVariants?.forEach((variant, index) => {
+                formData.append(`DeletedProductVariants[${index}].VariantId`, variant.variantId!!.toString());
+                formData.append(`DeletedProductVariants[${index}].Name`, variant.name!!.toString());
+                formData.append(`DeletedProductVariants[${index}].Percentage`, variant.percentage!!.toString());
+                if (variant.id !== undefined) {
+                    formData.append(`DeletedProductVariants[${index}].Id`, variant.id!!.toString());
+                }
+
+            });
+        }
 
 
         if (editingProduct) {
@@ -156,47 +218,6 @@ const Product = () => {
             createProductMutation.mutate(formData);
         }
     }
-
-
-    useEffect(() => {
-        if (editingProduct) {
-            setValue("name", editingProduct.name);
-            setValue("description", editingProduct.description);
-            setValue("price", editingProduct.price);
-            setValue("symbol", editingProduct.symbol);
-
-            if (editingProduct.storeId && editingProduct.storeName) {
-                const storeForEdit = { id: editingProduct.storeId, name: editingProduct.storeName } as iStore;
-                setSelectedStore(storeForEdit);
-                setStoreSearchTerm(editingProduct.storeName);
-            }
-            // @ts-ignore
-            if (editingProduct.subcategoryId && editingProduct.subCategoryName) {
-                // @ts-ignore
-                const subCategoryForEdit = { id: editingProduct.subcategoryId, name: editingProduct.subCategoryName } as iSubCategory;
-                setSelectedSubCategory(subCategoryForEdit);
-            }
-            if (editingProduct.productVariants) {
-                const variantsForEdit = editingProduct.productVariants.map(pv => ({ variantId: pv.variantId, variantName: pv.variantName, value: pv.value }));
-                setSelectedVariants(variantsForEdit);
-            }
-
-        }
-    }, [editingProduct, setValue]);
-
-
-    useEffect(() => {
-        if (!isDialogOpen) {
-            reset();
-            setEditingProduct(undefined);
-            setSelectedStore(undefined);
-            setSelectedSubCategory(undefined);
-            setStoreSearchTerm("");
-            setSelectedVariants([]);
-            setCurrentVariant(undefined);
-            setVariantValue("");
-        }
-    }, [isDialogOpen, reset]);
 
 
     const openImageDialog = (product: iProductResponseDto) => {
@@ -227,21 +248,85 @@ const Product = () => {
         }
     };
 
-    const addVariant = () => {
-        if (currentVariant && variantValue && !selectedVariants.some(v => v.variantId === currentVariant.id)) {
-            setSelectedVariants([...selectedVariants, { variantId: currentVariant.id??'', variantName: currentVariant.name, value: variantValue }]);
-            setCurrentVariant(undefined);
-            setVariantValue("");
+
+
+    const addOrUpdateProductVariant = (name: string, precentage: number) => {
+        if (currentVariant) {
+            const index = selectedProductVariants?.findIndex(v => v.name === name && v.variantId === currentVariant.id);
+
+            if (index !== -1) {
+                return
+            }
+
+            if (selectedProductVariants === undefined) {
+                setSelectedProductVariant([{
+                    variantId: currentVariant.id ?? '',
+                    name: name,
+                    percentage: precentage,
+                    id: undefined
+                }]);
+            }
+            else
+                setSelectedProductVariant([...selectedProductVariants, {
+                    variantId: currentVariant.id ?? '',
+                    name: name,
+                    percentage: precentage,
+                    id: undefined
+                }]);
+            console
+            resetProductVariant({ name: "", percentage: 0 });
         }
-    };
 
-    const removeVariant = (variantId: string) => {
-        setSelectedVariants(selectedVariants.filter(v => v.variantId !== variantId));
     };
 
 
-    if (data === undefined) return;
 
+    const removeProductVariant = (variant: IProductVariant) => {
+
+        if (variant.id !== undefined)
+            setDeleteProductVariant([...deleteProductVariants ?? [], variant]);
+        setSelectedProductVariant(selectedProductVariants?.filter(v => v !== variant));
+        console.log('this is deleting variant', deleteProductVariants);
+    };
+
+
+    useEffect(() => {
+        if (editingProduct) {
+            setValue("name", editingProduct.name);
+            setValue("description", editingProduct.description);
+            setValue("price", editingProduct.price);
+            setValue("symbol", editingProduct.symbol);
+            setStoreSearchTerm(editingProduct.storeName)
+            setSelectedStore({ id: editingProduct.storeId, name: editingProduct.storeName } as IStore)
+            setSelectedSubCategory({ id: editingProduct.subcategoryId, name: editingProduct.subCategoryName } as ISubCategory)
+
+            if (editingProduct.productVariants) {
+                setSelectedProductVariant(editingProduct.productVariants.flat());
+                console.log('this the product variant data', editingProduct.productVariants.flat());
+            }
+
+
+        }
+    }, [editingProduct, setValue]);
+
+
+    useEffect(() => {
+        if (!isDialogOpen) {
+            reset();
+            setEditingProduct(undefined);
+            setSelectedStore(undefined);
+            setSelectedSubCategory(undefined);
+            setStoreSearchTerm("");
+            setSelectedProductVariant([]);
+            setCurrentVariant(undefined);
+            setSelectedProductVariant(undefined);
+            setDeleteProductVariant(undefined)
+
+        }
+    }, [isDialogOpen, reset]);
+
+
+    if (products === undefined) return;
 
     return (
         <div className="flex flex-col w-full h-full space-y-6 p-6 animate-in fade-in duration-500">
@@ -311,7 +396,7 @@ const Product = () => {
                                     />
                                     {showStoreResults && stores && (
                                         <ul className="border rounded mt-1 max-h-40 overflow-y-auto">
-                                            {stores.map((store: iStore) => (
+                                            {stores.map((store: IStore) => (
                                                 <li key={store.id} onClick={() => {
                                                     setSelectedStore(store);
                                                     setStoreSearchTerm(store.name);
@@ -377,14 +462,24 @@ const Product = () => {
                                         error={errors.symbol?.message}
                                         {...register("symbol")}
                                     />
-                                </div>
+                                    {/* {currencies && currencies?.map((statusItem, sIndex) => (
+                                        <DropdownMenuItem
+                                            key={sIndex}
+                                            onClick={() => {
+                                            }}>
+                                            {statusItem.name}
+                                        </DropdownMenuItem>
+                                    ))} */}
 
+
+                                </div>
+                                <div className="h-6" />
                                 <InputImageWithLabelAndError
                                     key={editingProduct ? `edit-thumb-${editingProduct.id}` : 'create-thumb'}
                                     initialPreviews={editingProduct?.thumbnail ? [convertImageToValidUrl(editingProduct.thumbnail)] : []}
                                     label="Thumbnail"
                                     error={errors.thumbnail?.message?.toString()}
-                                      height={300}
+                                    height={150}
                                     onChange={
 
                                         (files: File[]) => {
@@ -398,10 +493,9 @@ const Product = () => {
                                         }
                                     }
                                 />
-
                                 <InputImageWithLabelAndError
                                     key={editingProduct ? `edit-imgs-${editingProduct.id}` : 'create-imgs'}
-                                    initialPreviews={editingProduct ? editingProduct.productImages.map(i => convertImageToValidUrl(i.imageUrl)) : []}
+                                    initialPreviews={editingProduct && editingProduct.productImages ? editingProduct.productImages.map(i => convertImageToValidUrl(i)) : []}
                                     label="Images"
                                     error={errors.images?.message?.toString()}
                                     isSingle={false}
@@ -410,51 +504,82 @@ const Product = () => {
 
                                         (files: File[]) => {
                                             if (files?.length > 0) {
-
                                                 register("images")
                                                 setValue("images", files)
                                             }
-
-
                                         }
                                     }
                                 />
                             </fieldset>
+                            <div className="h-2" />
 
 
-                            <fieldset disabled={!selectedSubCategory}>
-                                <label>Variants</label>
-                                <div className="flex gap-2 items-center">
-                                    <select
-                                        value={currentVariant?.id ?? ""}
+                            <fieldset disabled={false}>
+
+                                <div className="flex flex-col">
+                                    <SelectLableAndError
+                                        label="Variants"
+                                        dataset={variants ?? []}
+                                        initialData={currentVariant?.name}
                                         onChange={(e) => {
-                                            const variant = variants?.find(v => v.id === e.target.value);
-                                            if(variant!==undefined)
-                                            setCurrentVariant({id:variant?.id,name:variant.name});
+                                            const variant = variants?.find(v => v.name === e);
+                                            if (variant !== undefined)
+                                                setCurrentVariant({ id: variant?.id, name: variant.name });
                                         }}
-                                        className="w-full p-2 border rounded"
-                                    >
-                                        <option value="">Select a variant</option>
-                                        {variants&&variants?.map(v => (
-                                            <option key={v.id} value={v.id}>{v.name}</option>
-                                        ))}
-                                    </select>
-                                    <Input
-                                        type="text"
-                                        placeholder="Value"
-                                        value={variantValue}
-                                        onChange={(e) => setVariantValue(e.target.value)}
                                     />
-                                    <Button type="button" onClick={addVariant}>Add</Button>
                                 </div>
-                                <ul className="mt-2 space-y-2">
-                                    {selectedVariants.map(v => (
-                                        <li key={v.variantId} className="flex justify-between items-center p-2 border rounded">
-                                            <span>{v.variantName}: {v.value}</span>
-                                            <Button type="button" variant="destructive" size="sm" onClick={() => removeVariant(v.variantId)}>Remove</Button>
-                                        </li>
-                                    ))}
-                                </ul>
+
+                            </fieldset>
+
+
+                            <fieldset disabled={currentVariant === undefined}>
+
+                                <div className="flex flex-col">
+                                    <div className="mt-2 flex flex-wrap gap-2 mb-2">
+                                        {selectedProductVariants && selectedProductVariants?.map((variant, index) => (
+                                            <div
+                                                key={index} className="flex items-center space-x-2 bg-gray-200 px-2 py-1 rounded">
+                                                {<span>{variants?.find(x => x.id == variant.variantId)?.name}: {
+                                                    variants?.find(v => v.id === variant.variantId)?.name.toLowerCase() === ('color') ? <div
+                                                        style={{ background: variant.name, height: 20, width: 20, borderRadius: '50%', borderColor: 'black', borderWidth: 1 }}
+                                                    /> :
+                                                        variant.name
+                                                }</span>}
+                                                <div onClick={() => {
+                                                    removeProductVariant(variant)
+                                                }} className="text-red-500 font-bold cursor-pointer">x</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <label>Sub Variant</label>
+                                    <div>
+                                        <InputWithLabelAndError
+                                            error={productVariantErrors.name?.message}
+                                            type="text"
+                                            placeholder="Name"
+                                            {...productVariantRegeister("name")}
+
+                                        />
+                                        <div className="h-1" />
+                                        <InputWithLabelAndError
+                                            error={productVariantErrors.percentage?.message}
+                                            type="number"
+                                            placeholder="Precentage from Price"
+                                            {...productVariantRegeister("percentage", { valueAsNumber: true })}
+                                        />
+                                        <Button
+                                            onClick={
+                                                productVariantHandle((data) => {
+
+                                                    addOrUpdateProductVariant(data.name, data.percentage);
+
+                                                })
+                                            }
+                                            type="button">{"Add"}</Button>
+
+                                    </div>
+                                </div>
+
                             </fieldset>
                         </form>
                     </Dialog>
@@ -470,11 +595,12 @@ const Product = () => {
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Name</th>
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Store</th>
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Price</th>
+                                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap">Product Variant</th>
                                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="[&_tr:last-child]:border-0">
-                            {data?.map((product, pIndex) => (
+                        <tbody className="[&_tr:last-child]:border-0 bg-white">
+                            {products && products?.map((product, pIndex) => (
                                 <tr key={pIndex} className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
                                     <td className="p-4 align-middle">
                                         <Image
@@ -487,7 +613,43 @@ const Product = () => {
                                     </td>
                                     <td className="p-4 align-middle font-medium">{product.name}</td>
                                     <td className="p-4 align-middle">{product.storeName}</td>
-                                    <td className="p-4 align-middle">{`${product.price} ${currentCurrency?.symbol}`}</td>
+                                    <td className="p-4 align-middle">
+                                        <div className="flex flex-row whitespace-nowrap">
+                                            {`${product.price} ${currentCurrency?.symbol ?? product.symbol}`}
+                                        </div>
+                                    </td>
+                                    <td className="p-4 align-middle">
+                                        <div className="flex flex-row whitespace-nowrap">
+                                            {product.productVariants && product.productVariants?.map((variant, index) => (
+                                                <div key={index} className="flex">
+                                                    {<div className="flex flex-row">
+                                                        <span
+                                                            className="bg-white"
+                                                        >{variants?.find(x => x.id == variant.at(index)?.variantId)?.name}
+                                                            {' '}:</span>
+                                                        <div className="flex flex-row whitespace-nowrap gap-0.5 ml-2">
+                                                            {
+                                                                variant?.map((value, variantIndex) => {
+                                                                    return <span key={variantIndex}>
+                                                                        {
+                                                                            variants?.find(x => x.id == variant.at(variantIndex)?.variantId)?.name.toLowerCase() === ('color') ? <div
+                                                                                style={{ background: value.name, height: 20, width: 20, borderRadius: '50%', borderColor: 'black', borderWidth: 1 }}
+                                                                            /> :
+                                                                                value.name
+                                                                        }
+                                                                    </span>
+                                                                })
+
+                                                            }
+
+                                                        </div>
+                                                    </div>
+
+                                                    }
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </td>
                                     <td className="p-4 align-middle">
                                         <div className="flex gap-2">
                                             <Button variant="outline" size="icon" onClick={() => { setEditingProduct(product); setIsDialogOpen(true); }}>
@@ -495,7 +657,7 @@ const Product = () => {
                                             </Button>
                                             <Button variant="destructive" size="icon" onClick={() => {
                                                 setEditingProduct(product);
-                                                deleteProductMutation.mutate(product.id)
+                                                deleteProductMutation.mutate({ productId: product.id, storeId: product.storeId })
                                             }}>
                                                 <Trash2 className="h-4 w-4" />
                                             </Button>
@@ -515,7 +677,7 @@ const Product = () => {
                             alt={selectedProduct.name}
                             className="max-w-screen-xl max-h-screen-xl object-contain"
                             height={window.innerHeight * 0.8}
-                            src={ selectedProduct.thumbnail}
+                            src={selectedProduct.thumbnail}
                             width={window.innerWidth * 0.8}
                         />
                         <Button

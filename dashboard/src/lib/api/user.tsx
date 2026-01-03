@@ -1,17 +1,13 @@
-import { Util } from "@/util/globle";
+
 import axios from "axios";
-import { iUserInfo } from "../../model/iUserInfo";
+import { api_auth } from "./api_config";
+import { IUserInfo } from "../../model/IUserInfo";
 import { iUserUpdateInfoDto } from "../../dto/response/iUserUpdateInfoDto";
 
 async function getMyInfo() {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/me';
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
-        return result.data as iUserInfo
+        const result = await api_auth.get('/api/User/me')
+        return result.data as IUserInfo
     } catch (error) {
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";
@@ -49,18 +45,9 @@ async function updateUser({
     if (newPassword != null && newPassword != undefined)
         userData.append("newPassword", newPassword)
 
-    console.log(`this the data is ${JSON.stringify(userData)}`)
-    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User';
     try {
-        const result = await axios.put(url,
-            userData, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-
-            }
-        })
+        const result = await api_auth.put('/api/User', userData)
         if (result.status == 200) {
-            console.log("result.data ", result.data);
             return true
         } else {
             return false
@@ -84,13 +71,8 @@ async function updateUser({
 }
 
 async function getUserPages() {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/User/pages`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/User/pages`)
         return result.data as number
     } catch (error) {
         // Extract meaningful error message
@@ -110,14 +92,9 @@ async function getUserPages() {
 }
 
 async function getUserAtPage(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/User/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
-        return (result.data as iUserInfo[])
+        const result = await api_auth.get(`/api/User/${pageNumber}`)
+        return (result.data as IUserInfo[])
     } catch (error) {
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";
@@ -136,13 +113,8 @@ async function getUserAtPage(pageNumber: number) {
 }
 
 async function changeUserStatus(userId: string) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/User/status/${userId}`;
     try {
-        const result = await axios.delete(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.delete(`/api/User/status/${userId}`)
         return result.data as boolean
     } catch (error) {
         // Extract meaningful error message
@@ -164,13 +136,8 @@ async function changeUserStatus(userId: string) {
 
 async function createUser(userData: any) {
 
-    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/signup';
     try {
-        const result = await axios.post(url, userData, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.post('/api/User/signup', userData)
         return result.data as boolean
     } catch (error) {
         // Extract meaningful error message
@@ -189,16 +156,10 @@ async function createUser(userData: any) {
 
 }
 
-async function  updateUserData(userData:any) {
+async function updateUserData(userData: any) {
 
-    
-    const url = process.env.NEXT_PUBLIC_BASE_URL + '/api/User/signup';
     try {
-        const result = await axios.post(url, userData, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.post('/api/User/signup', userData)
         return result.data as boolean
     } catch (error) {
         // Extract meaningful error message

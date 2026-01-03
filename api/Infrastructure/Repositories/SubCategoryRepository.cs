@@ -53,7 +53,7 @@ public class SubCategoryRepository(AppDbContext context) : ISubCategoryRepositor
 
     public async Task<bool> IsExist(Guid id)
     {
-        return await context.SubCategories.FindAsync(id)!=null;
+        return await context.SubCategories.AsNoTracking().AnyAsync(x=>x.Id==id)==true;
 
     }
 

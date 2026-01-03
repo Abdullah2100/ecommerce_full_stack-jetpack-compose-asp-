@@ -1,3 +1,4 @@
+import { IProductVariant } from "@/model/IProductVariant";
 
 export default interface iProductResponseDto {
     id: string;
@@ -10,6 +11,6 @@ export default interface iProductResponseDto {
     storeName: string;
     subcategoryId: string;
     subCategoryName: string;
-    productImages: { id: string; imageUrl: string }[];
-    productVariants: { id: string; value: string; variantId: string; variantName: string }[];
+    productImages: string[];
+    productVariants: IProductVariant[][];
 }

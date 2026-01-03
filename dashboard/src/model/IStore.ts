@@ -1,4 +1,4 @@
-export default interface iStore {
+export default interface IStore {
     id: string,
     name: string,
     smallImage: string,

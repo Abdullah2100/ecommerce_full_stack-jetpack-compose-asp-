@@ -25,6 +25,7 @@ public static class ProductMapperExtension
                         => g.Select(pvH => pvH.ToProductVariantDto()).ToList()
                     ).ToList(),
                 StoreId = product.StoreId,
+                StoreName = product.Store.Name,
                 SubcategoryId = product.SubcategoryId,
             };
         }

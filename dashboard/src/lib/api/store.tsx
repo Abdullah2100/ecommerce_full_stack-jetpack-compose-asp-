@@ -1,18 +1,13 @@
 
 import axios from "axios";
-import { Util } from "@/util/globle";
-import iStore from "../../model/iStore";
+import { api_auth } from "./api_config";
+import IStore from "@/model/IStore";
 
 
 
 async function getStorePages() {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store/pages`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
+        const result = await api_auth.get(`/api/Store/pages`)
         return result.data as number
     } catch (error) {
         // Extract meaningful error message
@@ -32,14 +27,9 @@ async function getStorePages() {
 }
 
 async function getStoresByName(name: string) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store/name/${name}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        });
-        return result.data as iStore[];
+        const result = await api_auth.get(`/api/Store/name/${name}`);
+        return result.data as IStore[];
     } catch (error) {
         let errorMessage = "An unexpected error occurred";
         if (axios.isAxiosError(error)) {
@@ -52,14 +42,9 @@ async function getStoresByName(name: string) {
 }
 
 async function getStoreAtPage(pageNumber: number) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store/all/${pageNumber}`;
     try {
-        const result = await axios.get(url, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            }
-        })
-        return (result.data as iStore[])
+        const result = await api_auth.get(`/api/Store/all/${pageNumber}`)
+        return (result.data as IStore[])
     } catch (error) {
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";
@@ -78,14 +63,8 @@ async function getStoreAtPage(pageNumber: number) {
 }
 
 async function changeStoreStatus(store_id: string) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store/status/${store_id}`;
     try {
-        const result = await axios.patch(url, undefined, {
-            headers: {
-                'Authorization': `Bearer ${Util.token}`
-            },
-
-        })
+        const result = await api_auth.patch(`/api/Store/status/${store_id}`)
         return result.data as boolean
     } catch (error) {
         // Extract meaningful error message
@@ -105,18 +84,14 @@ async function changeStoreStatus(store_id: string) {
 }
 
 async function createStore(data: FormData) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store`;
-    console.log(`the store create url is ${url}`)
     try {
-        const result = await axios.post(url, data, {
+        const result = await api_auth.post(`/api/Store`, data, {
             headers: {
-                'Authorization': `Bearer ${Util.token}`,
                 'Content-Type': 'multipairt/form-data'
             }
         })
         return result.data
     } catch (error) {
-        console.log(`this the create store error ${JSON.stringify(error)}`)
         // Extract meaningful error message
         let errorMessage = "An unexpected error occurred";
 
@@ -133,11 +108,9 @@ async function createStore(data: FormData) {
 }
 
 async function updateStore(data: FormData) {
-    const url = process.env.NEXT_PUBLIC_BASE_URL + `/api/Store`;
     try {
-        const result = await axios.put(url, data, {
+        const result = await api_auth.put(`/api/Store`, data, {
             headers: {
-                'Authorization': `Bearer ${Util.token}`,
                 'Content-Type': 'multipart/form-data'
             }
         })
