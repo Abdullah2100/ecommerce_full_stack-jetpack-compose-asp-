@@ -1,6 +1,6 @@
 package com.vsnappy1.datepicker.data.model
 
-import com.vsnappy1.extension.isEqual
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension.isEqual
 import java.util.Calendar
 
 class SelectionLimiter(

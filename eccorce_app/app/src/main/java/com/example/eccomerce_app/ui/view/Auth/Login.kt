@@ -42,6 +42,7 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.eccomerce_app.ui.component.TextSecureInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
+import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -70,24 +71,35 @@ fun LoginScreen(
 
     val errorMessageValidation = remember { mutableStateOf("") }
 
+    fun updateConditionValue(
+        isSendingDataValue: Boolean? = null,
+        isEmailErrorValue: Boolean? = null,
+        isPasswordErrorValue: Boolean? = null
+    ) {
+        when {
+            isSendingDataValue != null -> isSendingData.value = isSendingDataValue
+            isEmailErrorValue != null -> isEmailError.value = isEmailErrorValue
+            isPasswordErrorValue != null -> isPasswordError.value = isPasswordErrorValue
+        }
+    }
+
 
     fun validateLoginInput(
         username: String, password: String
     ): Boolean {
 
-        isEmailError.value = false
-        isPasswordError.value = false
+        updateConditionValue(isEmailErrorValue = false, isPasswordErrorValue = false)
         when {
             username.trim().isEmpty() -> {
                 errorMessageValidation.value = context.getString(R.string.email_must_not_be_empty)
-                isEmailError.value = true
+                updateConditionValue(isEmailErrorValue = true)
                 return false
             }
 
             password.trim().isEmpty() -> {
                 errorMessageValidation.value =
                     context.getString(R.string.password_must_not_be_empty)
-                isPasswordError.value = true
+                updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
 
@@ -116,10 +128,8 @@ fun LoginScreen(
         ConstraintLayout(
             modifier = Modifier
                 .background(Color.White)
-                .padding(horizontal = 10.dp)
-                .padding(
-                    top = it.calculateTopPadding(), bottom = it.calculateBottomPadding()
-                )
+                .padding(it)
+                .padding(start =10.dp, end = 10.dp )
                 .fillMaxSize()
         ) {
             val (bottomRef, inputRef) = createRefs()
@@ -225,17 +235,17 @@ fun LoginScreen(
                             }
                         } else {
                             coroutine.launch {
-                                isSendingData.value = true
+                                updateConditionValue(isSendingDataValue = true)
 
                                 delay(10)
 
                                 val token =
-                                    //async { authKoin.generateTokenNotification() }.await()
+                                    async { authKoin.generateTokenNotification() }.await()
 
-                                Pair(
-                                    "fv6pNFrXSsC7o29xq991br:APA91bHiUFcyvxKKxcqWoPZzoIaeWEs6_uN36YI0II5HHpN3HP-dUQap9UbnPiyBB8Fc5xX6GiCYbDQ7HxuBlXZkAE2P0T82-DRQ160EiKCJ9tlPgfgQxa4",
-                                    null
-                                )
+//                                Pair(
+//                                    "fv6pNFrXSsC7o29xq991br:APA91bHiUFcyvxKKxcqWoPZzoIaeWEs6_uN36YI0II5HHpN3HP-dUQap9UbnPiyBB8Fc5xX6GiCYbDQ7HxuBlXZkAE2P0T82-DRQ160EiKCJ9tlPgfgQxa4",
+//                                    null
+//                                )
                                 if (!token.first.isNullOrEmpty()) {
                                     val result = authKoin.loginUser(
                                         userNameOrEmail.value.text,
@@ -253,7 +263,7 @@ fun LoginScreen(
                                         snackBarHostState.showSnackbar(result)
 
                                 } else {
-                                    isSendingData.value = false
+                                    updateConditionValue(isSendingDataValue = false)
                                     coroutine.launch {
                                         snackBarHostState.showSnackbar(
                                             token.second

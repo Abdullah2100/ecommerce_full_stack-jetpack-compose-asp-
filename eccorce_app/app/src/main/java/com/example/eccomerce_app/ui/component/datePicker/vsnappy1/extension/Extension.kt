@@ -1,4 +1,4 @@
-package com.vsnappy1.extension
+package com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension
 
 import android.content.res.Resources
 import androidx.compose.foundation.clickable

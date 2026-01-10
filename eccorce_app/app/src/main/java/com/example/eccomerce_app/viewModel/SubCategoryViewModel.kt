@@ -23,10 +23,10 @@ import java.util.UUID
 
 class SubCategoryViewModel(val subCategoryRepository: SubCategoryRepository) : ViewModel() {
 
-     val _SubCategories = MutableStateFlow<List<SubCategory>?>(null)
+   private  val _SubCategories = MutableStateFlow<List<SubCategory>?>(null)
     val subCategories = _SubCategories.asStateFlow()
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
@@ -133,8 +133,7 @@ class SubCategoryViewModel(val subCategoryRepository: SubCategoryRepository) : V
 
     fun getStoreSubCategories(storeId: UUID, pageNumber: Int = 1) {
         viewModelScope.launch(Dispatchers.Main + _coroutineException) {
-            val result = subCategoryRepository.getStoreSubCategory(storeId, pageNumber)
-            when (result) {
+            when (val result = subCategoryRepository.getStoreSubCategory(storeId, pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<SubCategoryDto>
 

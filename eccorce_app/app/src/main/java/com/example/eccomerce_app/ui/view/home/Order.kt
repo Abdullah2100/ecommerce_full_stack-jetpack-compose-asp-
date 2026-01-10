@@ -210,7 +210,7 @@ fun OrderScreen(orderViewModel: OrderViewModel) {
                 state = lazyState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = it.calculateTopPadding(), bottom = it.calculateBottomPadding())
+                    .padding(it)
                     .background(Color.White),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -333,7 +333,6 @@ fun OrderScreen(orderViewModel: OrderViewModel) {
                                         "",
                                         modifier = Modifier.clickable(onClick = {
                                              openQrDialog(order.id)
-
                                         })
                                     )
                                 }

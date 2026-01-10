@@ -32,20 +32,20 @@ class AuthViewModel(
     val localDao: LocaleDao
 ) : ViewModel() {
 
-    val _isLoading = MutableStateFlow(false)
+    private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
     val errorMessage = MutableStateFlow<String?>(null)
 
 
-    val _currentScreen = MutableStateFlow<Int?>(null)
+    private val _currentScreen = MutableStateFlow<Int?>(null)
     val currentScreen = _currentScreen.asStateFlow()
 
     suspend fun clearErrorMessage() {
         errorMessage.emit(null)
     }
 
-    val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
         viewModelScope.launch(Dispatchers.IO) {
             _isLoading.emit(false)
@@ -91,6 +91,7 @@ class AuthViewModel(
                 false -> {
                     _currentScreen.emit(1)
                 }
+
                 else -> {
                     when (authData == null) {
                         true -> {
@@ -225,8 +226,7 @@ class AuthViewModel(
     ): String? {
         _isLoading.emit(true)
 
-        val result = authRepository.getOtp(email)
-        when (result) {
+        when (val result = authRepository.getOtp(email)) {
             is NetworkCallHandler.Successful<*> -> {
                 return null
             }
@@ -249,8 +249,7 @@ class AuthViewModel(
     ): String? {
         _isLoading.emit(true)
 
-        val result = authRepository.verifyingOtp(email, otp)
-        when (result) {
+        when (val result = authRepository.verifyingOtp(email, otp)) {
             is NetworkCallHandler.Successful<*> -> {
                 return null
             }
@@ -275,8 +274,7 @@ class AuthViewModel(
 
     ): String? {
 
-        val result = authRepository.resetPassword(email, otp, newPassword)
-        when (result) {
+        when (val result = authRepository.resetPassword(email, otp, newPassword)) {
             is NetworkCallHandler.Successful<*> -> {
                 val authData = result.data as AuthDto
                 val authDataHolder = AuthModelEntity(

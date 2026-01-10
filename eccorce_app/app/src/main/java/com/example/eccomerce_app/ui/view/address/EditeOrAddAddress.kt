@@ -279,7 +279,9 @@ fun EditOrAddLocationScreen(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.White),
+                            .background(Color.White)
+                            .padding(paddingValue)
+                        ,
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -308,8 +310,7 @@ fun EditOrAddLocationScreen(
                     LazyColumn(
                         modifier = Modifier
                             .background(Color.White)
-                            .padding(top = 100.dp)
-                            .padding(horizontal = 15.dp)
+                            .padding(paddingValue)
                             .fillMaxHeight()
                             .fillMaxWidth()
                     ) {

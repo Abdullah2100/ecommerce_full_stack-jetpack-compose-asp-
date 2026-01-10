@@ -463,10 +463,7 @@ fun MapHomeScreen(
 
             GoogleMap(
                 modifier = Modifier
-                    .padding(
-                        top = paddingValue.calculateTopPadding(),
-                        bottom = paddingValue.calculateBottomPadding()
-                    )
+                    .padding(paddingValue  )
                     .fillMaxHeight(),
                 cameraPositionState = marker,
                 onMapClick = { latLng ->

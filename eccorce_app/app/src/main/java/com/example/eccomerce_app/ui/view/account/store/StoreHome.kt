@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Timelapse
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -91,13 +90,13 @@ import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import com.example.e_commercompose.R
 import com.example.e_commercompose.model.Category
+import com.example.e_commercompose.model.SubCategory
 import com.example.e_commercompose.model.SubCategoryUpdate
 import com.example.e_commercompose.model.enMapType
-import com.example.e_commercompose.ui.component.BannerBage
-import com.example.e_commercompose.ui.component.CustomAuthBottom
+import com.example.eccomerce_app.ui.component.BannerBage
 import com.example.e_commercompose.ui.component.CustomButton
 import com.example.e_commercompose.ui.component.ProductLoading
-import com.example.e_commercompose.ui.component.ProductShape
+import com.example.eccomerce_app.ui.component.ProductShape
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
@@ -115,7 +114,7 @@ import com.example.eccomerce_app.viewModel.UserViewModel
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.model.LatLng
 import com.vsnappy1.datepicker.DatePicker
-import com.vsnappy1.timepicker.TimePicker
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.timepicker.TimePicker
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -179,8 +178,8 @@ fun StoreScreen(
 
     val page = remember { mutableIntStateOf(1) }
 
-
-    val isChangingInData =  storeViewModel.isUpdate.collectAsState()
+    //this to recognize if there any update data store is update
+    val isStoreUpdateData = storeViewModel.isUpdate.collectAsState()
 
     val isLoadingMore = remember { mutableStateOf(false) }
     val isRefresh = remember { mutableStateOf(false) }
@@ -208,7 +207,8 @@ fun StoreScreen(
     val stores = storeViewModel.stores.collectAsState()
     val storeData = stores.value?.firstOrNull { it.id == (storeId.value ?: myStoreId) }
     val storeBanners = banners.value?.filter { it.storeId == storeId.value }
-    val storeSubCategories = subcategories.value?.filter { it.storeId == (storeId.value?:myStoreId) }
+    val storeSubCategories =
+        subcategories.value?.filter { it.storeId == (storeId.value ?: myStoreId) }
     val storeProduct =
         if (products.value != null && myStoreId != null) products.value!!.filter { it.storeId == (myStoreId) }
         else emptyList()
@@ -241,10 +241,11 @@ fun StoreScreen(
 
     fun handlingLocation(mapType: enMapType, currentLocation: Location): LatLng? {
         return when {
-            mapType == enMapType.MyStore || isFromHome ==true ->
+            mapType == enMapType.MyStore || isFromHome == true ->
                 if (storeData == null) null
                 else
                     LatLng(storeData.latitude, storeData.longitude)
+
             else -> {
                 LatLng(currentLocation.latitude, currentLocation.longitude)
 
@@ -312,6 +313,40 @@ fun StoreScreen(
             }
         })
 
+    fun updateConditionValue(
+        isLoadingMoreValue: Boolean? = null,
+        isRefreshValue: Boolean? = null,
+        isUpdatedValue: Boolean? = null,
+        isDeletedValue: Boolean? = null,
+        isDateTimeBottomSheetOpenValue: Boolean? = null,
+        isOpenBottomSheetValue: Boolean? = null,
+        isChangeSubCategoryValue: Boolean? = null,
+        isExpandedCategoryValue: Boolean? = null,
+        isShownDateDialogValue: Boolean? = null,
+        isSendingDataValue: Boolean? = null,
+        isPigImageValue: Boolean? = null,
+        resetIsPigImage: Boolean = false
+    ) {
+        if (isLoadingMoreValue != null) isLoadingMore.value = isLoadingMoreValue
+        if (isRefreshValue != null) isRefresh.value = isRefreshValue
+        if (isUpdatedValue != null) isUpdated.value = isUpdatedValue
+        if (isDeletedValue != null) isDeleted.value = isDeletedValue
+        if (isDateTimeBottomSheetOpenValue != null) isDateTimeBottomSheetOpen.value =
+            isDateTimeBottomSheetOpenValue
+        if (isOpenBottomSheetValue != null) isOpenBottomSheet.value = isOpenBottomSheetValue
+        if (isChangeSubCategoryValue != null) isChangeSubCategory.value = isChangeSubCategoryValue
+        if (isExpandedCategoryValue != null) isExpandedCategory.value = isExpandedCategoryValue
+        if (isShownDateDialogValue != null) isShownDateDialog.value = isShownDateDialogValue
+        if (isSendingDataValue != null) isSendingData.value = isSendingDataValue
+
+        if (resetIsPigImage) {
+            isPigImage.value = null
+        } else if (isPigImageValue != null) {
+            isPigImage.value = isPigImageValue
+        }
+    }
+
+
     val onImageSelection = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
     )
@@ -322,7 +357,7 @@ fun StoreScreen(
                 when (isPigImage.value == null || bottomSheetType.value == EnBottomSheetType.Banner) {
                     true -> {
                         bannerImage.value = fileHolder
-                        isShownDateDialog.value = true
+                        updateConditionValue(isShownDateDialogValue = true)
                     }
 
                     else -> {
@@ -343,7 +378,7 @@ fun StoreScreen(
                         }
                     }
                 }
-                isPigImage.value = null
+                updateConditionValue(resetIsPigImage = true)
             }
         }
     }
@@ -373,12 +408,19 @@ fun StoreScreen(
 
 
     fun getStoreInfoByStoreId(
-        id: UUID? = UUID.randomUUID(), isLoading: MutableState<Boolean>? = null
+        id: UUID,
+        isLoading: Boolean?=null,
+        updateLoadingState:((value: Boolean)->Unit)?  = null
     ) {
-        storeViewModel.getStoreData(storeId = id!!)
+        
+        storeViewModel.getStoreData(storeId = id)
         bannerViewModel.getStoreBanner(id)
         subCategoryViewModel.getStoreSubCategories(id, 1)
-        productViewModel.getProducts(mutableIntStateOf(1), id, isLoading)
+        productViewModel.getProducts(
+            1, id, isLoading?:false,
+            updatePageNumber = {value->page.intValue=value},
+            updateLoadingState = {value->updateLoadingState?.invoke(value)}
+        )
     }
 
 
@@ -389,11 +431,11 @@ fun StoreScreen(
         }
 
         keyboardController?.hide()
-        isSendingData.value = true
+        updateConditionValue(isSendingDataValue = true)
         operationType.value = EnOperation.STORE
         coroutine.launch {
             val result = async {
-                if (myInfo.value?.storeId!=null) storeViewModel.updateStore(
+                if (myInfo.value?.storeId != null) storeViewModel.updateStore(
                     name = storeName.value.text,
                     wallpaperImage = createdStoreInfoHolder.value?.wallpaperImage,
                     smallImage = createdStoreInfoHolder.value?.smallImage,
@@ -415,7 +457,7 @@ fun StoreScreen(
                     })
             }.await()
 
-            isSendingData.value = false
+            updateConditionValue(isSendingDataValue = false)
             operationType.value = null
 
             if (result != null) {
@@ -432,8 +474,7 @@ fun StoreScreen(
     fun createOrUpdateSupCategory() {
         coroutine.launch {
             keyboardController?.hide()
-            isSendingData.value = true
-            isOpenBottomSheet.value = false
+            updateConditionValue(isSendingDataValue = true, isOpenBottomSheetValue = false)
 
             val result = async {
                 if (isUpdated.value) subCategoryViewModel.updateSubCategory(
@@ -448,14 +489,13 @@ fun StoreScreen(
                     categoryId = categories.value!!.firstOrNull() { it.name == categoryName.value.text }!!.id
                 )
             }.await()
-            isSendingData.value = false
-            isExpandedCategory.value = false
+            updateConditionValue(isSendingDataValue = false, isExpandedCategoryValue = false)
 
             if (result.isNullOrEmpty()) {
                 categoryName.value = TextFieldValue("")
                 subCategoryName.value = TextFieldValue("")
                 if (isUpdated.value) {
-                    isUpdated.value = false
+                    updateConditionValue(isUpdatedValue = false)
                 }
             } else {
                 snackBarHostState.showSnackbar(result)
@@ -467,26 +507,26 @@ fun StoreScreen(
 
     fun deleteSupCategory() {
         coroutine.launch {
-            isSendingData.value = true
-            isDeleted.value = true
+            updateConditionValue(isSendingDataValue = true, isDeletedValue = true)
             keyboardController?.hide()
             val result = async {
                 subCategoryViewModel.deleteSubCategory(
                     id = selectedSubCategoryIdHolder.value!!
                 )
             }.await()
-            isSendingData.value = false
-            isDeleted.value = false
+            updateConditionValue(isSendingDataValue = false, isDeletedValue = false)
             if (result.isNullOrEmpty()) {
-                isOpenBottomSheet.value = false
+                updateConditionValue(
+                    isOpenBottomSheetValue = false,
+                    isExpandedCategoryValue = false
+                )
                 selectedSubCategoryIdHolder.value = null
-                isExpandedCategory.value = false
                 categoryName.value = TextFieldValue("")
                 subCategoryName.value = TextFieldValue("")
-                isUpdated.value = false
+                updateConditionValue(isUpdatedValue = false)
                 selectedSubCategoryId.value = null
             } else {
-                isOpenBottomSheet.value = true
+                updateConditionValue(isOpenBottomSheetValue = true)
                 errorMessage.value = result
             }
 
@@ -496,8 +536,7 @@ fun StoreScreen(
 
     fun createBanner() {
         coroutine.launch {
-            isOpenBottomSheet.value = false
-            isSendingData.value = true
+            updateConditionValue(isOpenBottomSheetValue = false, isSendingDataValue = true)
             val result = async {
                 bannerViewModel.createBanner(
                     bannerEndDateTime.value.toString(),
@@ -514,6 +553,202 @@ fun StoreScreen(
         }
     }
 
+    fun openBottonSheetAndUpdateType(supCategory: EnBottomSheetType) {
+        bottomSheetType.value = supCategory
+        updateConditionValue(isOpenBottomSheetValue = true)
+
+    }
+
+    fun updateDateTime(year: Int, month: Int, day: Int) {
+        if (bannerEndDateTime.value != null)
+            bannerEndDateTime.value = LocalDateTime(
+                year = year,
+                month = month + 1,
+                day = day,
+                hour = bannerEndDateTime.value!!.hour,
+                second = bannerEndDateTime.value!!.second,
+                minute = 0
+            )
+        else {
+            bannerEndDateTime.value = LocalDateTime(
+                year = year,
+                month = month + 1,
+                day = day,
+                hour = 0,
+                second = 0,
+                minute = 0
+            )
+        }
+        updateConditionValue(isDateTimeBottomSheetOpenValue = false)
+    }
+
+    fun updateDateTime(hour: Int, second: Int) {
+        if (bannerEndDateTime.value != null)
+            bannerEndDateTime.value = LocalDateTime(
+                year = bannerEndDateTime.value!!.year,
+                month = bannerEndDateTime.value!!.month,
+                day = bannerEndDateTime.value!!.day,
+                hour = hour,
+                second = second,
+                minute = 1
+            )
+        else {
+            if (hour > 0) {
+                bannerEndDateTime.value = LocalDateTime(
+                    year = 1,
+                    month = 1,
+                    day = 1,
+                    hour = hour,
+                    second = second,
+                    minute = 1
+                )
+            }
+        }
+
+        updateConditionValue(isDateTimeBottomSheetOpenValue = false)
+
+    }
+
+    fun dismissBanner() {
+        bannerEndDateTime.value = null
+        bannerImage.value = null
+    }
+
+    fun dismissSubCategory() {
+
+        updateConditionValue(isExpandedCategoryValue = false)
+        categoryName.value = TextFieldValue("")
+        subCategoryName.value = TextFieldValue("")
+    }
+
+    fun dismissBottonSheet() {
+        updateConditionValue(isOpenBottomSheetValue = false)
+        when (bottomSheetType.value) {
+            EnBottomSheetType.Banner -> {
+                dismissBanner()
+            }
+
+            EnBottomSheetType.SupCategory -> {
+                dismissSubCategory()
+            }
+
+            else -> {
+
+            }
+        }
+    }
+
+    fun updateBottonSheetTimeType(type: EnDateTimeType) {
+        keyboardController?.hide()
+        bottomSheetDateTimeType.value = type
+        updateConditionValue(isDateTimeBottomSheetOpenValue = true)
+    }
+
+    fun selectCategory(value: String) {
+        updateConditionValue(isExpandedCategoryValue = false)
+        categoryName.value =
+            TextFieldValue(value)
+
+    }
+
+    fun onRefreshDo() {
+        coroutine.launch {
+            updateConditionValue(isRefreshValue = true)
+            page.intValue = 1;
+            delay(100)
+            getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID(), ){
+                value->isRefresh.value=value
+            }
+        }
+    }
+
+
+    fun onBigPictureSelect() {
+        keyboardController?.hide()
+        updateConditionValue(isPigImageValue = true)
+        onImageSelection.launch(
+            PickVisualMediaRequest(
+                ActivityResultContracts.PickVisualMedia.ImageOnly
+            )
+        )
+    }
+
+    fun onDeleteBanner(id: UUID) {
+        updateConditionValue(isSendingDataValue = true)
+        coroutine.launch {
+            val result = async {
+                bannerViewModel.deleteBanner(id)
+            }.await()
+
+            updateConditionValue(isSendingDataValue = false)
+            var errorMessage = ""
+            errorMessage = if (result.isNullOrEmpty()) {
+                context.getString(R.string.banner_deleted_successfully)
+            } else {
+                result
+            }
+            snackBarHostState.showSnackbar(errorMessage)
+        }
+    }
+
+    fun requestPermissionLocation() {
+        keyboardController?.hide()
+        requestPermissionThenNavigate.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION,
+            )
+        )
+    }
+
+    fun updateSelectedSubCategory(id: UUID) {
+        coroutine.launch {
+            if (selectedSubCategoryId.value != id) {
+                isChangeSubCategory.value = true
+
+                selectedSubCategoryId.value = id
+                updateConditionValue(isChangeSubCategoryValue = false)
+            }
+
+        }
+    }
+
+    fun openSubCategoryBottonSheet(subCategory: SubCategory) {
+        if (isFromHome == false) {
+
+            val name =
+                categories.value?.firstOrNull { it.id == subCategory.categoryId }?.name
+                    ?: ""
+
+            selectedSubCategoryIdHolder.value = subCategory.id
+            categoryName.value = TextFieldValue(name)
+            subCategoryName.value = TextFieldValue(subCategory.name)
+            isUpdated.value = true
+            updateConditionValue(isUpdatedValue = true)
+            updateConditionValue(isOpenBottomSheetValue = true)
+
+        }
+    }
+
+    fun deleteProduct(id: UUID) {
+        coroutine.launch {
+            isSendingData.value = true
+            updateConditionValue(isSendingDataValue = true)
+            val result =
+                productViewModel.deleteProduct(
+                    storeId.value!!, id
+                )
+
+            updateConditionValue(isSendingDataValue = false)
+            var resultMessage = ""
+            resultMessage = result
+                ?: context.getString(R.string.product_is_deleted_successfully)
+
+            snackBarHostState.showSnackbar(
+                resultMessage
+            )
+        }
+    }
     LaunchedEffect(Unit) {
         getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID())
     }
@@ -523,16 +758,22 @@ fun StoreScreen(
             when (selectedSubCategoryId.value == null) {
                 true -> {
                     productViewModel.getProducts(
-                        page, storeId = storeId.value ?: UUID.randomUUID(), isLoadingMore
+                        page.value,
+                        storeId = storeId.value ?: UUID.randomUUID(),
+                        isLoadingMore.value,
+                        updatePageNumber = {value->page.intValue=value},
+                        updateLoadingState = {value->isLoadingMore.value=value}
                     )
                 }
 
                 else -> {
                     productViewModel.getProducts(
-                        page,
+                        page.intValue,
                         storeId = storeId.value!!,
                         selectedSubCategoryId.value!!,
-                        isLoadingMore
+                        isLoadingMore.value,
+                        updatePageNumber = {value->page.intValue=value},
+                        updateLoadingState = {value->isLoadingMore.value=value}
                     )
                 }
             }
@@ -541,8 +782,6 @@ fun StoreScreen(
 
     }
 
-
-   Log.d("thisData",subcategories.value.toString())
 
     Scaffold(
         snackbarHost = {
@@ -554,7 +793,7 @@ fun StoreScreen(
         bottomBar = {
             if (isDateTimeBottomSheetOpen.value)
                 ModalBottomSheet(
-                    onDismissRequest = { isDateTimeBottomSheetOpen.value = false },
+                    onDismissRequest = { updateConditionValue(isDateTimeBottomSheetOpenValue = false) },
                     sheetState = dateTimeSheetState, containerColor = Color.White
                 )
                 {
@@ -567,27 +806,7 @@ fun StoreScreen(
                             EnDateTimeType.Date -> {
                                 DatePicker(
                                     onDateSelected = { year, month, day ->
-                                        if (bannerEndDateTime.value != null)
-                                            bannerEndDateTime.value = LocalDateTime(
-                                                year = year,
-                                                month = month+1,
-                                                day = day,
-                                                hour = bannerEndDateTime.value!!.hour,
-                                                second = bannerEndDateTime.value!!.second,
-                                                minute = 0
-                                            )
-                                        else {
-                                            bannerEndDateTime.value = LocalDateTime(
-                                                year = year,
-                                                month = month+1,
-                                                day = day,
-                                                hour = 0,
-                                                second = 0,
-                                                minute = 0
-                                            )
-                                        }
-
-                                        isDateTimeBottomSheetOpen.value = false
+                                        updateDateTime(year, month, day)
                                     },
 
                                     months = listOf(
@@ -602,7 +821,7 @@ fun StoreScreen(
                                         "سبتمبر",
                                         "أكتوبر",
                                         "نوفمبر",
-//                                        "ديسمبر"
+                                        "ديسمبر"
                                     ),
                                     days = listOf(
                                         "الأحد",    // Sunday
@@ -619,31 +838,7 @@ fun StoreScreen(
                             else -> {
                                 TimePicker(
                                     onTimeSelected = { hour, second ->
-
-                                        if (bannerEndDateTime.value != null)
-                                            bannerEndDateTime.value = LocalDateTime(
-                                                year = bannerEndDateTime.value!!.year,
-                                                month = bannerEndDateTime.value!!.month,
-                                                day = bannerEndDateTime.value!!.day,
-                                                hour = hour,
-                                                second = second,
-                                                minute = 1
-                                            )
-                                        else {
-                                            if (hour > 0) {
-                                                bannerEndDateTime.value = LocalDateTime(
-                                                    year = 1,
-                                                    month = 1,
-                                                    day = 1,
-                                                    hour = hour,
-                                                    second = second,
-                                                    minute = 1
-                                                )
-                                            }
-                                        }
-
-                                        isDateTimeBottomSheetOpen.value = false
-
+                                        updateDateTime(hour, second)
                                     },
                                     amPmLocaleList = listOf("صباحا", "مساء")
                                 )
@@ -655,20 +850,9 @@ fun StoreScreen(
 
             if (isOpenBottomSheet.value)
                 ModalBottomSheet(
-                    onDismissRequest = {
-
-                        isOpenBottomSheet.value = false
-                        if (bottomSheetType.value == EnBottomSheetType.Banner) {
-                            bannerEndDateTime.value = null
-                            bannerImage.value = null
-
-                        }
-                        if (isExpandedCategory.value) {
-                            isExpandedCategory.value = false
-                            categoryName.value = TextFieldValue("")
-                            subCategoryName.value = TextFieldValue("")
-                        }
-                    }, sheetState = sheetState, containerColor = Color.White
+                    onDismissRequest = { dismissBottonSheet() },
+                    sheetState = sheetState,
+                    containerColor = Color.White
                 )
                 {
                     Column(
@@ -806,10 +990,7 @@ fun StoreScreen(
                                     }
                                     IconButton(
                                         onClick = {
-//                                            keyboardController?.hide()
-                                            bottomSheetDateTimeType.value = EnDateTimeType.Date
-                                            isDateTimeBottomSheetOpen.value = true
-
+                                            updateBottonSheetTimeType(EnDateTimeType.Date)
                                         })
                                     {
                                         Icon(
@@ -850,9 +1031,7 @@ fun StoreScreen(
                                     }
                                     IconButton(
                                         onClick = {
-                                            keyboardController?.hide()
-                                            bottomSheetDateTimeType.value = EnDateTimeType.Time
-                                            isDateTimeBottomSheetOpen.value = true
+                                            updateBottonSheetTimeType(EnDateTimeType.Time)
 
                                         })
                                     {
@@ -866,10 +1045,11 @@ fun StoreScreen(
                                 }
                                 Sizer(10)
                                 CustomButton(
-                                    isEnable = bannerImage.value != null && bannerEndDateTime.value != null && bannerEndDateTime.value!!.year != 1 && bannerEndDateTime.value!!.hour != 0,
-                                    operation = {
-                                        createBanner()
-                                    },
+                                    isEnable = bannerImage.value != null &&
+                                            bannerEndDateTime.value != null &&
+                                            bannerEndDateTime.value!!.year != 1 &&
+                                            bannerEndDateTime.value!!.hour != 0,
+                                    operation = { createBanner() },
                                     buttonTitle = stringResource(R.string.create_banner)
                                 )
                             }
@@ -904,7 +1084,9 @@ fun StoreScreen(
                                             .height(65.dp)
                                             .fillMaxWidth()
                                             .clickable {
-                                                isExpandedCategory.value = !isExpandedCategory.value
+                                                updateConditionValue(
+                                                    isExpandedCategoryValue = !isExpandedCategory.value
+                                                )
                                             }
                                             .clip(RoundedCornerShape(8.dp))
                                             .padding(horizontal = 5.dp),
@@ -922,7 +1104,6 @@ fun StoreScreen(
 
                                     Column(
                                         modifier = Modifier
-//                                           .padding(bottom = 19.dp)
                                             .fillMaxWidth()
                                             .height(animated.value)
                                             .border(
@@ -945,11 +1126,7 @@ fun StoreScreen(
                                                     .height(50.dp)
                                                     .fillMaxWidth()
                                                     .clip(RoundedCornerShape(8.dp))
-                                                    .clickable {
-                                                        isExpandedCategory.value = false
-                                                        categoryName.value =
-                                                            TextFieldValue(option.name)
-                                                    }
+                                                    .clickable { selectCategory(option.name) }
                                                     .padding(top = 12.dp, start = 5.dp)
 
                                             )
@@ -974,7 +1151,9 @@ fun StoreScreen(
                                         R.string.create
                                     ),
                                     color = null,
-                                    isEnable = !isDeleted.value && (subCategoryName.value.text.isNotEmpty() && categoryName.value.text.isNotEmpty())
+                                    isEnable = !isDeleted.value &&
+                                            (subCategoryName.value.text.isNotEmpty() &&
+                                                    categoryName.value.text.isNotEmpty())
                                 )
 
                                 if (isUpdated.value) {
@@ -1028,10 +1207,8 @@ fun StoreScreen(
                 }, actions = {
                     if (isFromHome == false) {
                         TextButton(
-                            enabled = !isSendingData.value, onClick = {
-
-                                createOrUpdateStoreInfo()
-                            }) {
+                            enabled = !isSendingData.value,
+                            onClick = { createOrUpdateStoreInfo() }) {
                             when (isSendingData.value && operationType.value == EnOperation.STORE) {
                                 true -> {
                                     CircularProgressIndicator(
@@ -1042,9 +1219,16 @@ fun StoreScreen(
                                 else -> {
                                     Text(
                                         when {
-                                          isChangingInData.value && myInfo.value?.storeId!=null-> stringResource(R.string.update)
-                                         isChangingInData.value && myInfo.value?.storeId==null -> stringResource(R.string.create)
-                                        else-> ""},
+                                            isStoreUpdateData.value && myInfo.value?.storeId != null -> stringResource(
+                                                R.string.update
+                                            )
+
+                                            isStoreUpdateData.value && myInfo.value?.storeId == null -> stringResource(
+                                                R.string.create
+                                            )
+
+                                            else -> ""
+                                        },
                                         fontFamily = General.satoshiFamily,
                                         fontWeight = FontWeight.Normal,
                                         fontSize = (16).sp,
@@ -1080,14 +1264,17 @@ fun StoreScreen(
                         onClick = {
                             nav.navigate(
                                 Screens.CreateProduct(
-                                    (storeId.value ?: myInfo.value?.storeId ?: UUID.randomUUID()).toString(),
+                                    (storeId.value ?: myInfo.value?.storeId
+                                    ?: UUID.randomUUID()).toString(),
                                     null
                                 )
                             )
                         }, containerColor = CustomColor.alertColor_2_700
                     ) {
                         Icon(
-                            Icons.Default.Add, "", tint = Color.White
+                            Icons.Default.Add,
+                            "",
+                            tint = Color.White
                         )
                     }
 
@@ -1119,15 +1306,7 @@ fun StoreScreen(
         PullToRefreshBox(
             isRefreshing = isRefresh.value,
             onRefresh = {
-                coroutine.launch {
-
-                    isRefresh.value = true
-                    page.intValue = 1;
-                    delay(100)
-                    getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID(), isRefresh)
-
-
-                }
+                onRefreshDo()
             },
             state = state,
             indicator = {
@@ -1150,7 +1329,7 @@ fun StoreScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
-                    .padding(top = paddingValue.calculateTopPadding() - 29.dp)
+                    .padding(paddingValue)
                     .padding(horizontal = 15.dp),
                 horizontalAlignment = Alignment.Start,
             ) {
@@ -1162,7 +1341,7 @@ fun StoreScreen(
                             .fillMaxWidth()
                     ) {
 
-                        val (bigImageRef, smalImageRef) = createRefs()
+                        val (bigImageRef, smallImageRef) = createRefs()
 
                         ConstraintLayout(
                             modifier = Modifier
@@ -1238,7 +1417,6 @@ fun StoreScreen(
                                         SubcomposeAsyncImage(
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier
-//                                                .padding(top = 35.dp)
                                                 .fillMaxHeight()
                                                 .fillMaxWidth()
                                                 .clip(RoundedCornerShape(8.dp)),
@@ -1276,13 +1454,7 @@ fun StoreScreen(
 
                                 IconButton(
                                     onClick = {
-                                        keyboardController?.hide()
-                                        isPigImage.value = true
-                                        onImageSelection.launch(
-                                            PickVisualMediaRequest(
-                                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                                            )
-                                        )
+                                        onBigPictureSelect()
                                     },
                                     modifier = Modifier.size(30.dp),
                                     colors = IconButtonDefaults.iconButtonColors(
@@ -1304,7 +1476,7 @@ fun StoreScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .offset(y = (-50).dp)
-                                .constrainAs(smalImageRef) {
+                                .constrainAs(smallImageRef) {
                                     top.linkTo(bigImageRef.bottom)
                                     start.linkTo(parent.start)
                                     end.linkTo(parent.end)
@@ -1330,7 +1502,8 @@ fun StoreScreen(
                                     .background(
                                         color = if (isFromHome == true && storeData == null) CustomColor.primaryColor50
                                         else Color.White, shape = RoundedCornerShape(60.dp)
-                                    ), contentAlignment = Alignment.Center) {
+                                    ),
+                                contentAlignment = Alignment.Center) {
                                 when (createdStoreInfoHolder.value?.smallImage == null) {
                                     true -> {
                                         when (storeData?.smallImage.isNullOrEmpty()) {
@@ -1345,11 +1518,9 @@ fun StoreScreen(
                                             }
 
                                             else -> {
-
                                                 SubcomposeAsyncImage(
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier
-//                                                .padding(top = 35.dp)
                                                         .height(90.dp)
                                                         .width(90.dp)
                                                         .clip(RoundedCornerShape(50.dp)),
@@ -1377,7 +1548,6 @@ fun StoreScreen(
                                         SubcomposeAsyncImage(
                                             contentScale = ContentScale.Crop,
                                             modifier = Modifier
-//                                                .padding(top = 35.dp)
                                                 .height(90.dp)
                                                 .width(90.dp)
                                                 .clip(RoundedCornerShape(50.dp)),
@@ -1400,7 +1570,6 @@ fun StoreScreen(
                                         )
                                     }
                                 }
-
                             }
                             if (isFromHome == false) Box(
                                 modifier = Modifier
@@ -1410,13 +1579,11 @@ fun StoreScreen(
                                         bottom.linkTo(imageRef.bottom)
                                     }
 
-
                             ) {
-
                                 IconButton(
                                     onClick = {
                                         keyboardController?.hide()
-                                        isPigImage.value = false
+                                        updateConditionValue(isPigImageValue = false)
                                         onImageSelection.launch(
                                             PickVisualMediaRequest(
                                                 ActivityResultContracts.PickVisualMedia.ImageOnly
@@ -1436,9 +1603,7 @@ fun StoreScreen(
                                     )
                                 }
                             }
-
                         }
-
                     }
 
                     Sizer(20)
@@ -1534,10 +1699,8 @@ fun StoreScreen(
                                         CustomColor.primaryColor500, RoundedCornerShape(8.dp)
                                     )
                                     .clip(RoundedCornerShape(8.dp))
-                                    .clickable {
-                                        bottomSheetType.value = EnBottomSheetType.Banner
-                                        isOpenBottomSheet.value = true
-                                    }, contentAlignment = Alignment.Center
+                                    .clickable { openBottonSheetAndUpdateType(EnBottomSheetType.Banner) },
+                                contentAlignment = Alignment.Center
 
                             ) {
                                 Icon(
@@ -1568,29 +1731,15 @@ fun StoreScreen(
                         }
 
                         else -> {
-                            if (!storeBanners.isNullOrEmpty()) BannerBage(
-
-                                storeBanners,
-                                true,
-                                deleteBanner = if (isFromHome == true) null else { it ->
-                                    isSendingData.value = true
-                                    coroutine.launch {
-                                        val result = async {
-                                            bannerViewModel.deleteBanner(it)
-                                        }.await()
-
-                                        isSendingData.value = false
-                                        var errorMessage = ""
-                                        errorMessage = if (result.isNullOrEmpty()) {
-                                            context.getString(R.string.banner_deleted_successfully)
-                                        } else {
-                                            result
-                                        }
-                                        snackBarHostState.showSnackbar(errorMessage)
-                                    }
-                                },
-                                isShowTitle = false
-                            )
+                            if (!storeBanners.isNullOrEmpty())
+                                BannerBage(
+                                    storeBanners,
+                                    true,
+                                    deleteBanner = if (isFromHome == true) null else { it ->
+                                        onDeleteBanner(it)
+                                    },
+                                    isShowTitle = false
+                                )
 
                         }
                     }
@@ -1617,14 +1766,7 @@ fun StoreScreen(
                         )
                         IconButton(
                             onClick = {
-                                keyboardController?.hide()
-                                requestPermissionThenNavigate.launch(
-                                    arrayOf(
-                                        Manifest.permission.ACCESS_COARSE_LOCATION,
-                                        Manifest.permission.ACCESS_FINE_LOCATION,
-                                    )
-                                )
-
+                                requestPermissionLocation()
                             })
                         {
                             Icon(
@@ -1663,30 +1805,30 @@ fun StoreScreen(
                                     color = CustomColor.neutralColor950,
                                     textAlign = TextAlign.Center,
                                 )
-                            if(isFromHome==false && myStoreId != null)
-                                Box(
-                                    modifier = Modifier
-                                        .height(40.dp)
-                                        .width(70.dp)
-                                        .background(
-                                            CustomColor.primaryColor500, RoundedCornerShape(8.dp)
+                                if (isFromHome == false && myStoreId != null)
+                                    Box(
+                                        modifier = Modifier
+                                            .height(40.dp)
+                                            .width(70.dp)
+                                            .background(
+                                                CustomColor.primaryColor500,
+                                                RoundedCornerShape(8.dp)
+                                            )
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable {
+                                                openBottonSheetAndUpdateType(
+                                                    EnBottomSheetType.SupCategory
+                                                )
+                                            }, contentAlignment = Alignment.Center
+
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Add,
+                                            "",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(24.dp)
                                         )
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable {
-                                            isUpdated.value = false
-                                            bottomSheetType.value = EnBottomSheetType.SupCategory
-                                            isOpenBottomSheet.value = true
-
-                                        }, contentAlignment = Alignment.Center
-
-                                ) {
-                                    Icon(
-                                        Icons.Default.Add,
-                                        "",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
+                                    }
 
                             }
                             Sizer(5)
@@ -1751,67 +1893,44 @@ fun StoreScreen(
                                             }
                                             items(
                                                 storeSubCategories,
-                                                key = { category -> category.id }) { subCategroy ->
+                                                key = { category -> category.id }) { subCategory ->
                                                 Box(
                                                     modifier = Modifier
                                                         .padding(end = 4.dp)
                                                         .height(40.dp)
 //                                                        .width(70.dp)
                                                         .background(
-                                                            if (selectedSubCategoryId.value == subCategroy.id) CustomColor.alertColor_3_300 else Color.White,
+                                                            if (selectedSubCategoryId.value == subCategory.id) CustomColor.alertColor_3_300 else Color.White,
                                                             RoundedCornerShape(8.dp)
                                                         )
                                                         .border(
                                                             width = 1.dp,
-                                                            color = if (selectedSubCategoryId.value == subCategroy.id) Color.White else CustomColor.neutralColor200,
+                                                            color = if (selectedSubCategoryId.value == subCategory.id) Color.White else CustomColor.neutralColor200,
                                                             RoundedCornerShape(8.dp)
 
                                                         )
                                                         .clip(RoundedCornerShape(8.dp))
-                                                        .combinedClickable(onClick = {
-                                                            coroutine.launch {
-                                                                if (selectedSubCategoryId.value != subCategroy.id) {
-                                                                    isChangeSubCategory.value = true
-
-                                                                    selectedSubCategoryId.value =
-                                                                        subCategroy.id
-
-                                                                    isChangeSubCategory.value =
-                                                                        false
-                                                                }
-
-                                                            }
-
-                                                        }, onLongClick = {
-                                                            if (isFromHome == false) {
-
-                                                                val name =
-                                                                    categories.value?.firstOrNull { it.id == subCategroy.categoryId }?.name
-                                                                        ?: ""
-
-                                                                selectedSubCategoryIdHolder.value =
-                                                                    subCategroy.id
-                                                                categoryName.value =
-                                                                    TextFieldValue(name)
-                                                                subCategoryName.value =
-                                                                    TextFieldValue(
-                                                                        subCategroy.name
-                                                                    )
-                                                                isUpdated.value = true
-                                                                isOpenBottomSheet.value = true
-
-                                                            }
-                                                        })
+                                                        .combinedClickable(
+                                                            onClick = {
+                                                                updateSelectedSubCategory(
+                                                                    subCategory.id
+                                                                )
+                                                            },
+                                                            onLongClick = {
+                                                                openSubCategoryBottonSheet(
+                                                                    subCategory = subCategory
+                                                                )
+                                                            })
                                                         .padding(horizontal = 10.dp),
                                                     contentAlignment = Alignment.Center
 
                                                 ) {
                                                     Text(
-                                                        subCategroy.name,
+                                                        subCategory.name,
                                                         fontFamily = General.satoshiFamily,
                                                         fontWeight = FontWeight.Bold,
                                                         fontSize = (18).sp,
-                                                        color = if (selectedSubCategoryId.value == subCategroy.id) Color.White else CustomColor.neutralColor200,
+                                                        color = if (selectedSubCategoryId.value == subCategory.id) Color.White else CustomColor.neutralColor200,
 
                                                         textAlign = TextAlign.Center,
                                                     )
@@ -1864,22 +1983,7 @@ fun StoreScreen(
                                                     product = productFilterBySubCategory,
                                                     nav = nav,
                                                     delFun = if (isFromHome == true) null else { it ->
-                                                        coroutine.launch {
-                                                            isSendingData.value = true
-                                                            val result =
-                                                                productViewModel.deleteProduct(
-                                                                    storeId.value!!, it
-                                                                )
-
-                                                            isSendingData.value = false
-                                                            var resultMessage = ""
-                                                            resultMessage = result
-                                                                ?: context.getString(R.string.product_is_deleted_successfully)
-
-                                                            snackBarHostState.showSnackbar(
-                                                                resultMessage
-                                                            )
-                                                        }
+                                                        deleteProduct(it)
                                                     },
                                                     updFun = if (isFromHome == true) null else { it ->
                                                         nav.navigate(
@@ -1900,7 +2004,7 @@ fun StoreScreen(
 
                     }
                 }
-               item {
+                item {
                     Sizer(90)
                 }
 

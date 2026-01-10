@@ -1,4 +1,4 @@
-package com.example.e_commercompose.ui.view.checkout
+package com.example.eccomerce_app.ui.view.checkout
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -88,6 +88,10 @@ fun CheckoutScreen(
 
     val isSendingData = remember { mutableStateOf(false) }
 
+    fun updateConditionValue(isSendingDataValue: Boolean? = null) {
+        if (isSendingDataValue != null) isSendingData.value = isSendingDataValue
+    }
+
     val kiloPrice = generalSetting.value?.firstOrNull { it.name == "one_kilo_price" }?.value
 
     val currentAddress = myInfo.value?.address?.firstOrNull { it.isCurrent }
@@ -155,14 +159,14 @@ fun CheckoutScreen(
                         isEnable = !isSendingData.value,
                         operation = {
                             coroutine.launch {
-                                isSendingData.value = true
+                                updateConditionValue(isSendingDataValue = true)
                                 val result = async {
                                     orderViewModel.submitOrder(
                                         cartItems = cartData.value,
                                         userAddress = currentAddress!!,
                                         clearCartData = { cartViewModel.clearCart() })
                                 }.await()
-                                isSendingData.value = false
+                                updateConditionValue(isSendingDataValue = false)
                                 var message = context.getString(R.string.order_submit_successfully)
                                 if (!result.isNullOrEmpty()) {
                                     message = result
@@ -192,11 +196,8 @@ fun CheckoutScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(horizontal = 15.dp)
-                .padding(
-                    top = it.calculateTopPadding() + 20.dp,
-                    bottom = it.calculateBottomPadding()
-                )
+                .padding(it)
+
 
         ) {
 

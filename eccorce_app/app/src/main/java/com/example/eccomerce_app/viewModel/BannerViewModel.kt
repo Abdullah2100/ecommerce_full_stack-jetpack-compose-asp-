@@ -24,16 +24,16 @@ class BannerViewModel(
     val webSocket: HubConnection?
 
 ) : ViewModel() {
-     val _hub = MutableStateFlow<HubConnection?>(null)
+ private    val _hub = MutableStateFlow<HubConnection?>(null)
 
-     val _banners = MutableStateFlow<List<BannerModel>?>(null)
+  private   val _banners = MutableStateFlow<List<BannerModel>?>(null)
     val banners = _banners.asStateFlow()
 
-     val _bannersRadom = MutableStateFlow<List<BannerModel>?>(null)
+ private    val _bannersRadom = MutableStateFlow<List<BannerModel>?>(null)
     val bannersRadom = _bannersRadom.asStateFlow()
 
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+ private    val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
@@ -85,8 +85,7 @@ class BannerViewModel(
 
     fun getStoresBanner() {
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
-            val result = bannerRepository.getRandomBanner()
-            when (result) {
+            when (val result = bannerRepository.getRandomBanner()) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<BannerDto>
 
@@ -149,8 +148,7 @@ class BannerViewModel(
 
     suspend fun deleteBanner(bannerId: UUID): String? {
 
-        val result = bannerRepository.deleteBanner(bannerId)
-        when (result) {
+        when (val result = bannerRepository.deleteBanner(bannerId)) {
             is NetworkCallHandler.Successful<*> -> {
                 val copyBanner = _banners.value?.filter { it.id != bannerId }
                 if (!copyBanner.isNullOrEmpty())
@@ -176,8 +174,7 @@ class BannerViewModel(
 
     fun getStoreBanner(storeId: UUID, pageNumber: Int = 1) {
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
-            val result = bannerRepository.getBannerByStoreId(storeId, pageNumber)
-            when (result) {
+            when (val result = bannerRepository.getBannerByStoreId(storeId, pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<BannerDto>
 

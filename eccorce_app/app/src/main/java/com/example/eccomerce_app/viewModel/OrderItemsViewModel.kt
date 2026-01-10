@@ -28,14 +28,14 @@ class OrderItemsViewModel(
     @Named("orderHub") val orderHub: HubConnection?,
 ) : ViewModel() {
 
-    val _orderItemSocket = MutableStateFlow<HubConnection?>(null)
-    val _orderSocket = MutableStateFlow<HubConnection?>(null)
+    private val _orderItemSocket = MutableStateFlow<HubConnection?>(null)
+    private val _orderSocket = MutableStateFlow<HubConnection?>(null)
 
 
-    val _orderItemForMyStore = MutableStateFlow<List<OrderItem>?>(null)
+    private val _orderItemForMyStore = MutableStateFlow<List<OrderItem>?>(null)
     val orderItemForMyStore = _orderItemForMyStore.asStateFlow()
 
-    val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
@@ -124,17 +124,18 @@ class OrderItemsViewModel(
     }
 
     fun getMyOrderItemBelongToMyStore(
-        pageNumber: MutableState<Int>,
-        isLoading: MutableState<Boolean>? = null
+        pageNumber: Int,
+        isLoading: Boolean? = null,
+        updatePageNumber: ((number: Int) -> Unit)? = null,
+        updateLoadingState: ((state: Boolean) -> Unit)? = null
     ) {
 
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
             if (isLoading != null) {
-                isLoading.value = true
+                updateLoadingState?.invoke(true)
                 delay(500)
             }
-            val result = orderItemRepository.getMyOrderItemForStoreId(pageNumber.value)
-            when (result) {
+            when (val result = orderItemRepository.getMyOrderItemForStoreId(pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<OrderItemDto>
                     val orderItemList = mutableListOf<OrderItem>()
@@ -144,8 +145,8 @@ class OrderItemsViewModel(
                     }
                     val distinctOrderItem = orderItemList.distinctBy { it.id }.toList()
                     _orderItemForMyStore.emit(distinctOrderItem)
-                    if (isLoading != null) isLoading.value = false
-                    if (data.size == 25) pageNumber.value++
+                    if (isLoading != null) updateLoadingState?.invoke(false)
+                    if (data.size == 25) updatePageNumber?.invoke(pageNumber + 1)
 
                 }
 
@@ -153,7 +154,7 @@ class OrderItemsViewModel(
                     if (_orderItemForMyStore.value == null) {
                         _orderItemForMyStore.emit(emptyList())
                     }
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
 
                     val errorMessage = result.data as String
                     Log.d("errorFromGettingOrder", errorMessage)
@@ -168,8 +169,7 @@ class OrderItemsViewModel(
 
 
     suspend fun updateOrderItemStatusFromStore(id: UUID, status: Int): String? {
-        val result = orderItemRepository.updateOrderItemStatus(id, status)
-        when (result) {
+        when (val result = orderItemRepository.updateOrderItemStatus(id, status)) {
             is NetworkCallHandler.Successful<*> -> {
                 val orderItemStatus = when (status) {
                     0 -> "Excepted"

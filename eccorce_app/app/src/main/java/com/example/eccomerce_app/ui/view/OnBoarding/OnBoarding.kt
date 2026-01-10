@@ -47,6 +47,16 @@ fun OnBoardingScreen(
 ) {
     val fontScall = LocalDensity.current.fontScale
     val coroutine = rememberCoroutineScope()
+
+    fun navToHome(){
+        userViewModel.setIsPassOnBoardingScreen()
+
+        nav.navigate(Screens.AuthGraph) {
+            popUpTo(nav.graph.id) {
+                inclusive = true
+            }
+        }
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -55,7 +65,7 @@ fun OnBoardingScreen(
         ConstraintLayout(
             modifier = Modifier
                 .background(Color.White)
-                .padding(top = it.calculateBottomPadding())
+                .padding(it)
                 .padding(horizontal = 15.dp)
                 .fillMaxSize()
         ) {
@@ -115,16 +125,7 @@ fun OnBoardingScreen(
                         end.linkTo(parent.end)
 
                     },
-                onClick = {
-
-                    userViewModel.setIsPassOnBoardingScreen()
-
-                    nav.navigate(Screens.AuthGraph) {
-                        popUpTo(nav.graph.id) {
-                            inclusive = true
-                        }
-                    }
-                },
+                onClick = {navToHome()},
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = CustomColor.primaryColor700

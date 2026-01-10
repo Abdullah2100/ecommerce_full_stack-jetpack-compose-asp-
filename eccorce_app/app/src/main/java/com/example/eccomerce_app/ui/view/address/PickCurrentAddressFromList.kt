@@ -1,4 +1,4 @@
-package com.example.e_commercompose.ui.view.location
+package com.example.eccomerce_app.ui.view.address
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.example.e_commercompose.R
+import com.example.e_commercompose.model.Address
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.component.Sizer
@@ -93,8 +94,40 @@ fun PickCurrentAddressFromAddressScreen(
         categoryViewModel.getCategories(1)
         bannerViewModel.getStoresBanner()
         variantViewModel.getVariants(1)
-        productViewModel.getProducts(mutableIntStateOf(1))
+        productViewModel.getProducts(1)
         orderViewModel.getMyOrders(mutableIntStateOf(1))
+    }
+
+
+    fun choseCurrentUserLocation(address: Address){
+        coroutine.launch {
+            isLoading.value = true
+
+            val result = async {
+                userViewModel.updateUserAddress(
+                    address.id ?: UUID.randomUUID(),
+                    address.title,
+                    address.longitude,
+                    address.latitude
+                )
+            }.await()
+
+            isLoading.value = false
+            if (!result.isNullOrEmpty()) {
+                snackBarHostState.showSnackbar(result)
+                return@launch
+            }
+            userViewModel.userPassLocation(true)
+
+            initial()
+            nav.navigate(Screens.HomeGraph) {
+                popUpTo(nav.graph.id) {
+                    inclusive = true
+                }
+            }
+
+        }
+
     }
 
     Scaffold(
@@ -146,7 +179,8 @@ fun PickCurrentAddressFromAddressScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(Color.White),
+                        .background(Color.White)
+                        .padding(it),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
@@ -175,7 +209,7 @@ fun PickCurrentAddressFromAddressScreen(
                 LazyColumn(
                     modifier = Modifier
                         .background(Color.White)
-                        .padding(top = 100.dp)
+                        .padding(it)
                         .padding(horizontal = 15.dp)
                         .fillMaxHeight()
                         .fillMaxWidth()
@@ -187,35 +221,7 @@ fun PickCurrentAddressFromAddressScreen(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(8.dp))
                                 .clickable {
-                                    coroutine.launch {
-                                        isLoading.value = true
-                                        val currentLocation = locations.value!!.address!![index]
-                                        val result = async {
-
-                                            userViewModel.updateUserAddress(
-                                                currentLocation.id ?: UUID.randomUUID(),
-                                                currentLocation.title,
-                                                currentLocation.longitude,
-                                                currentLocation.latitude
-                                            )
-                                        }.await()
-
-                                        isLoading.value = false
-                                        if (!result.isNullOrEmpty()) {
-                                            snackBarHostState.showSnackbar(result)
-                                            return@launch
-                                        }
-                                        userViewModel.userPassLocation(true)
-
-                                        initial()
-                                        nav.navigate(Screens.HomeGraph) {
-                                            popUpTo(nav.graph.id) {
-                                                inclusive = true
-                                            }
-                                        }
-
-                                    }
-
+                                    choseCurrentUserLocation(locations.value!!.address!![index])
                                 }
                         ) {
                             Row(

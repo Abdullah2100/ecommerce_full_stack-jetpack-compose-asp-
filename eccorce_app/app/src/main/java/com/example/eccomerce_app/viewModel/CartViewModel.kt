@@ -26,10 +26,6 @@ import kotlin.math.sqrt
 class CartViewModel() : ViewModel() {
 
 
-     val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
-
-
     val cartItems = MutableStateFlow(
         CartModel(
             0.0,
@@ -39,11 +35,11 @@ class CartViewModel() : ViewModel() {
             emptyList()
         )
     )
-     val _distance = MutableStateFlow(0.0)
+   private  val _distance = MutableStateFlow(0.0)
     val distance = _distance.asStateFlow()
 
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+ private    val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
@@ -61,7 +57,7 @@ class CartViewModel() : ViewModel() {
             if (productLength == distanceProductsLength) {
                 var variantPrice = product.price
                 product.productVariants.forEach { it ->
-                    variantPrice = variantPrice * it.percentage
+                    variantPrice *= it.percentage
                 }
                 val price = ((cartItems.value.totalPrice)) + variantPrice
                 val copyCardItem = cartItems.value.copy(
@@ -111,7 +107,7 @@ class CartViewModel() : ViewModel() {
 
 
             firstProduct.productVariants.forEach { it ->
-                variantPrice = variantPrice * it.percentage
+                variantPrice *= it.percentage
             }
 
             val totalPrice = (cartItems.value.totalPrice) - (variantPrice)
@@ -148,7 +144,7 @@ class CartViewModel() : ViewModel() {
 
 
             firstProduct.productVariants.forEach { it ->
-                variantPrice = variantPrice * it.percentage
+                variantPrice *= it.percentage
             }
 
             val totalPrice =
@@ -191,7 +187,6 @@ class CartViewModel() : ViewModel() {
         stores: List<StoreModel>?,
         currentAddress: Address?
     ) {
-        Log.d("updateCurrentLocation","${stores?.firstOrNull()?.latitude} ${stores?.firstOrNull()?.longitude} \n${currentAddress?.latitude} ${currentAddress?.longitude}")
 
         if (stores == null || currentAddress == null) return
         var copyDistance = 0.0
@@ -201,7 +196,7 @@ class CartViewModel() : ViewModel() {
             copyDistance = ceil(max(1.0, (distanceKm)))
 
         }
-        Log.d("distanceToUserIs",copyDistance.toString())
+
         _distance.emit(copyDistance)
     }
 

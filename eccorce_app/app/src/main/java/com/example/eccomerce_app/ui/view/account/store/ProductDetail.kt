@@ -92,7 +92,7 @@ fun ProductDetail(
     userViewModel: UserViewModel,
     currencyViewModel: CurrencyViewModel,
 
-) {
+    ) {
 
     val context = LocalContext.current
 
@@ -158,13 +158,36 @@ fun ProductDetail(
     }
 
     fun getStoreInfoByStoreId(id: UUID? = UUID.randomUUID()) {
-        storeViewModel.getStoreData(storeId = id!!)
-        bannerViewModel.getStoreBanner(id)
+        if(id==null) return
+         storeViewModel.getStoreData(storeId = id)
+        bannerViewModel.getStoreBanner(id,1)
         subCategoryViewModel.getStoreSubCategories(id, 1)
     }
 
 
+    fun addProductVariant(value: ProductVariant) {
 
+        val copyVariant = mutableListOf<ProductVariant>()
+        copyVariant.add(value)
+        copyVariant.addAll(selectedProductVariants.value)
+        //to make user can select one productVariant with one variant id
+        selectedProductVariants.value = copyVariant.distinctBy { it.variantId }
+    }
+
+    fun getStoreData(){
+        if (productData != null)
+            productViewModel
+                .getProducts(
+                    pageNumber = 1,
+                    storeId = productData.storeId
+                )
+        nav.navigate(
+            Screens.Store(
+                storeId = storeData?.id.toString(),
+                isFromHome = true
+            )
+        )
+    }
     if (!isFromHome) {
         LaunchedEffect(Unit) {
             getStoreInfoByStoreId(
@@ -237,7 +260,12 @@ fun ProductDetail(
                                 productId = productData!!.id,
                                 name = productData.name,
                                 thumbnail = productData.thumbnail,
-                                price =convertPriceToAnotherCurrency(productData.price,productData.symbol,defaultCurrency.value,currencies.value),
+                                price = convertPriceToAnotherCurrency(
+                                    productData.price,
+                                    productData.symbol,
+                                    defaultCurrency.value,
+                                    currencies.value
+                                ),
                                 productVariants = selectedProductVariants.value,
                                 storeId = productData.storeId
                             )
@@ -276,7 +304,7 @@ fun ProductDetail(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(top = it.calculateTopPadding() + 30.dp)
+                .padding(it)
         ) {
 
             item {
@@ -439,7 +467,7 @@ fun ProductDetail(
                             fontSize = 16.sp,
                             modifier = Modifier.padding(start = 15.dp)
                         )
-                        Sizer(width=10)
+                        Sizer(width = 10)
                         FlowRow(
                             modifier = Modifier
                                 .weight(1f),
@@ -474,34 +502,24 @@ fun ProductDetail(
                                                                 productVariantHolder
                                                             )
                                                         ) CustomColor.primaryColor700
-                                                        else Color.Transparent,
+                                                        else Color.White,
                                                         shape = RoundedCornerShape(20.dp)
                                                     )
                                                     .clip(RoundedCornerShape(20.dp))
-                                                    .clickable {
-
-                                                        val copyVariant =
-                                                            mutableListOf<ProductVariant>()
-
-                                                        copyVariant.add(productVariantHolder)
-                                                        copyVariant.addAll(selectedProductVariants.value)
-                                                        selectedProductVariants.value =
-                                                            copyVariant.distinctBy { it.variantId }
-
-                                                    }
+                                                    .clickable { addProductVariant(productVariantHolder) }
                                             )
                                             {
-                                                    Box(
-                                                        Modifier
-                                                            .padding(2.dp)
-                                                            . height(22.dp)
-                                                            .width(22.dp)
-                                                            .background(
-                                                                colorValue,
-                                                                RoundedCornerShape(20.dp)
-                                                            )
+                                                Box(
+                                                    Modifier
+                                                        .padding(2.dp)
+                                                        .height(22.dp)
+                                                        .width(22.dp)
+                                                        .background(
+                                                            colorValue,
+                                                            RoundedCornerShape(20.dp)
+                                                        )
 
-                                                    ) { }
+                                                ) { }
                                             }
                                     }
 
@@ -518,17 +536,7 @@ fun ProductDetail(
                                                 )
                                                 .padding(horizontal = 10.dp, vertical = 10.dp)
                                                 .clip(RoundedCornerShape(20.dp))
-                                                .clickable {
-
-                                                    val copyVariant =
-                                                        mutableListOf<ProductVariant>()
-
-                                                    copyVariant.add(productVariantHolder)
-                                                    copyVariant.addAll(selectedProductVariants.value)
-                                                    selectedProductVariants.value = copyVariant
-                                                        .distinctBy { it.variantId }
-
-                                                },
+                                                .clickable {  addProductVariant(productVariantHolder)   },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
@@ -603,19 +611,9 @@ fun ProductDetail(
                                     fontWeight = FontWeight.Bold,
                                     fontSize = (16).sp,
                                     color = CustomColor.primaryColor700,
-                                    modifier = Modifier.clickable {
-                                        if (productData != null)
-                                            productViewModel
-                                                .getProducts(
-                                                    pageNumber = mutableIntStateOf(1),
-                                                    storeId = productData.storeId
-                                                )
-                                        nav.navigate(
-                                            Screens.Store(
-                                                storeId = storeData.id.toString(),
-                                                isFromHome = true
-                                            )
-                                        )
+                                    modifier = Modifier
+                                        .clickable {
+                                        getStoreData()
                                     }
                                 )
 

@@ -1,6 +1,5 @@
-package com.example.e_commercompose.ui.component
+package com.example.eccomerce_app.ui.component
 
-import android.util.Log
 import androidx.compose.animation.core.EaseInOut
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.background
@@ -144,7 +143,6 @@ if(isShowTitle)
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clickable {
-                                Log.d("navBannerIsPresing", "true")
                                 nav!!.navigate(Screens.Store(banners[page].storeId.toString()))
                             }
                             .constrainAs(imageRef) {

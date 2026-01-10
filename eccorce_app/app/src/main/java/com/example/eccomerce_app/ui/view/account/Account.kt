@@ -1,4 +1,4 @@
-package com.example.e_commercompose.ui.view.account
+package com.example.eccomerce_app.ui.view.account
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
@@ -31,7 +31,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -51,8 +50,8 @@ import androidx.navigation.NavHostController
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.ui.Screens
-import com.example.e_commercompose.ui.component.AccountCustomBottom
-import com.example.e_commercompose.ui.component.LogoutButton
+import com.example.eccomerce_app.ui.component.AccountCustomBottom
+import com.example.eccomerce_app.ui.component.LogoutButton
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.util.General.currentLocal
 import com.example.eccomerce_app.util.General.whenLanguageUpdateDo
@@ -95,6 +94,20 @@ fun AccountPage(
     val isChangingLanguage = remember { mutableStateOf(false) }
     val isExpandLanguage = remember { mutableStateOf(false) }
 
+    fun updateConditionValue(
+        isChangingCurrencyValue: Boolean? = null,
+        isShowCurrenciesValue: Boolean? = null,
+        isChangingLanguageValue: Boolean? = null,
+        isExpandLanguageValue: Boolean? = null
+    ) {
+        when {
+            isChangingCurrencyValue != null -> isChangingCurrency.value = isChangingCurrencyValue
+            isShowCurrenciesValue != null -> isShowCurrencies.value = isShowCurrenciesValue
+            isChangingLanguageValue != null -> isChangingLanguage.value = isChangingLanguageValue
+            isExpandLanguageValue != null -> isExpandLanguage.value = isExpandLanguageValue
+        }
+    }
+
 
     val updateDirection = remember {
         derivedStateOf {
@@ -109,7 +122,7 @@ fun AccountPage(
 
     fun updateLanguage(lang: String) {
         coroutine.launch {
-            isChangingLanguage.value = true
+            updateConditionValue(isChangingLanguageValue = true)
             delay(100)
             val currentLange =
                 if (lang == "العربية") {
@@ -122,7 +135,7 @@ fun AccountPage(
                     else ""
                 }
             if (currentLange.isEmpty()) {
-                isChangingLanguage.value = false
+                updateConditionValue(isChangingLanguageValue = false)
                 return@launch
             };
             async {
@@ -131,17 +144,34 @@ fun AccountPage(
                 )
             }.await()
             currentLocal.emit(currentLange)
+
             whenLanguageUpdateDo(currentLange, context)
-            isChangingLanguage.value = false
-            isExpandLanguage.value = false
+            updateConditionValue(isChangingLanguageValue = false, isExpandLanguageValue = false)
 
         }
 
     }
 
+    fun updateProductCurrency(symbol: String) {
+        updateConditionValue(isChangingLanguageValue = true)
+
+        productViewModel.setDefaultCurrency(symbol) { value ->
+            updateConditionValue(isChangingLanguageValue = value)
+        }
+    }
+
+    fun logout() {
+        authViewModel.logout()
+        nav.navigate(Screens.AuthGraph)
+        {
+            popUpTo(nav.graph.id) {
+                inclusive = true
+            }
+        }
+    }
     LaunchedEffect(isChangingLanguage.value) {
-        if(!isChangingLanguage.value)
-            isShowCurrencies.value=false
+        if (!isChangingLanguage.value)
+            updateConditionValue(isShowCurrenciesValue = false)
     }
 
 
@@ -212,7 +242,7 @@ fun AccountPage(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
-                    .padding(top = it.calculateTopPadding() + 20.dp)
+                    .padding(paddingValues = it)
                     .padding(horizontal = 15.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
@@ -266,8 +296,8 @@ fun AccountPage(
                         R.drawable.order_belong_to_store,
                         {
                             orderItemsViewModel.getMyOrderItemBelongToMyStore(
-                                pageNumber = mutableIntStateOf(1),
-                                isLoading = mutableStateOf(false)
+                                pageNumber = 1,
+                                isLoading = false
                             )
                             nav.navigate(Screens.OrderForMyStore)
                         })
@@ -286,15 +316,14 @@ fun AccountPage(
                     stringResource(R.string.exchange_currency),
                     R.drawable.currency_exchange,
                     {
-                        isShowCurrencies.value = true
+                        updateConditionValue(isShowCurrenciesValue = true)
                     },
-//                    isShownArrowIcon = false,
                     additionalComponent = {
                         Box {
                             DropdownMenu(
                                 containerColor = Color.White,
                                 expanded = isShowCurrencies.value,
-                                onDismissRequest = { isShowCurrencies.value = false })
+                                onDismissRequest = { updateConditionValue(isShowCurrenciesValue = false) })
                             {
                                 currencies.value?.forEach { lang ->
                                     DropdownMenuItem(
@@ -310,13 +339,8 @@ fun AccountPage(
                                             )
                                         },
                                         onClick = {
-                                            isChangingLanguage.value = true
 
-                                            productViewModel.setDefaultCurrency(
-                                                lang.symbol,
-                                                isChangingLanguage
-                                            )
-
+                                            updateProductCurrency(lang.symbol)
                                         }
                                     )
                                 }
@@ -346,7 +370,7 @@ fun AccountPage(
                             TextButton(
                                 modifier = Modifier
                                     .offset(y = 2.dp),
-                                onClick = { isExpandLanguage.value = true }) {
+                                onClick = { updateConditionValue(isExpandLanguageValue = true) }) {
                                 Text(
                                     if (currentLocale.value == "en") "English" else "العربية",
                                     fontFamily = General.satoshiFamily,
@@ -360,7 +384,7 @@ fun AccountPage(
                             DropdownMenu(
                                 containerColor = Color.White,
                                 expanded = isExpandLanguage.value,
-                                onDismissRequest = { isExpandLanguage.value = false })
+                                onDismissRequest = { updateConditionValue(isExpandLanguageValue = false) })
                             {
                                 listOf<String>(
                                     "العربية",
@@ -397,13 +421,7 @@ fun AccountPage(
                 )
 
                 LogoutButton(stringResource(R.string.logout), R.drawable.logout, {
-                    authViewModel.logout()
-                    nav.navigate(Screens.AuthGraph)
-                    {
-                        popUpTo(nav.graph.id) {
-                            inclusive = true
-                        }
-                    }
+                    logout()
                 })
 
             }

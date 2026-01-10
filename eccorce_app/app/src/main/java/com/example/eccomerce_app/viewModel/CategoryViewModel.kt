@@ -15,20 +15,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class CategoryViewModel(val categoryRepository: CategoryRepository) : ViewModel() {
-     val _categories = MutableStateFlow<MutableList<Category>?>(null)
+      private  val _categories = MutableStateFlow<MutableList<Category>?>(null)
     val categories = _categories.asStateFlow()
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
 
     fun getCategories(pageNumber: Int = 1) {
-        Log.d("http://", "is category not null ${pageNumber == 1 && _categories.value != null}")
         if (pageNumber == 1 && !_categories.value.isNullOrEmpty()) return
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
-            val result = categoryRepository.getCategory(pageNumber)
-            when (result) {
+            when (val result = categoryRepository.getCategory(pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val categoriesHolder = result.data as List<CategoryDto>
 
