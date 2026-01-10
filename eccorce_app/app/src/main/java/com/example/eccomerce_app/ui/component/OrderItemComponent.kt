@@ -3,7 +3,6 @@ package com.example.eccomerce_app.ui.component
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.widget.ImageView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

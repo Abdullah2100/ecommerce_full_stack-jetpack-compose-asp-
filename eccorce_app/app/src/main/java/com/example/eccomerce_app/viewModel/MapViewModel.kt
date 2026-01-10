@@ -20,8 +20,7 @@ class MapViewModel(private val mapRepository: MapRepository) : ViewModel() {
     val googlePlaceInfo = _googlePlaceInfo.asStateFlow()
     fun findPointBetweenTwoDestination(origin: LatLng, destination: LatLng, key: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            val result = mapRepository.getDistanceBetweenTwoPoint(origin, destination, key)
-            when (result) {
+            when (val result = mapRepository.getDistanceBetweenTwoPoint(origin, destination, key)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val info = result.data as? GooglePlacesInfo
                     info?.routes?.firstOrNull()?.overview_polyline?.points?.let { encodedPath ->

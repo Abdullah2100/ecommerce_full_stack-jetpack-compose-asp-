@@ -1,4 +1,4 @@
-package com.example.e_commercompose.ui.component
+package com.example.eccomerce_app.ui.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -40,6 +40,7 @@ import androidx.navigation.NavHostController
 import coil.compose.SubcomposeAsyncImage
 import com.example.eccomerce_app.util.General
 import com.example.e_commercompose.model.ProductModel
+import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.theme.CustomColor
 import java.util.UUID

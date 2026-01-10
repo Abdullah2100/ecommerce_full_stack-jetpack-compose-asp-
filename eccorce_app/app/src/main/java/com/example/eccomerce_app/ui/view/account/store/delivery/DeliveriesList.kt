@@ -1,5 +1,6 @@
 package com.example.eccomerce_app.ui.view.account.store.delivery
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -76,6 +77,7 @@ import kotlinx.coroutines.launch
 import java.util.UUID
 
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeliveriesListScreen(
@@ -132,17 +134,33 @@ fun DeliveriesListScreen(
         }
     }
 
+    fun refreshDeliveryList(){
+        coroutine.launch {
+            if (!isRefresh.value) isRefresh.value = true
+            page.intValue = 1;
+            deliveryViewModel.getDeliveryBelongToStore(page.intValue){value->
+                page.intValue=value
+            }
+            if (isRefresh.value) {
+                delay(1000)
+                isRefresh.value = false
+            }
+
+        }
+    }
 
 
 
     LaunchedEffect(reachedBottom.value) {
         if (!deliveries.value.isNullOrEmpty() && reachedBottom.value && deliveries.value!!.size > 23) {
-            deliveryViewModel.getDeliveryBelongToStore(page)
+            deliveryViewModel.getDeliveryBelongToStore(page.intValue){value->
+                page.intValue=value
+            }
         }
     }
 
     LaunchedEffect(Unit) {
-        deliveryViewModel.getDeliveryBelongToStore(mutableIntStateOf(1))
+        deliveryViewModel.getDeliveryBelongToStore(1)
     }
 
     Scaffold(
@@ -274,19 +292,11 @@ fun DeliveriesListScreen(
         PullToRefreshBox(
             isRefreshing = isRefresh.value,
             onRefresh = {
-                coroutine.launch {
-                    if (!isRefresh.value) isRefresh.value = true
-                    page.intValue = 1;
-                    deliveryViewModel.getDeliveryBelongToStore(page)
-                    if (isRefresh.value) {
-                        delay(1000)
-                        isRefresh.value = false
-                    }
-
-                }
+                refreshDeliveryList()
             },
             modifier = Modifier
                 .background(Color.White)
+
                 .fillMaxSize(),
             state = state,
             indicator = {
@@ -305,10 +315,7 @@ fun DeliveriesListScreen(
         {
             LazyColumn(
                 modifier = Modifier
-                    .padding(
-                        top = paddingValues.calculateTopPadding() + 10.dp,
-                        bottom = paddingValues.calculateBottomPadding()
-                    )
+                    .padding(paddingValues)
                     .padding(horizontal = 20.dp)
                     .background(Color.White)
                     .fillMaxSize()

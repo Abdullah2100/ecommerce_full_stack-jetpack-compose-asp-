@@ -138,10 +138,7 @@ fun CustomTitleButton(
         modifier = Modifier
             .height(50.dp)
             .fillMaxWidth(),
-        onClick = {
-
-            operation()
-        },
+        onClick = {  operation()  },
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.Transparent//color?: CustomColor.primaryColor400

@@ -27,15 +27,15 @@ import javax.inject.Named
 
 class OrderViewModel(
     val orderRepository: OrderRepository,
-    @Named("orderHub")  val webSocket: HubConnection?
+    @Named("orderHub") val webSocket: HubConnection?
 
 ) : ViewModel() {
-     val _orderSocket = MutableStateFlow<HubConnection?>(null)
+    private val _orderSocket = MutableStateFlow<HubConnection?>(null)
 
-     val _orders = MutableStateFlow<List<Order>?>(null)
+    private val _orders = MutableStateFlow<List<Order>?>(null)
     val orders = _orders.asStateFlow()
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
@@ -51,12 +51,11 @@ class OrderViewModel(
                     "orderStatus",
                     { response ->
 
-                          val orderUpdateData = _orders.value?.map { data->
-                              if(data.id==response.id){
-                                  data.copy(status = response.status)
-                              }
-                              else data
-                          }
+                        val orderUpdateData = _orders.value?.map { data ->
+                            if (data.id == response.id) {
+                                data.copy(status = response.status)
+                            } else data
+                        }
 
 
                         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
@@ -112,10 +111,10 @@ class OrderViewModel(
     }
 
 
- suspend  fun submitOrder(
+    suspend fun submitOrder(
         cartItems: CartModel,
         userAddress: Address?,
-        clearCartData:()-> Unit
+        clearCartData: () -> Unit
     ): String? {
         val result = orderRepository.submitOrder(
             CreateOrderDto(
@@ -154,13 +153,12 @@ class OrderViewModel(
         pageNumber: MutableState<Int>,
         isLoading: MutableState<Boolean>? = null,
 
-    ) {
+        ) {
         if (isLoading != null) isLoading.value = true
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
             if (isLoading != null)
                 delay(500)
-            val result = orderRepository.getMyOrders(pageNumber.value)
-            when (result) {
+            when (val result = orderRepository.getMyOrders(pageNumber.value)) {
 
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<OrderDto>
@@ -169,8 +167,8 @@ class OrderViewModel(
                     if (!_orders.value.isNullOrEmpty()) {
                         orderList.addAll(_orders.value!!)
                     }
-                    val distincetOrder = orderList.distinctBy { it.id }.toList()
-                    _orders.emit(distincetOrder)
+                    val distinctOrder = orderList.distinctBy { it.id }.toList()
+                    _orders.emit(distinctOrder)
 
                     if (isLoading != null) isLoading.value = false
                     if (data.size == 25)
@@ -193,8 +191,7 @@ class OrderViewModel(
 
 
     suspend fun deleteOrder(orderId: UUID): String? {
-        val result = orderRepository.deleteOrder(orderId)
-        when (result) {
+        when (val result = orderRepository.deleteOrder(orderId)) {
             is NetworkCallHandler.Successful<*> -> {
                 val orderList = _orders.value?.filter { it.id != orderId }
 
@@ -210,9 +207,6 @@ class OrderViewModel(
         }
 
     }
-
-
-
 
 
 }

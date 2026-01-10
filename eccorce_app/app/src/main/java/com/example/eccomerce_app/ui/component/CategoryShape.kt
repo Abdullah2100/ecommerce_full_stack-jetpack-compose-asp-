@@ -1,6 +1,5 @@
-package com.example.e_commercompose.ui.component
+package com.example.eccomerce_app.ui.component
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,9 +35,11 @@ import coil.compose.SubcomposeAsyncImage
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.util.General
 import com.example.e_commercompose.model.Category
+import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.viewModel.ProductViewModel
+import java.util.UUID
 
 
 @Composable
@@ -49,6 +50,17 @@ fun CategoryShape(
 ){
     val context = LocalContext.current
 
+    fun getProductAndNavigateToProduct(id: UUID){
+        productViewModel.getProductsByCategoryID(
+            pageNumber = 1,
+            categoryId = id
+        )
+        nav.navigate(
+            Screens.ProductCategory(
+                id.toString()
+            )
+        )
+    }
 
     Row(
         modifier = Modifier
@@ -87,22 +99,13 @@ fun CategoryShape(
             .fillMaxWidth()
     ) {
         items(items = categories,
-            key = {it->it.id}) { category->
+            key = {it.id}) { category->
             Column(
                 modifier = Modifier
                     .padding(end = 5.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .clickable {
-                        productViewModel.getProductsByCategoryID(
-                            pageNumber = mutableStateOf(1),
-                            categoryId = category.id
-                        )
-                        nav.navigate(
-                            Screens.ProductCategory(
-                                category.id.toString()
-                            )
-                        )
-
+                        getProductAndNavigateToProduct(category.id)
                     },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

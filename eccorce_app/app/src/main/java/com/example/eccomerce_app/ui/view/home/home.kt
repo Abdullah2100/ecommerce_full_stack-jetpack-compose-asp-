@@ -3,10 +3,12 @@ package com.example.eccomerce_app.ui.view.home
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -61,14 +63,17 @@ import com.example.eccomerce_app.util.General
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.ui.Screens
-import com.example.e_commercompose.ui.component.BannerBage
+import com.example.eccomerce_app.ui.component.BannerBage
 import com.example.e_commercompose.ui.component.CategoryLoadingShape
-import com.example.e_commercompose.ui.component.CategoryShape
+import com.example.eccomerce_app.ui.component.CategoryShape
 import com.example.e_commercompose.ui.component.LocationLoadingShape
 import com.example.e_commercompose.ui.component.ProductLoading
-import com.example.e_commercompose.ui.component.ProductShape
+import com.example.eccomerce_app.ui.component.ProductShape
 import com.example.eccomerce_app.util.General.reachedBottom
 import com.example.e_commercompose.ui.component.BannerLoading
+import com.example.eccomerce_app.ui.component.HomeAddressComponent
+import com.example.eccomerce_app.ui.component.HomeSearchComponent
+import com.example.eccomerce_app.ui.component.OpacityAndHideComponent
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.VariantViewModel
 import com.example.eccomerce_app.viewModel.BannerViewModel
@@ -120,9 +125,6 @@ fun HomePage(
     val sizeAnimation = animateDpAsState(if (!isClickingSearch.value) 80.dp else 0.dp)
 
 
-    val interactionSource = remember { MutableInteractionSource() }
-
-
     val requestPermission = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { permission ->
@@ -141,7 +143,7 @@ fun HomePage(
             categoryViewModel.getCategories(1)
             bannerViewModel.getStoresBanner()
             variantViewModel.getVariants(1)
-            productViewModel.getProducts(mutableIntStateOf(1)) // Pass the reset page
+            productViewModel.getProducts(1) // Pass the reset page
             orderViewModel.getMyOrders(mutableIntStateOf(1)) // Ensure page is managed here too if paginated
             currencyViewModel.getCurrencies(1)
             if (showRefreshIndicator) {
@@ -165,200 +167,116 @@ fun HomePage(
     LaunchedEffect(reachedBottom.value) {
         if (!products.value.isNullOrEmpty() && reachedBottom.value && products.value!!.size > 23) {
             productViewModel.getProducts(
-                page,
-                isLoadingMore
+                page.intValue,
+                isLoadingMore.value,
+                updatePageNumber = { value -> page.intValue = value },
+                updateLoadingState = { value -> isLoadingMore.value = value }
             )
         }
 
     }
 
-    PullToRefreshBox(
-        isRefreshing = isRefresh.value,
-        onRefresh = {
-            initialDataLoad(true)
-        },
-        state = state,
-        indicator = {
-            Indicator(
-                modifier = Modifier.align(Alignment.TopCenter),
-                isRefreshing = isRefresh.value,
-                containerColor = Color.White,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                state = state
-            )
-        },
-    ) {
-        Scaffold(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) { scaffoldState ->
-            scaffoldState.calculateTopPadding()
-            scaffoldState.calculateBottomPadding()
+
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) { scaffoldState ->
+        scaffoldState.calculateTopPadding()
+        scaffoldState.calculateBottomPadding()
 
 
-
+        PullToRefreshBox(
+            isRefreshing = isRefresh.value,
+            onRefresh = {
+                initialDataLoad(true)
+            },
+            state = state,
+            indicator = {
+                Indicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    isRefreshing = isRefresh.value,
+                    containerColor = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    state = state
+                )
+            },
+        ) {
             LazyColumn(
                 state = lazyState,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.White)
-                    .padding(horizontal = 15.dp)
-                    .padding(top = 50.dp)
+                    .padding(scaffoldState)
+                    .padding(top = 20.dp, start = 10.dp, end = 10.dp)
 
             ) {
 
                 //address info
                 item {
-                    when (myInfo.value?.address == null && categories.value == null) {
-                        true -> {
-                            LocationLoadingShape((configuration.screenWidthDp))
-                        }
-
-                        else -> {
-                            if (!myInfo.value?.address.isNullOrEmpty())
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    modifier = Modifier.height(sizeAnimation.value)
-                                ) {
-                                    Column(
-                                        modifier = Modifier
-                                            .width(width = (configuration.screenWidthDp - 30 - 34).dp)
-                                            .clickable(
-                                                enabled = true,
-                                                interactionSource = interactionSource,
-                                                indication = null,
-                                                onClick = {
-                                                    nav.navigate(Screens.EditeOrAddNewAddress)
-                                                }
-                                            )
-                                    ) {
-                                        Text(
-                                            stringResource(R.string.location),
-                                            fontFamily = General.satoshiFamily,
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 16.sp,
-                                            color = CustomColor.neutralColor800,
-                                            textAlign = TextAlign.Center
-
-                                        )
-                                        Sizer(1)
-                                        Text(
-                                            myInfo.value?.address?.firstOrNull { it.isCurrent }?.title
-                                                ?: "",
-                                            fontFamily = General.satoshiFamily,
-                                            fontWeight = FontWeight.Medium,
-                                            fontSize = 18.sp,
-                                            color = CustomColor.neutralColor950,
-                                            textAlign = TextAlign.Center
-
-                                        )
-                                    }
-
-                                    Icon(
-                                        Icons.Outlined.Notifications,
-                                        "",
-                                        tint = CustomColor.neutralColor950,
-                                        modifier = Modifier.size(30.dp)
-
-                                    )
-                                }
-                        }
-                    }
-
+                    HomeAddressComponent(
+                        isPassCondition = myInfo.value?.address == null && categories.value == null,
+                        screenWidth = configuration.screenWidthDp,
+                        animatedComponentSize = sizeAnimation.value,
+                        nav = nav,
+                        address = myInfo.value?.address?.firstOrNull { it.isCurrent }
+                    )
 
                 }
 
                 //this the search box
                 if (!products.value.isNullOrEmpty())
                     item {
-                        Card(
-                            modifier = Modifier
-                                .padding(top = 5.dp, bottom = 10.dp)
-                                .clickable(
-                                    interactionSource = interactionSource,
-                                    indication = null,
-                                    onClick = {
-                                        isClickingSearch.value = !isClickingSearch.value
-                                    }
-                                ), colors = CardDefaults.cardColors(
-                                containerColor = Color.White
-                            ),
-                            elevation = CardDefaults.elevatedCardElevation(
-                                defaultElevation = 5.dp,
-                            ),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(top = 15.dp, bottom = 15.dp, start = 4.dp)
-
-                            ) {
-
-                                Icon(
-                                    Icons.Outlined.Search, "",
-                                    tint = CustomColor.neutralColor950,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Sizer(width = 5)
-                                Text(
-                                    stringResource(R.string.find_your_favorite_items),
-                                    fontFamily = General.satoshiFamily,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp,
-                                    color = CustomColor.neutralColor800,
-                                    textAlign = TextAlign.Center
-
-                                )
-
-                            }
-
+                        HomeSearchComponent(
+                            isClickingSearch = isClickingSearch.value,
+                        ) { state ->
+                            isClickingSearch.value = state
                         }
                     }
 
 
                 item {
-                    when (categories.value == null) {
-                        true -> {
-                            CategoryLoadingShape()
-                        }
+                    OpacityAndHideComponent(isHideComponent = isClickingSearch.value, content = {
+                        when (categories.value == null) {
+                            true -> {
+                                CategoryLoadingShape()
+                            }
 
-                        else -> {
-                            when (categories.value!!.isEmpty()) {
-                                true -> {}
-                                else -> {
+                            else -> {
+                                when (categories.value!!.isEmpty()) {
+                                    true -> {}
+                                    else -> {
 
-                                    CategoryShape(
-                                        categories = categories.value!!.take(4),
-                                        productViewModel = productViewModel,
-                                        nav = nav
-                                    )
+                                        CategoryShape(
+                                            categories = categories.value!!.take(4),
+                                            productViewModel = productViewModel,
+                                            nav = nav
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
+                    })
                 }
 
                 //banner section
                 item {
-                    when (banner.value == null) {
-                        true -> {
-                            BannerLoading()
-                        }
+                    OpacityAndHideComponent(isHideComponent = isClickingSearch.value, content = {
+                        when (banner.value == null) {
+                            true -> {
+                                BannerLoading()
+                            }
 
-                        else -> {
-                            if (!banner.value.isNullOrEmpty())
-                                BannerBage(
-                                    banners = banner.value!!,
-                                    isMe = false,
-                                    nav = nav
-                                )
+                            else -> {
+                                if (!banner.value.isNullOrEmpty())
+                                    BannerBage(
+                                        banners = banner.value!!,
+                                        isMe = false,
+                                        nav = nav
+                                    )
+                            }
                         }
-                    }
+                    })
 
 
                 }
@@ -367,33 +285,39 @@ fun HomePage(
                 //product
 
                 item {
+                    OpacityAndHideComponent(isHideComponent = isClickingSearch.value, content = {
+                        Sizer(10)
+                        when (products.value == null) {
+                            true -> {
+                                ProductLoading()
+                            }
 
-                    Sizer(10)
-                    when (products.value == null) {
-                        true -> {
-                            ProductLoading()
-                        }
-
-                        else -> {
-                            if (products.value!!.isNotEmpty()) {
-                                ProductShape(products.value!!, nav = nav)
+                            else -> {
+                                if (products.value!!.isNotEmpty()) {
+                                    ProductShape(products.value!!, nav = nav)
+                                }
                             }
                         }
-                    }
+                    })
                 }
 
                 if (isLoadingMore.value) {
+
                     item {
-                        Box(
-                            modifier = Modifier
-                                .padding(top = 15.dp)
-                                .fillMaxWidth(),
-                            contentAlignment = Alignment.Center
-                        )
-                        {
-                            CircularProgressIndicator(color = CustomColor.primaryColor700)
-                        }
-                        Sizer(40)
+                        OpacityAndHideComponent(
+                            isHideComponent = isClickingSearch.value,
+                            content = {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(top = 15.dp)
+                                        .fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                )
+                                {
+                                    CircularProgressIndicator(color = CustomColor.primaryColor700)
+                                }
+                                Sizer(40)
+                            })
                     }
                 }
 
@@ -405,3 +329,5 @@ fun HomePage(
         }
     }
 }
+
+

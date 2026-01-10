@@ -1,4 +1,4 @@
-package com.vsnappy1.timepicker
+package com.example.eccomerce_app.ui.component.datePicker.vsnappy1.timepicker
 
 import android.text.format.DateFormat
 import androidx.compose.animation.core.animateFloatAsState
@@ -6,13 +6,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,15 +32,15 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.e_commercompose.ui.component.Sizer
-import com.vsnappy1.extension.noRippleClickable
-import com.vsnappy1.extension.toDp
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension.noRippleClickable
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension.toDp
+import com.vsnappy1.component.SwipeLazyColumn
 import com.vsnappy1.theme.Size.extraLarge
 import com.vsnappy1.theme.Size.medium
 import com.vsnappy1.timepicker.data.model.TimePickerTime
 import com.vsnappy1.timepicker.enums.MinuteGap
 import com.vsnappy1.timepicker.ui.model.TimePickerConfiguration
 import com.vsnappy1.timepicker.ui.viewmodel.TimePickerViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -111,7 +109,6 @@ fun TimePicker(
     ) {
         Box(
             modifier = Modifier
-//                .width(50.dp)
                 .clickable(onClick = {
                     viewModel.getSelectedTime()?.apply {
                         onTimeSelected(hour, minute)
@@ -240,7 +237,7 @@ private fun SwipeLazyColumn(
     val coroutineScope = rememberCoroutineScope()
     var isAutoScrolling by remember { mutableStateOf(false) }
     val listState = rememberLazyListState(selectedIndex)
-    com.vsnappy1.component.SwipeLazyColumn(
+    SwipeLazyColumn(
         modifier = modifier,
         selectedIndex = selectedIndex,
         onSelectedIndexChange = onSelectedIndexChange,

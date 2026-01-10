@@ -53,6 +53,9 @@ fun GenerateOtpScreen(
 
 
     val isSendingData = remember { mutableStateOf(false) }
+    fun updateConditionValue(isSendingDataValue: Boolean? = null) {
+        if (isSendingDataValue != null) isSendingData.value = isSendingDataValue
+    }
     val snackBarHostState = remember { SnackbarHostState() }
 
 
@@ -69,12 +72,9 @@ fun GenerateOtpScreen(
 
         ConstraintLayout(
             modifier = Modifier
-                .padding(horizontal = 10.dp)
-                .padding(
-                    top = it.calculateTopPadding(),
-                    bottom = it.calculateBottomPadding()
-                )
                 .background(Color.White)
+                .padding(horizontal = 10.dp)
+                .padding( it)
                 .fillMaxSize()
         ) {
 
@@ -108,12 +108,12 @@ fun GenerateOtpScreen(
                     isLoading = isSendingData.value,
                     operation = {
                         keyboardController?.hide()
-                        isSendingData.value = true
+                        updateConditionValue(isSendingDataValue = true)
                         coroutine.launch {
                             val result = async {
                                 authViewModel.getOtp(email.value.text)
                             }.await()
-                            isSendingData.value = false
+                            updateConditionValue(isSendingDataValue = false)
 
                             if (!result.isNullOrEmpty()) {
                                 snackBarHostState.showSnackbar(result)

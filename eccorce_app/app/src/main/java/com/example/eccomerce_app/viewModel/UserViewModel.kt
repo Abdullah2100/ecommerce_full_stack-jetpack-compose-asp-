@@ -175,8 +175,7 @@ class UserViewModel(
     }
 
     suspend fun setCurrentActiveUserAddress(addressId: UUID): String? {
-        val result = addressRepository.setAddressAsCurrent(addressId)
-        when (result) {
+        when (val result = addressRepository.setAddressAsCurrent(addressId)) {
             is NetworkCallHandler.Successful<*> -> {
                 if (!_userInfo.value?.address.isNullOrEmpty()) {
                     val addresses = _userInfo.value?.address?.map { address ->
@@ -247,8 +246,7 @@ class UserViewModel(
     }
 
     suspend fun deleteUserAddress(addressId: UUID): String? {
-        val result = addressRepository.deleteUserAddress(addressId)
-        when (result) {
+        when (val result = addressRepository.deleteUserAddress(addressId)) {
             is NetworkCallHandler.Successful<*> -> {
 
                 val address = _userInfo.value?.address?.filter { it.id != addressId }

@@ -25,30 +25,31 @@ class CurrencyViewModel(
 ) : ViewModel() {
 
 
-
-
     val selectedCurrency = currencyDao
         .getSelectedCurrencyFlow()
-        .stateIn(scop,
+        .stateIn(
+            scop,
             started = SharingStarted.WhileSubscribed(2000L),
-            initialValue = null)
+            initialValue = null
+        )
 
-    val currenciesList= currencyDao
+    val currenciesList = currencyDao
         .getSavedCurrenciesAsFlow()
-        .stateIn(scop,
+        .stateIn(
+            scop,
             started = SharingStarted.WhileSubscribed(2000L),
-            initialValue = null)
+            initialValue = null
+        )
 
 
-    val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
 
     fun getCurrencies(pageNumber: Int) {
         scop.launch(Dispatchers.IO + _coroutineException) {
-            val result = currencyRepository.getStoreCurrencies(pageNumber = pageNumber)
-            when (result) {
+            when (val result = currencyRepository.getStoreCurrencies(pageNumber = pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<CurrencyDto>
 
@@ -82,6 +83,5 @@ class CurrencyViewModel(
         }
 
     }
-
 
 }

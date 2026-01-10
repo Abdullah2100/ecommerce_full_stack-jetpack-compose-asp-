@@ -1,0 +1,3 @@
+/home/abdullah/Desktop/ecommerce_full_stack-jetpack-compose-asp-/eccorce_app/app/.cxx/RelWithDebInfo/4ne4w4g6/x86_64/CMakeFiles/nativelib.dir
+/home/abdullah/Desktop/ecommerce_full_stack-jetpack-compose-asp-/eccorce_app/app/.cxx/RelWithDebInfo/4ne4w4g6/x86_64/CMakeFiles/edit_cache.dir
+/home/abdullah/Desktop/ecommerce_full_stack-jetpack-compose-asp-/eccorce_app/app/.cxx/RelWithDebInfo/4ne4w4g6/x86_64/CMakeFiles/rebuild_cache.dir

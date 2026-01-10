@@ -19,10 +19,10 @@ import kotlinx.coroutines.launch
 class VariantViewModel(val variantRepository: VariantRepository) : ViewModel() {
 
 
-     val _variants = MutableStateFlow<MutableList<VarirntModel>?>(null)
+  private   val _variants = MutableStateFlow<MutableList<VarirntModel>?>(null)
     val variants = _variants.asStateFlow()
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+  private   val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
@@ -30,8 +30,7 @@ class VariantViewModel(val variantRepository: VariantRepository) : ViewModel() {
         if (pageNumber == 1 && _variants.value != null) return
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
 
-            val result = variantRepository.getVariant(pageNumber)
-            when (result) {
+            when (val result = variantRepository.getVariant(pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val variantsHolder = result.data as List<VariantDto>
 

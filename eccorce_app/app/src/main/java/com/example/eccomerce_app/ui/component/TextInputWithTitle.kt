@@ -155,6 +155,7 @@ fun TextNumberInputWithTitle(
 
     val pattern = remember { Regex("^\\d+\$") }
     val fontScall = LocalDensity.current.fontScale
+
     Column {
         Text(
             title,
@@ -233,7 +234,7 @@ fun TextSecureInputWithTitle(
     keyboardOptions: KeyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
 ) {
 
-    val showPassword = remember { mutableStateOf(false) }
+    val isShowPassword = remember { mutableStateOf(false) }
     val fontScall = LocalDensity.current.fontScale
     Column() {
         Text(
@@ -283,14 +284,14 @@ fun TextSecureInputWithTitle(
                 fontSize = (16 / fontScall).sp,
                 color = CustomColor.neutralColor950
             ),
-            visualTransformation = if (showPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (isShowPassword.value) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon =
                 {
-                    val iconName = if (!showPassword.value) R.drawable.baseline_visibility_24
+                    val iconName = if (!isShowPassword.value) R.drawable.baseline_visibility_24
                     else R.drawable.visibility_off
 
                     IconButton(onClick = {
-                        showPassword.value = !showPassword.value
+                        isShowPassword.value = !isShowPassword.value
                     }) {
                         Image(
                             painterResource(iconName), contentDescription = "",

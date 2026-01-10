@@ -1,7 +1,6 @@
 package com.example.eccomerce_app.ui.view.Auth
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +54,7 @@ import com.example.eccomerce_app.ui.Screens
 import com.example.hotel_mobile.Util.Validation
 import kotlinx.coroutines.launch
 import com.example.e_commercompose.R
+import kotlinx.coroutines.async
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,6 +93,28 @@ fun SignUpPage(
     val isTermAndServicesError = remember { mutableStateOf(false) }
     val errorMessageValidation = remember { mutableStateOf("") }
 
+    fun updateConditionValue(
+        isLoadingValue: Boolean? = null,
+        isCheckBoxValue: Boolean? = null,
+        isEmailErrorValue: Boolean? = null,
+        isNameErrorValue: Boolean? = null,
+        isPhoneErrorValue: Boolean? = null,
+        isPasswordErrorValue: Boolean? = null,
+        isPasswordConfirmValue: Boolean? = null,
+        isTermAndServicesErrorValue: Boolean? = null
+    ) {
+        when {
+            isLoadingValue != null -> isLoading.value = isLoadingValue
+            isCheckBoxValue != null -> isCheckBox.value = isCheckBoxValue
+            isEmailErrorValue != null -> isEmailError.value = isEmailErrorValue
+            isNameErrorValue != null -> isNameError.value = isNameErrorValue
+            isPhoneErrorValue != null -> isPhoneError.value = isPhoneErrorValue
+            isPasswordErrorValue != null -> isPasswordError.value = isPasswordErrorValue
+            isPasswordConfirmValue != null -> isPasswordConfirm.value = isPasswordConfirmValue
+            isTermAndServicesErrorValue != null -> isTermAndServicesError.value = isTermAndServicesErrorValue
+        }
+    }
+
 
     fun validateSignupInput(
         name: String,
@@ -101,90 +123,92 @@ fun SignUpPage(
         confirmPassword: String
     ): Boolean {
 
-        isNameError.value = false
-        isEmailError.value = false
-        isPasswordError.value = false
-        isPasswordConfirm.value = false
+        updateConditionValue(
+            isNameErrorValue = false,
+            isEmailErrorValue = false,
+            isPasswordErrorValue = false,
+            isPasswordConfirmValue = false
+        )
 
         when {
 
             name.trim().isEmpty() -> {
                 errorMessageValidation.value = context.getString(R.string.name_must_not_be_empty)
-                isNameError.value = true
+                updateConditionValue(isNameErrorValue = true)
                 return false
             }
 
             email.trim().isEmpty() -> {
                 errorMessageValidation.value = context.getString(R.string.email_must_not_be_empty)
-                isEmailError.value = true
+                updateConditionValue(isEmailErrorValue = true)
                 return false
             }
 
             !Validation.emailValidation(email) -> {
                 errorMessageValidation.value = context.getString(R.string.write_valid_email)
-                isEmailError.value = true
+                updateConditionValue(isEmailErrorValue = true)
                 return false
             }
 
             phone.value.text.trim().isEmpty() -> {
                 errorMessageValidation.value = context.getString(R.string.phone_must_not_empty)
-                isPhoneError.value = true
+                updateConditionValue(isPhoneErrorValue = true)
                 return false
             }
 
             password.trim().isEmpty() -> {
                 errorMessageValidation.value =
                     (context.getString(R.string.password_must_not_be_empty))
-                isPasswordError.value = true
+                updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
 
             !Validation.passwordSmallValidation(password) -> {
                 errorMessageValidation.value =
                     (context.getString(R.string.password_must_not_contain_two_small_letter))
-                isPasswordError.value = true
+                updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
 
             !Validation.passwordNumberValidation(password) -> {
                 errorMessageValidation.value =
                     (context.getString(R.string.password_must_not_contain_two_number))
-                isPasswordError.value = true
+                updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
 
             !Validation.passwordCapitalValidation(password) -> {
                 errorMessageValidation.value =
                     (context.getString(R.string.password_must_not_contain_two_capitalletter))
-                isPasswordError.value = true
+                updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
 
             !Validation.passwordSpicialCharracterValidation(password) -> {
                 errorMessageValidation.value =
                     (context.getString(R.string.password_must_not_contain_two_spical_character))
-                isPasswordError.value = true
+                updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
 
             confirmPassword.trim().isEmpty() -> {
                 errorMessageValidation.value =
                     context.getString(R.string.password_must_not_be_empty)
-                isPasswordConfirm.value = true
+                updateConditionValue(isPasswordConfirmValue = true)
                 return false
             }
 
             password != confirmPassword -> {
                 errorMessageValidation.value =
                     (context.getString(R.string.confirm_password_not_equal_to_password))
-                isPasswordConfirm.value = true
+                updateConditionValue(isPasswordConfirmValue = true)
                 return false
             }
 
             !isCheckBox.value -> {
                 errorMessageValidation.value =
                     context.getString(R.string.term_and_policies_is_required)
-                isTermAndServicesError.value = true;
+                updateConditionValue(isTermAndServicesErrorValue = true)
 
                 return false
             }
@@ -246,11 +270,9 @@ fun SignUpPage(
         ConstraintLayout(
             modifier = Modifier
                 .background(Color.White)
-                .padding(horizontal = 10.dp)
-                .padding(
-                    top = it.calculateTopPadding(),
-                    bottom = it.calculateBottomPadding()
-                )
+                .padding(it )
+                .padding(start =10.dp, end = 10.dp )
+
                 .fillMaxSize()
         ) {
             val (inputRef) = createRefs()
@@ -312,7 +334,7 @@ fun SignUpPage(
                 {
                     Checkbox(
                         checked = isCheckBox.value,
-                        onCheckedChange = { isCheckBox.value = !isCheckBox.value },
+                        onCheckedChange = { updateConditionValue(isCheckBoxValue = !isCheckBox.value) },
                         colors = CheckboxDefaults.colors(
                             checkedColor = CustomColor.primaryColor700
                         ),
@@ -333,9 +355,7 @@ fun SignUpPage(
                         fontSize = (16 / fontScall).sp,
                         modifier = Modifier
                             .padding(start = 3.dp)
-                            .clickable {
-
-                            },
+                            ,
                         textDecoration = TextDecoration.Underline
                     )
                 }
@@ -365,12 +385,13 @@ fun SignUpPage(
                     operation = {
                         keyboardController?.hide()
                         coroutine.launch {
-                            isLoading.value = true;
-                            val token = //async { authKoin.generateTokenNotification() }.await()
-                             Pair(
-                                "fv6pNFrXSsC7o29xq991br:APA91bHiUFcyvxKKxcqWoPZzoIaeWEs6_uN36YI0II5HHpN3HP-dUQap9UbnPiyBB8Fc5xX6GiCYbDQ7HxuBlXZkAE2P0T82-DRQ160EiKCJ9tlPgfgQxa4",
-                                null
-                            )
+                            updateConditionValue(isLoadingValue = true)
+                            val token =
+                                async { authKoin.generateTokenNotification() }.await()
+//                             Pair(
+//                                "fv6pNFrXSsC7o29xq991br:APA91bHiUFcyvxKKxcqWoPZzoIaeWEs6_uN36YI0II5HHpN3HP-dUQap9UbnPiyBB8Fc5xX6GiCYbDQ7HxuBlXZkAE2P0T82-DRQ160EiKCJ9tlPgfgQxa4",
+//                                null
+//                            )
 
                             if (token.first != null) {
                                 val result = authKoin.signUpUser(
@@ -390,7 +411,7 @@ fun SignUpPage(
                                 else
                                     snackBarHostState.showSnackbar(result)
                             } else {
-                                isLoading.value = false
+                                updateConditionValue(isLoadingValue = false)
                                 coroutine.launch {
                                     snackBarHostState.showSnackbar(
                                         token.second

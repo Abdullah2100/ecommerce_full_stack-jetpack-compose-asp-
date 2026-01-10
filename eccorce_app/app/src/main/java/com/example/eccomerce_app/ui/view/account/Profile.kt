@@ -121,12 +121,9 @@ fun ProfileScreen(
                 )
             )
         }
-        //clipboardManager.setPrimaryClip()
     }
 
-    fun validateLoginInput(
-
-    ): Boolean {
+    fun validateLoginInput(): Boolean {
         var errorMessage = ""
 
         if (oldPassword.value.text.isEmpty() && newPassword.value.text.isEmpty() && phone.value.text.isEmpty())
@@ -281,9 +278,8 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(top = it.calculateTopPadding() + 20.dp, bottom = it.calculateBottomPadding())
-                .padding(horizontal = 15.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(it)
+            ,horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
 

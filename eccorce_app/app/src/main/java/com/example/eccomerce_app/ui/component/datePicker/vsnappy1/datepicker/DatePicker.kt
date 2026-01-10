@@ -55,9 +55,9 @@ import com.vsnappy1.datepicker.data.model.SelectionLimiter
 import com.vsnappy1.datepicker.enums.Days
 import com.vsnappy1.datepicker.ui.model.DatePickerUiState
 import com.vsnappy1.datepicker.ui.viewmodel.DatePickerViewModel
-import com.vsnappy1.extension.noRippleClickable
-import com.vsnappy1.extension.spToDp
-import com.vsnappy1.extension.toDp
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension.noRippleClickable
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension.spToDp
+import com.example.eccomerce_app.ui.component.datePicker.vsnappy1.extension.toDp
 import com.vsnappy1.theme.Size.medium
 import kotlinx.coroutines.launch
 import kotlin.math.ceil

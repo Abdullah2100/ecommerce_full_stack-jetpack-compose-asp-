@@ -1,7 +1,6 @@
 package com.example.eccomerce_app.viewModel
 
 import android.util.Log
-import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.eccomerce_app.util.General
@@ -30,44 +29,46 @@ class ProductViewModel(
     private val productRepository: ProductRepository,
     private val currencyDao: CurrencyDao,
     private val scop: CoroutineScope,
-
 //    val webSocket: HubConnection?
+
 ) : ViewModel() {
 
 
 //     val _hub = MutableStateFlow<HubConnection?>(null)
 
-     val _products = MutableStateFlow<List<ProductModel>?>(null)
+    private val _products = MutableStateFlow<List<ProductModel>?>(null)
     val products = _products.asStateFlow()
 
 
-     val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 
-    fun setDefaultCurrency(symbol:String, isCompleteUpdate: MutableState<Boolean>) {
+    fun setDefaultCurrency(symbol: String, onCompleteUpdateValue: (value: Boolean) -> Unit) {
         scop.launch(Dispatchers.IO + SupervisorJob()) {
             delay(100)
             currencyDao.setSelectedCurrency(symbol)
-             async{convertProductCurrencyToSavedCurrency()}.await()
-             isCompleteUpdate.value = false;
+            async { convertProductCurrencyToSavedCurrency() }.await()
+            onCompleteUpdateValue.invoke(false);
         }
     }
 
     //this if user change the currency from setting
-    private suspend fun convertProductCurrencyToSavedCurrency(): Boolean{
+    private suspend fun convertProductCurrencyToSavedCurrency(): Boolean {
         val currencyList = currencyDao.getSavedCurrencies()
-        if(!_products.value.isNullOrEmpty()&& currencyList.isNotEmpty()){
-            val targetCurrency = currencyList.firstOrNull{it-> it.isSelected }
+        if (!_products.value.isNullOrEmpty() && currencyList.isNotEmpty()) {
+            val targetCurrency = currencyList.firstOrNull { it -> it.isSelected }
 
-            val productToNewCurrency = _products.value?.map { data->
+            val productToNewCurrency = _products.value?.map { data ->
                 data.copy(
                     price = convertPriceToAnotherCurrency(
                         data.price,
                         data.symbol,
                         targetCurrency,
-                        currencyList),
-                    symbol = targetCurrency?.symbol?:data.symbol)
+                        currencyList
+                    ),
+                    symbol = targetCurrency?.symbol ?: data.symbol
+                )
             }
 
             _products.emit(null)
@@ -81,19 +82,22 @@ class ProductViewModel(
 
     //this if the user is select the currency then for api  comming will use this
     // to convert them to local currency saved
-    private suspend fun convertProductCurrencyToSavedCurrency(products:List<ProductModel>?=null): List<ProductModel>?{
+    private suspend fun convertProductCurrencyToSavedCurrency(products: List<ProductModel>? = null): List<ProductModel>? {
         val currencyList = currencyDao.getSavedCurrencies()
-        val targetCurrency = currencyList.firstOrNull{it-> it.isSelected }
-        if(!products.isNullOrEmpty()&&targetCurrency!=null){
+        val targetCurrency = currencyList.firstOrNull { it -> it.isSelected }
+        if (!products.isNullOrEmpty() && targetCurrency != null) {
 
-            val productToNewCurrency = products.map { data->
+            val productToNewCurrency = products.map { data ->
 
-                data.copy(price = convertPriceToAnotherCurrency(
-                    data.price,
-                    data.symbol,
-                    targetCurrency,
-                    currencyList),
-                    symbol = targetCurrency.symbol)
+                data.copy(
+                    price = convertPriceToAnotherCurrency(
+                        data.price,
+                        data.symbol,
+                        targetCurrency,
+                        currencyList
+                    ),
+                    symbol = targetCurrency.symbol
+                )
 
             }
 
@@ -102,7 +106,6 @@ class ProductViewModel(
         }
         return null
     }
-
 
 
     /*
@@ -147,22 +150,24 @@ class ProductViewModel(
     }
 */
     fun getProducts(
-        pageNumber: MutableState<Int>,
-        isLoading: MutableState<Boolean>? = null
-    ) {
+        pageNumber: Int,
+        isLoading: Boolean? = null,
+        updatePageNumber: ((value: Int) -> Unit)? = null,
+        updateLoadingState: ((value: Boolean) -> Unit)? = null,
+        ) {
         viewModelScope.launch(Dispatchers.IO + _coroutineException) {
-            if (isLoading != null) isLoading.value = true
+            if (isLoading != null) updateLoadingState?.invoke(true)
             delay(500)
 
-            val result = productRepository.getProduct(pageNumber.value)
-            when (result) {
+            when (val result = productRepository.getProduct(pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
                     val productsResponse = data.map { it.toProduct() }.toList()
 
-                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+                    val productWithSavedCurrency =
+                        convertProductCurrencyToSavedCurrency(productsResponse) ?: productsResponse
 
                     holder.addAll(productWithSavedCurrency)
 
@@ -179,9 +184,9 @@ class ProductViewModel(
 
 
 
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                     if (data.size == 25)
-                        pageNumber.value++
+                        updatePageNumber?.invoke(pageNumber + 1)
                 }
 
                 is NetworkCallHandler.Error -> {
@@ -194,7 +199,7 @@ class ProductViewModel(
                     }
                     Log.d("errorFromGettingStoreData", errorMessage)
 
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                 }
             }
 
@@ -203,21 +208,23 @@ class ProductViewModel(
     }
 
     fun getProducts(
-        pageNumber: MutableState<Int>,
+        pageNumber: Int,
         storeId: UUID,
-        isLoading: MutableState<Boolean>? = null
+        isLoading: Boolean? = null,
+        updatePageNumber: ((value: Int) -> Unit)? = null,
+        updateLoadingState: ((value: Boolean) -> Unit)? = null,
     ) {
-        if (isLoading != null) isLoading.value = true
-        viewModelScope.launch(Dispatchers.Main + _coroutineException) {
-            val result = productRepository.getProduct(storeId, pageNumber.value)
-            when (result) {
+        viewModelScope.launch(Dispatchers.IO + _coroutineException) {
+            if (isLoading != null) updateLoadingState?.invoke(true)
+            when (val result = productRepository.getProduct(storeId, pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as List<ProductDto>
 
                     val holder = mutableListOf<ProductModel>()
                     val productsResponse = data.map { it.toProduct() }.toList()
 
-                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+                    val productWithSavedCurrency =
+                        convertProductCurrencyToSavedCurrency(productsResponse) ?: productsResponse
 
                     holder.addAll(productWithSavedCurrency)
                     if (_products.value != null) {
@@ -230,9 +237,10 @@ class ProductViewModel(
                         _products.emit(distinctSubCategories)
                     else if (_products.value == null)
                         _products.emit(emptyList())
-                    if (isLoading != null) isLoading.value = false
+
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                     if (data.size == 25)
-                        pageNumber.value++
+                        updatePageNumber?.invoke(pageNumber + 1)
 
                 }
 
@@ -245,7 +253,7 @@ class ProductViewModel(
                         errorMessage.replace(General.BASED_URL, " Server ")
                     }
                     Log.d("errorFromGettingStoreData", errorMessage)
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                 }
             }
         }
@@ -253,16 +261,18 @@ class ProductViewModel(
     }
 
     fun getProductsByCategoryID(
-        pageNumber: MutableState<Int>,
+        pageNumber: Int,
         categoryId: UUID,
-        isLoading: MutableState<Boolean>? = null
+        isLoading: Boolean? = null,
+        updatePageNumber: ((value: Int) -> Unit)? = null,
+        updateLoadingState: ((value: Boolean) -> Unit)? = null,
     ) {
-        if (isLoading != null) isLoading.value = true
-        viewModelScope.launch(Dispatchers.Main + _coroutineException) {
+        viewModelScope.launch(Dispatchers.IO + _coroutineException) {
+            if (isLoading != null) updateLoadingState?.invoke(true)
             val result = productRepository
                 .getProductByCategoryId(
                     categoryId,
-                    pageNumber.value
+                    pageNumber
                 )
             when (result) {
                 is NetworkCallHandler.Successful<*> -> {
@@ -272,7 +282,8 @@ class ProductViewModel(
 
                     val productsResponse = data.map { it.toProduct() }.toList()
 
-                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+                    val productWithSavedCurrency =
+                        convertProductCurrencyToSavedCurrency(productsResponse) ?: productsResponse
 
                     holder.addAll(productWithSavedCurrency)
 
@@ -286,9 +297,10 @@ class ProductViewModel(
                         _products.emit(distinctSubCategories)
                     else if (_products.value == null)
                         _products.emit(emptyList())
-                    if (isLoading != null) isLoading.value = false
+
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                     if (data.size == 25)
-                        pageNumber.value++
+                        updatePageNumber?.invoke(pageNumber + 1)
 
                 }
 
@@ -301,7 +313,7 @@ class ProductViewModel(
                         errorMessage.replace(General.BASED_URL, " Server ")
                     }
                     Log.d("errorFromGettingStoreData", errorMessage)
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                 }
             }
         }
@@ -310,17 +322,19 @@ class ProductViewModel(
 
 
     fun getProducts(
-        pageNumber: MutableState<Int>,
+        pageNumber: Int,
         storeId: UUID,
         subcategoryId: UUID,
-        isLoading: MutableState<Boolean>? = null
+        isLoading: Boolean? = null,
+        updatePageNumber: ((value: Int) -> Unit)? = null,
+        updateLoadingState: ((value: Boolean) -> Unit)? = null,
     ) {
-        if (isLoading != null) isLoading.value = true
-        viewModelScope.launch(Dispatchers.Main + _coroutineException) {
+        viewModelScope.launch(Dispatchers.IO + _coroutineException) {
+            if (isLoading != null) updateLoadingState?.invoke(true)
             val result = productRepository.getProduct(
                 storeId,
                 subcategoryId,
-                pageNumber = pageNumber.value
+                pageNumber = pageNumber
             )
             when (result) {
                 is NetworkCallHandler.Successful<*> -> {
@@ -329,7 +343,8 @@ class ProductViewModel(
                     val holder = mutableListOf<ProductModel>()
                     val productsResponse = data.map { it.toProduct() }.toList()
 
-                    val productWithSavedCurrency= convertProductCurrencyToSavedCurrency(productsResponse)?:productsResponse
+                    val productWithSavedCurrency =
+                        convertProductCurrencyToSavedCurrency(productsResponse) ?: productsResponse
 
                     holder.addAll(productWithSavedCurrency)
 
@@ -338,16 +353,16 @@ class ProductViewModel(
                         holder.addAll(_products.value!!)
                     }
 
-                    val distinticSubCategories = holder.distinctBy { it.id }.toMutableList()
+                    val distinctSubCategories = holder.distinctBy { it.id }.toMutableList()
 
-                    if (distinticSubCategories.size > 0)
-                        _products.emit(distinticSubCategories)
+                    if (distinctSubCategories.isNotEmpty())
+                        _products.emit(distinctSubCategories)
                     else if (_products.value == null)
                         _products.emit(emptyList())
 
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
                     if (data.size == 25)
-                        pageNumber.value++
+                        updatePageNumber?.invoke(pageNumber + 1)
 
                 }
 
@@ -360,7 +375,7 @@ class ProductViewModel(
                         errorMessage.replace(General.BASED_URL, " Server ")
                     }
                     Log.d("errorFromGettingStoreData", errorMessage)
-                    if (isLoading != null) isLoading.value = false
+                    if (isLoading != null) updateLoadingState?.invoke(false)
 
                 }
             }
@@ -371,18 +386,18 @@ class ProductViewModel(
     suspend fun createProducts(
         name: String,
         description: String,
-        thmbnail: File,
+        thumbnail: File,
         subcategoryId: UUID,
         storeId: UUID,
         price: Double,
-        symbol:String,
+        symbol: String,
         productVariants: List<ProductVarientSelection>,
         images: List<File>
     ): String? {
         val result = productRepository.createProduct(
             name,
             description,
-            thmbnail,
+            thumbnail,
             subcategoryId,
             storeId,
             price,
@@ -426,11 +441,11 @@ class ProductViewModel(
         id: UUID,
         name: String?,
         description: String?,
-        thmbnail: File?,
+        thumbnail: File?,
         subcategoryId: UUID?,
         storeId: UUID,
         price: Double?,
-        symbol:String?,
+        symbol: String?,
         productVariants: List<ProductVarientSelection>?,
         images: List<File>?,
         deletedProductVariants: List<ProductVarientSelection>?,
@@ -441,7 +456,7 @@ class ProductViewModel(
             id,
             name,
             description,
-            thmbnail,
+            thumbnail,
             subcategoryId,
             storeId,
             price,
@@ -462,10 +477,10 @@ class ProductViewModel(
                 if (_products.value != null) {
                     holder.addAll(_products.value!!)
                 }
-                val distnectHolder = holder.distinctBy { it.id }
+                val distinctHolder = holder.distinctBy { it.id }
 
-                if (distnectHolder.size > 0)
-                    _products.emit(distnectHolder)
+                if (distinctHolder.isNotEmpty())
+                    _products.emit(distinctHolder)
 
                 return null
             }
@@ -512,4 +527,3 @@ class ProductViewModel(
 
 
 }
-

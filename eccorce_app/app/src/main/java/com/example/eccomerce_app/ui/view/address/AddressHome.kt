@@ -67,6 +67,10 @@ fun AddressHomeScreen(
 
     val isNotEnablePermission = remember { mutableStateOf(false) }
 
+    fun updateConditionValue(isNotEnablePermissionValue: Boolean? = null) {
+        if (isNotEnablePermissionValue != null) isNotEnablePermission.value = isNotEnablePermissionValue
+    }
+
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -136,8 +140,6 @@ fun AddressHomeScreen(
     }
 
     Scaffold(
-
-
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
         },
@@ -151,7 +153,8 @@ fun AddressHomeScreen(
         Column(
             modifier = Modifier
                 .background(Color.White)
-                .padding(horizontal = 15.dp)
+                .padding(it)
+                .padding(horizontal = 10.dp)
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -222,7 +225,7 @@ fun AddressHomeScreen(
                 AlertDialog(
                     onDismissRequest = {
                         //Logic when dismiss happens
-                        isNotEnablePermission.value = false
+                        updateConditionValue(isNotEnablePermissionValue = false)
                     },
                     title = {
                         Text(stringResource(R.string.permission_required))
@@ -241,7 +244,7 @@ fun AddressHomeScreen(
                         TextButton(onClick = {
                             //Logic when user denies to accept permissions
                         }) {
-                            isNotEnablePermission.value = false
+                            updateConditionValue(isNotEnablePermissionValue = false)
                             Text(stringResource(R.string.deny))
                         }
                     })

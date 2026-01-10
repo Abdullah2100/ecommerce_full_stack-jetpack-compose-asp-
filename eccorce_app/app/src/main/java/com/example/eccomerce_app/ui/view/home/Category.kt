@@ -47,6 +47,7 @@ import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
 import com.example.e_commercompose.R
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +58,19 @@ fun CategoryScreen(
 ) {
     val category = categoryViewModel.categories.collectAsState()
     val context = LocalContext.current
+
+    fun getProductCategoryAndNavigate(id: UUID)
+    {
+        productViewModel.getProductsByCategoryID(
+            1,
+            id,
+        )
+        nav.navigate(
+            Screens.ProductCategory(
+                id.toString()
+            )
+        )
+    }
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
@@ -98,10 +112,7 @@ fun CategoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    top = scaffoldState.calculateTopPadding(),
-                    bottom = scaffoldState.calculateBottomPadding()
-                )
+                .padding( scaffoldState   )
                 .background(Color.White),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -124,15 +135,7 @@ fun CategoryScreen(
                                 .background(Color.White)
                                 .width(80.dp)
                                 .clickable {
-                                    productViewModel.getProductsByCategoryID(
-                                        mutableIntStateOf(1),
-                                        category.value!![index].id,
-                                    )
-                                    nav.navigate(
-                                        Screens.ProductCategory(
-                                            category.value!![index].id.toString()
-                                        )
-                                    )
+                                    getProductCategoryAndNavigate(category.value!![index].id,)
                                 },
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally

@@ -102,9 +102,11 @@ fun CartScreen(
                     .padding(bottom = 10.dp)
                     .clip(RoundedCornerShape(8.dp))
             )
-        }, modifier = Modifier
+        },
+        modifier = Modifier
             .fillMaxSize()
-            .background(Color.White), topBar = {
+            .background(Color.White),
+        topBar = {
             CenterAlignedTopAppBar(
                 modifier = Modifier.padding(end = 15.dp),
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -183,10 +185,7 @@ fun CartScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(
-                    top = scaffoldState.calculateTopPadding(),
-                    bottom = scaffoldState.calculateBottomPadding()
-                )
+                .padding(scaffoldState  )
                 .background(Color.White), verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(cardData.value.cartProducts.size) { index ->

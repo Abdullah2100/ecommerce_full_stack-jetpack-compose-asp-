@@ -96,20 +96,60 @@ fun OrderForMyStoreScreen(
     val isSendingData = remember { mutableStateOf(false) }
     val isLoadingMore = remember { mutableStateOf(false) }
     val isRefresh = remember { mutableStateOf(false) }
+
+    fun updateConditionValue(
+        isSendingDataValue: Boolean? = null,
+        isLoadingMoreValue: Boolean? = null,
+        isRefreshValue: Boolean? = null
+    ) {
+        when {
+            isSendingDataValue != null -> isSendingData.value = isSendingDataValue
+            isLoadingMoreValue != null -> isLoadingMore.value = isLoadingMoreValue
+            isRefreshValue != null -> isRefresh.value = isRefreshValue
+        }
+    }
+
     val reachedBottom = remember { derivedStateOf { lazyState.reachedBottom() } }
 
 
     val snackBarHostState = remember { SnackbarHostState() }
 
 
+    fun refreshOrderFun(){
+        coroutine.launch {
+            if (!isRefresh.value) updateConditionValue(isRefreshValue = true)
+            page.intValue = 1;
+            orderItemsViewModel.getMyOrderItemBelongToMyStore(
+                page.intValue,
+                isLoadingMore.value,
+                updatePageNumber = {
+                    page.intValue = it
+                },
+                updateLoadingState = {
+                    isLoadingMore.value = it
+                }
+            )
+            if (isRefresh.value) {
+                delay(1000)
+                updateConditionValue(isRefreshValue = false)
+            }
 
+        }
+
+    }
 
     LaunchedEffect(reachedBottom.value) {
         if (!orderData.value.isNullOrEmpty() && reachedBottom.value && orderData.value!!.size > 23) {
             Log.d("scrollReachToBottom", "true")
             orderItemsViewModel.getMyOrderItemBelongToMyStore(
-                page,
-                isLoadingMore
+                page.intValue,
+                isLoadingMore.value,
+                updatePageNumber = {
+                    page.intValue = it
+                },
+                updateLoadingState = {
+                    isLoadingMore.value = it
+                }
             )
         }
 
@@ -168,20 +208,8 @@ fun OrderForMyStoreScreen(
 
             isRefreshing = isRefresh.value,
             onRefresh = {
-                coroutine.launch {
-                    if (!isRefresh.value) isRefresh.value = true
-                    page.intValue = 1;
-                    orderItemsViewModel.getMyOrderItemBelongToMyStore(
-                        page,
-                        isLoadingMore
-                    )
-                    if (isRefresh.value) {
-                        delay(1000)
-                        isRefresh.value = false
-                    }
-
-                }
-            },
+                refreshOrderFun()
+              },
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxSize(),
@@ -203,10 +231,7 @@ fun OrderForMyStoreScreen(
                 state = lazyState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        top = paddingValue.calculateTopPadding(),
-                        bottom = paddingValue.calculateBottomPadding()
-                    )
+                    .padding(paddingValue )
                     .background(Color.White),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -294,14 +319,14 @@ fun OrderForMyStoreScreen(
                                                     coroutine.launch {
                                                         currentUpdateOrderItemId.value =
                                                             order.id
-                                                        isSendingData.value = true
+                                                        updateConditionValue(isSendingDataValue = true)
                                                         val result = async {
                                                             orderItemsViewModel.updateOrderItemStatusFromStore(
                                                                 order.id,
                                                                 0
                                                             )
                                                         }.await()
-                                                        isSendingData.value = false
+                                                        updateConditionValue(isSendingDataValue = false)
                                                         var message =
                                                             context.getString(R.string.complete_update_orderitem_status)
                                                         if (!result.isNullOrEmpty()) {
@@ -328,15 +353,15 @@ fun OrderForMyStoreScreen(
                                                     coroutine.launch {
                                                         currentUpdateOrderItemId.value =
                                                             order.id
-                                                        isSendingData.value = true
+                                                        updateConditionValue(isSendingDataValue = true)
                                                         val result = async {
                                                             orderItemsViewModel.updateOrderItemStatusFromStore(
                                                                 order.id,
                                                                 1
                                                             )
                                                         }.await()
-                                                        isSendingData.value = false
-
+                                                        updateConditionValue(isSendingDataValue = false)
+                                                        
                                                         var message = context.getString(R.string.complete_update_orderitem_status)
                                                         if (!result.isNullOrEmpty()) {
                                                             message = result

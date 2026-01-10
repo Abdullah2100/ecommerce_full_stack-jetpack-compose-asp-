@@ -43,7 +43,7 @@ import com.example.eccomerce_app.util.General
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.e_commercompose.ui.component.ProductLoading
-import com.example.e_commercompose.ui.component.ProductShape
+import com.example.eccomerce_app.ui.component.ProductShape
 import com.example.eccomerce_app.util.General.reachedBottom
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
@@ -85,9 +85,11 @@ fun ProductCategoryScreen(
     LaunchedEffect(reachedBottom.value) {
         if (!productsByCategory.isNullOrEmpty() && reachedBottom.value && productsByCategory.size>23) {
             productViewModel.getProductsByCategoryID(
-                page,
+                page.intValue,
                 categoryId,
-                isLoadingMore
+                isLoadingMore.value,
+                updateLoadingState = {value->isLoadingMore.value=value}
+                , updatePageNumber = {value -> page.intValue=value}
             )
         }
 
@@ -143,9 +145,11 @@ fun ProductCategoryScreen(
                     if (!isRefresh.value) isRefresh.value = true
                     page.intValue=1;
                     productViewModel.getProductsByCategoryID(
-                        page,
+                        1,
                         categoryId,
-                        isLoadingMore
+                        isLoadingMore.value,
+                        updatePageNumber = {page.intValue=1},
+                        updateLoadingState = {value->isLoadingMore.value=value}
                     )
                     if (isRefresh.value) {
                         delay(1000)
@@ -170,7 +174,7 @@ fun ProductCategoryScreen(
             LazyColumn(
                 state = lazyState,
                 modifier = Modifier
-                    .padding(top = paddingValue.calculateTopPadding())
+                    .padding(paddingValue)
                     .fillMaxSize()
                     .background(Color.White)
                     .padding(horizontal = 15.dp)

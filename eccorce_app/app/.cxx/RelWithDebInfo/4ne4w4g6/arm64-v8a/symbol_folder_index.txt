@@ -1,0 +1,1 @@
+/home/abdullah/Desktop/ecommerce_full_stack-jetpack-compose-asp-/eccorce_app/app/build/intermediates/cxx/RelWithDebInfo/4ne4w4g6/obj/arm64-v8a

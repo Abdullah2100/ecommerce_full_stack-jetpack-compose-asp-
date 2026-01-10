@@ -21,8 +21,7 @@ class DeliveryViewModel(
 
     val deliveries = MutableStateFlow<List<Delivery>?>(null)
     suspend fun createDelivery(userId: UUID): String? {
-        val result = deliveryRepository.createNewDelivery(userId)
-        return when (result) {
+        return when (val result = deliveryRepository.createNewDelivery(userId)) {
             is NetworkCallHandler.Successful<*> -> {
                 val data = result.data as? DeliveryDto
                 val newDeliveriesList = mutableListOf<Delivery>()
@@ -43,17 +42,19 @@ class DeliveryViewModel(
         }
     }
 
-    fun getDeliveryBelongToStore(pageNumber: MutableIntState){
+    fun getDeliveryBelongToStore(
+        pageNumber: Int,
+        updatePageNumber: ((value: Int) -> Unit)? = null
+    ) {
 
         viewModelScope.launch(Dispatchers.IO) {
-            val result = deliveryRepository.getDeliveriesBelongToStore(pageNumber.intValue)
-            when (result) {
+            when (val result = deliveryRepository.getDeliveriesBelongToStore(pageNumber)) {
                 is NetworkCallHandler.Successful<*> -> {
                     val data = result.data as? List<DeliveryDto>
                     val newDeliveriesList = mutableListOf<Delivery>()
 
                     if (data != null) {
-                        pageNumber.intValue=pageNumber.intValue+1;
+                        updatePageNumber?.invoke(pageNumber + 1);
                         newDeliveriesList.addAll(data.map { it.toDeliveryInfo() })
                     }
                     if (deliveries.value != null)
@@ -63,13 +64,15 @@ class DeliveryViewModel(
 
                     deliveries.emit(distinctDelivery)
 
-                    null;
                 }
 
                 is NetworkCallHandler.Error -> {
-                    Log.d("Error","This Error from getting delivery Belong to my Store ${result.data}")
+                    Log.d(
+                        "Error",
+                        "This Error from getting delivery Belong to my Store ${result.data}"
+                    )
                 }
-                }
+            }
         }
     }
 }
