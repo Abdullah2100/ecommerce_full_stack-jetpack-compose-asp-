@@ -67,6 +67,7 @@ import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.model.Delivery
 import com.example.eccomerce_app.ui.component.SharedAppBar
+import com.example.eccomerce_app.ui.component.StoreDeliveryComponent
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.util.General.reachedBottom
 import com.example.eccomerce_app.viewModel.DeliveryViewModel
@@ -132,12 +133,12 @@ fun DeliveriesListScreen(
         }
     }
 
-    fun refreshDeliveryList(){
+    fun refreshDeliveryList() {
         coroutine.launch {
             if (!isRefresh.value) isRefresh.value = true
             page.intValue = 1
-            deliveryViewModel.getDeliveryBelongToStore(page.intValue){value->
-                page.intValue=value
+            deliveryViewModel.getDeliveryBelongToStore(page.intValue) { value ->
+                page.intValue = value
             }
             if (isRefresh.value) {
                 delay(1000)
@@ -151,8 +152,8 @@ fun DeliveriesListScreen(
 
     LaunchedEffect(reachedBottom.value) {
         if (!deliveries.value.isNullOrEmpty() && reachedBottom.value && deliveries.value!!.size > 23) {
-            deliveryViewModel.getDeliveryBelongToStore(page.intValue){value->
-                page.intValue=value
+            deliveryViewModel.getDeliveryBelongToStore(page.intValue) { value ->
+                page.intValue = value
             }
         }
     }
@@ -174,7 +175,7 @@ fun DeliveriesListScreen(
             .background(Color.White),
         topBar = {
             SharedAppBar(
-                title =  stringResource(R.string.deliveries),
+                title = stringResource(R.string.deliveries),
                 nav = nav,
                 scrollBehavior = scrollBehavior
             )
@@ -299,121 +300,7 @@ fun DeliveriesListScreen(
                         items = deliveries.value as List<Delivery>,
                         key = { delivery -> delivery.id },
                     ) { delivery ->
-
-                        Box(
-                            modifier = Modifier
-                                .height(140.dp)
-                                .fillParentMaxWidth()
-                                .shadow(2.dp, RoundedCornerShape(8.dp))
-                                .padding(top = 1.dp)
-                                .background(
-                                    Color.White,
-                                    RoundedCornerShape(8.dp)
-                                )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillParentMaxWidth()
-                                    .padding(horizontal = 10.dp, vertical = 10.dp),
-                                horizontalArrangement = Arrangement.Center,
-                                verticalAlignment = Alignment.CenterVertically
-
-                                ) {
-                                ConstraintLayout(
-                                    modifier = Modifier
-                                        .wrapContentSize()
-                                )
-                                {
-                                    val (imageRef) = createRefs()
-                                    Box(
-                                        modifier = Modifier
-                                            .constrainAs(imageRef) {
-                                                top.linkTo(parent.top)
-                                                bottom.linkTo(parent.bottom)
-                                                start.linkTo(parent.start)
-                                                end.linkTo(parent.end)
-                                            }
-                                            .height(110.dp)
-                                            .width(110.dp)
-                                            .border(
-                                                width = 1.dp,
-                                                color = CustomColor.neutralColor500,
-                                                shape = RoundedCornerShape(60.dp)
-                                            ),
-                                        contentAlignment = Alignment.Center
-                                    )
-                                    {
-
-                                        when (delivery.thumbnail.isNullOrEmpty()) {
-                                            true -> {
-
-                                                Icon(
-                                                    imageVector = ImageVector.vectorResource(R.drawable.user),
-                                                    "",
-                                                    modifier = Modifier.size(80.dp)
-                                                )
-                                            }
-
-                                            else -> {
-
-                                                SubcomposeAsyncImage(
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier
-                                                        .height(90.dp)
-                                                        .width(90.dp)
-                                                        .clip(RoundedCornerShape(50.dp)),
-                                                    model = General.handlingImageForCoil(
-                                                        delivery.thumbnail,
-                                                        context
-                                                    ),
-                                                    contentDescription = "",
-                                                    loading = {
-                                                        Box(
-                                                            modifier = Modifier
-                                                                .fillMaxSize(),
-                                                            contentAlignment = Alignment.Center // Ensures the loader is centered and doesn't expand
-                                                        ) {
-                                                            CircularProgressIndicator(
-                                                                color = Color.Black,
-                                                                modifier = Modifier.size(54.dp) // Adjust the size here
-                                                            )
-                                                        }
-                                                    },
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-
-                                Column(
-                                    modifier = Modifier
-                                        .fillParentMaxHeight()
-                                        .width((screenWidth - 130).dp)
-                                        .padding(start = 5.dp),
-                                    verticalArrangement = Arrangement.Center
-                                ) {
-
-                                    Text(
-                                        delivery.user.name,
-                                        fontFamily = General.satoshiFamily,
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = (19).sp,
-                                        color = CustomColor.neutralColor950,
-                                        textAlign = TextAlign.Center
-                                    )
-
-                                    Text(
-                                        delivery.user.phone,
-                                        fontFamily = General.satoshiFamily,
-                                        fontWeight = FontWeight.Normal,
-                                        fontSize = (19).sp,
-                                        color = CustomColor.neutralColor950,
-                                        textAlign = TextAlign.Center
-                                    )
-
-                                }
-                            }
-                        }
+                        StoreDeliveryComponent(delivery, screenWidth)
                     }
             }
         }

@@ -533,7 +533,6 @@ fun CreateProductScreen(
                             SubcomposeAsyncImage(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
-//                                                .padding(top = 35.dp)
                                     .fillMaxHeight()
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp)),
@@ -573,8 +572,6 @@ fun CreateProductScreen(
 
                     IconButton(
                         onClick = {
-//                          keyboardController?.hide()
-//                          isPigImage.value = true
                             onImageSelection.launch(
                                 PickVisualMediaRequest(
                                     ActivityResultContracts.PickVisualMedia.ImageOnly
