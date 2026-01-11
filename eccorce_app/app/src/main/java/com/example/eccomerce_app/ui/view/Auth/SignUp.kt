@@ -54,6 +54,7 @@ import com.example.eccomerce_app.ui.Screens
 import com.example.hotel_mobile.Util.Validation
 import kotlinx.coroutines.launch
 import com.example.e_commercompose.R
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import kotlinx.coroutines.async
 
 
@@ -234,32 +235,7 @@ fun SignUpPage(
             )
         },
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Text(
-                            stringResource(R.string.signup),
-                            fontFamily = General.satoshiFamily,
-                            fontWeight = FontWeight.Bold,
-                            color = CustomColor.neutralColor950,
-                            fontSize = (34 / fontScall).sp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-
-                        )
-                    }
-
-                },
-
-
-                )
+            SharedAppBar(title = stringResource(R.string.signup))
         },
     ) {
 

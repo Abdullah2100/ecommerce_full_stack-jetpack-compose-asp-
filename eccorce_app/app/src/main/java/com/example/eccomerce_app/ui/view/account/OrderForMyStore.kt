@@ -61,6 +61,7 @@ import com.example.e_commercompose.ui.component.CustomButton
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.ui.component.OrderItemShape
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.OrderItemsViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
 import kotlinx.coroutines.async
@@ -115,7 +116,7 @@ fun OrderForMyStoreScreen(
     val snackBarHostState = remember { SnackbarHostState() }
 
 
-    fun refreshOrderFun(){
+    fun refreshOrderFun() {
         coroutine.launch {
             if (!isRefresh.value) updateConditionValue(isRefreshValue = true)
             page.intValue = 1;
@@ -168,35 +169,9 @@ fun OrderForMyStoreScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.order_belong_to_my_store),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
+            SharedAppBar(
+                title = stringResource(R.string.order_belong_to_my_store),
+                nav = nav,
             )
         },
     )
@@ -209,7 +184,7 @@ fun OrderForMyStoreScreen(
             isRefreshing = isRefresh.value,
             onRefresh = {
                 refreshOrderFun()
-              },
+            },
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxSize(),
@@ -231,7 +206,7 @@ fun OrderForMyStoreScreen(
                 state = lazyState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValue )
+                    .padding(paddingValue)
                     .background(Color.White),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -361,8 +336,9 @@ fun OrderForMyStoreScreen(
                                                             )
                                                         }.await()
                                                         updateConditionValue(isSendingDataValue = false)
-                                                        
-                                                        var message = context.getString(R.string.complete_update_orderitem_status)
+
+                                                        var message =
+                                                            context.getString(R.string.complete_update_orderitem_status)
                                                         if (!result.isNullOrEmpty()) {
                                                             message = result
                                                         }

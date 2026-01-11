@@ -101,6 +101,7 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.ui.Screens
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.util.General.reachedBottom
 import com.example.eccomerce_app.util.General.toCustomFil
@@ -1180,31 +1181,10 @@ fun StoreScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ), title = {
-                    Text(
-                        stringResource(R.string.store),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                }, navigationIcon = {
-                    IconButton(
-                        modifier = Modifier.offset(x = (-6).dp), onClick = {
-                            nav.popBackStack()
-                        }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                }, actions = {
+            SharedAppBar(
+                title =stringResource(R.string.store),
+                nav = nav,
+                action = {
                     if (isFromHome == false) {
                         TextButton(
                             enabled = !isSendingData.value,
@@ -1239,8 +1219,11 @@ fun StoreScreen(
                             }
                         }
                     }
-                }, scrollBehavior = scrollBehavior
+
+                },
+                scrollBehavior = scrollBehavior
             )
+
         },
         floatingActionButton = {
             if (isFromHome == false && storeData != null)

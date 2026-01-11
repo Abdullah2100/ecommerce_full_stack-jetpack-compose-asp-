@@ -62,6 +62,7 @@ import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.component.CustomButton
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.StoreViewModel
 import com.example.eccomerce_app.viewModel.VariantViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
@@ -107,23 +108,8 @@ fun CartScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.my_cart),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
+            SharedAppBar(title = stringResource(R.string.my_cart))
 
-                )
         },
         floatingActionButton = {
             Column(
@@ -185,7 +171,7 @@ fun CartScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(scaffoldState  )
+                .padding(scaffoldState)
                 .background(Color.White), verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             items(cardData.value.cartProducts.size) { index ->

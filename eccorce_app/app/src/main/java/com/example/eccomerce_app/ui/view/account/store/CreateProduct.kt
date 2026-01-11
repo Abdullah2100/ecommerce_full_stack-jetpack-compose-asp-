@@ -77,6 +77,7 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.eccomerce_app.ui.component.TextNumberInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.CurrencyViewModel
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.SubCategoryViewModel
@@ -117,18 +118,22 @@ fun CreateProductScreen(
 
 
     val productData = if (productIdHolder == null) null
-                      else products.value?.firstOrNull { it.id == productIdHolder }
+    else products.value?.firstOrNull { it.id == productIdHolder }
 
 
     val thumbnail = remember { mutableStateOf(productData?.thumbnail) }
 
 
     val images = remember { mutableStateOf(productData?.productImages ?: emptyList()) }
-    val productVariants =  remember { mutableStateOf(
-        if (productData != null && !productData.productVariants.isNullOrEmpty()) productData.productVariants.toListOfProductVarient()
-        else emptyList()) }
+    val productVariants = remember {
+        mutableStateOf(
+            if (productData != null && !productData.productVariants.isNullOrEmpty()) productData.productVariants.toListOfProductVarient()
+            else emptyList()
+        )
+    }
     val deleteImages = remember { mutableStateOf<List<String>>(emptyList()) }
-    val deleteProductVariant =  remember { mutableStateOf<List<ProductVarientSelection>>(emptyList()) }
+    val deleteProductVariant =
+        remember { mutableStateOf<List<ProductVarientSelection>>(emptyList()) }
 
 
     val productName = remember { mutableStateOf(TextFieldValue("")) }
@@ -210,16 +215,18 @@ fun CreateProductScreen(
     }
 
     fun updateConditionValue(
-        isExpandedSubCategoryValue: Boolean?=null,
-        isExpandedCurrencyValue: Boolean?=null,
-        isExpandedVariantValue : Boolean?=null,
-        isSendingDataValue: Boolean?=null
-    ){
-        when{
-            isExpandedSubCategoryValue != null -> isExpandedSubCategory.value = isExpandedSubCategoryValue
-            isExpandedCurrencyValue != null -> isExpandedCurrency.value =isExpandedCurrencyValue
-            isExpandedVariantValue != null -> isExpandedVariant.value =isExpandedVariantValue
-            isSendingDataValue != null -> isSendingData.value =isSendingDataValue
+        isExpandedSubCategoryValue: Boolean? = null,
+        isExpandedCurrencyValue: Boolean? = null,
+        isExpandedVariantValue: Boolean? = null,
+        isSendingDataValue: Boolean? = null
+    ) {
+        when {
+            isExpandedSubCategoryValue != null -> isExpandedSubCategory.value =
+                isExpandedSubCategoryValue
+
+            isExpandedCurrencyValue != null -> isExpandedCurrency.value = isExpandedCurrencyValue
+            isExpandedVariantValue != null -> isExpandedVariant.value = isExpandedVariantValue
+            isSendingDataValue != null -> isSendingData.value = isSendingDataValue
         }
     }
 
@@ -282,7 +289,7 @@ fun CreateProductScreen(
     }
 
     fun updateSubCategory(id: UUID) {
-        updateConditionValue(isExpandedSubCategoryValue =false)
+        updateConditionValue(isExpandedSubCategoryValue = false)
         selectedSubCategoryId.value = id
     }
 
@@ -437,38 +444,14 @@ fun CreateProductScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
+            SharedAppBar(
+                title = if (productId == null) stringResource(R.string.create_product) else stringResource(
+                    R.string.update_product
                 ),
-                title = {
-                    Text(
-                        if (productId == null) stringResource(R.string.create_product) else stringResource(
-                            R.string.update_product
-                        ),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
-            )
+                nav = nav,
+
+                )
+
         },
 
         bottomBar = {

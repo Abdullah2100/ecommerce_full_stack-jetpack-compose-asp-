@@ -44,6 +44,7 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.e_commercompose.ui.component.ProductLoading
 import com.example.eccomerce_app.ui.component.ProductShape
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.util.General.reachedBottom
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
@@ -83,13 +84,13 @@ fun ProductCategoryScreen(
 
 
     LaunchedEffect(reachedBottom.value) {
-        if (!productsByCategory.isNullOrEmpty() && reachedBottom.value && productsByCategory.size>23) {
+        if (!productsByCategory.isNullOrEmpty() && reachedBottom.value && productsByCategory.size > 23) {
             productViewModel.getProductsByCategoryID(
                 page.intValue,
                 categoryId,
                 isLoadingMore.value,
-                updateLoadingState = {value->isLoadingMore.value=value}
-                , updatePageNumber = {value -> page.intValue=value}
+                updateLoadingState = { value -> isLoadingMore.value = value },
+                updatePageNumber = { value -> page.intValue = value }
             )
         }
 
@@ -100,36 +101,10 @@ fun ProductCategoryScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        categories.value?.firstOrNull { it.id == categoryId }?.name ?: "",
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
-
-                )
+            SharedAppBar(
+                title = categories.value?.firstOrNull { it.id == categoryId }?.name ?: "",
+                nav = nav
+            )
         }
 
 
@@ -143,13 +118,13 @@ fun ProductCategoryScreen(
             onRefresh = {
                 coroutine.launch {
                     if (!isRefresh.value) isRefresh.value = true
-                    page.intValue=1;
+                    page.intValue = 1;
                     productViewModel.getProductsByCategoryID(
                         1,
                         categoryId,
                         isLoadingMore.value,
-                        updatePageNumber = {page.intValue=1},
-                        updateLoadingState = {value->isLoadingMore.value=value}
+                        updatePageNumber = { page.intValue = 1 },
+                        updateLoadingState = { value -> isLoadingMore.value = value }
                     )
                     if (isRefresh.value) {
                         delay(1000)
@@ -170,7 +145,7 @@ fun ProductCategoryScreen(
                     state = state
                 )
             },
-        )  {
+        ) {
             LazyColumn(
                 state = lazyState,
                 modifier = Modifier

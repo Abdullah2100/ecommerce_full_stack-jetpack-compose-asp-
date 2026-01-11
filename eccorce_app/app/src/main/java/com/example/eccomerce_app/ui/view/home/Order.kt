@@ -70,6 +70,7 @@ import kotlinx.coroutines.launch
 //import qrgenerator.QRCodeImage
 import java.util.UUID
 import com.example.e_commercompose.R
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
 
@@ -148,23 +149,8 @@ fun OrderScreen(orderViewModel: OrderViewModel) {
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.my_order),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
+            SharedAppBar(title = stringResource(R.string.my_order))
 
-                )
         },
         floatingActionButton = {
             Column(
@@ -332,35 +318,36 @@ fun OrderScreen(orderViewModel: OrderViewModel) {
                                         imageVector = ImageVector.vectorResource(R.drawable.qr_button),
                                         "",
                                         modifier = Modifier.clickable(onClick = {
-                                             openQrDialog(order.id)
+                                            openQrDialog(order.id)
                                         })
                                     )
                                 }
                                 Sizer(5)
-                              if(!(order.status=="Received" || order.status=="Completed"))
-                                CustomButton(
+                                if (!(order.status == "Received" || order.status == "Completed"))
+                                    CustomButton(
 
-                                    buttonTitle = stringResource(R.string.cancel_order),
-                                    operation = {
-                                        deletedId.value = order.id
-                                        coroutine.launch {
+                                        buttonTitle = stringResource(R.string.cancel_order),
+                                        operation = {
+                                            deletedId.value = order.id
+                                            coroutine.launch {
 
-                                            isSendingData.value = true
+                                                isSendingData.value = true
 
-                                            val result = async {
-                                                orderViewModel.deleteOrder(order.id)
-                                            }.await()
+                                                val result = async {
+                                                    orderViewModel.deleteOrder(order.id)
+                                                }.await()
 
-                                            isSendingData.value = false
-                                            val message = result ?: context.getString(R.string.order_deleted_successfully)
+                                                isSendingData.value = false
+                                                val message = result
+                                                    ?: context.getString(R.string.order_deleted_successfully)
 
-                                            snackBarHostState.showSnackbar(message)
-                                        }
+                                                snackBarHostState.showSnackbar(message)
+                                            }
 
-                                    },
-                                    color = CustomColor.alertColor_1_600,
-                                    isLoading = isSendingData.value && deletedId.value == order.id
-                                )
+                                        },
+                                        color = CustomColor.alertColor_1_600,
+                                        isLoading = isSendingData.value && deletedId.value == order.id
+                                    )
                             }
                         }
 

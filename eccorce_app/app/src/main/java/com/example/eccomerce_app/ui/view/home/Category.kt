@@ -47,6 +47,7 @@ import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.CategoryViewModel
 import com.example.e_commercompose.R
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,8 +60,7 @@ fun CategoryScreen(
     val category = categoryViewModel.categories.collectAsState()
     val context = LocalContext.current
 
-    fun getProductCategoryAndNavigate(id: UUID)
-    {
+    fun getProductCategoryAndNavigate(id: UUID) {
         productViewModel.getProductsByCategoryID(
             1,
             id,
@@ -76,34 +76,8 @@ fun CategoryScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White),
-                title = {
-                    Text(
-                        stringResource(R.string.category),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
+            SharedAppBar(title = stringResource(R.string.category), nav = nav)
 
-                )
         }
 
     ) { scaffoldState ->
@@ -112,7 +86,7 @@ fun CategoryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding( scaffoldState   )
+                .padding(scaffoldState)
                 .background(Color.White),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -135,7 +109,7 @@ fun CategoryScreen(
                                 .background(Color.White)
                                 .width(80.dp)
                                 .clickable {
-                                    getProductCategoryAndNavigate(category.value!![index].id,)
+                                    getProductCategoryAndNavigate(category.value!![index].id)
                                 },
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally

@@ -12,7 +12,7 @@ public class User
     public string  Email{ get; set; }
     public string Password { get; set; }
     public bool IsBlocked { get; set; } = false;
-    public string deviceToken { get; set; }
+    public string? DeviceToken { get; set; } = null;
     
     //1 :normal user ; 0: is admin
     public int Role { get; set; } = 1;

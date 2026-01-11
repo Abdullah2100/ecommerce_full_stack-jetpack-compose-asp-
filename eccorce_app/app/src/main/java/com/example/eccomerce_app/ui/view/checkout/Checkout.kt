@@ -59,6 +59,7 @@ import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.e_commercompose.R
 import com.example.e_commercompose.model.PaymentMethodModel
 import com.example.e_commercompose.ui.component.CustomButton
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.GeneralSettingViewModel
 import com.example.eccomerce_app.viewModel.OrderViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
@@ -115,37 +116,11 @@ fun CheckoutScreen(
             SnackbarHost(hostState = snackBarHostState)
         },
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.checkout),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
+            SharedAppBar(
+                title =stringResource(R.string.checkout),
+                nav = nav
             )
-        },
+           },
         bottomBar = {
             BottomAppBar(
                 containerColor = Color.White

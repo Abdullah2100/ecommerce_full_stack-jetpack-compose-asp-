@@ -81,7 +81,7 @@ public class UserService(
             Phone = signupDto.Phone,
             Password = ClsUtil.HashingText(signupDto.Password),
             Role =(int) (signupDto.Role?? enRole.User),
-            deviceToken = signupDto.DeviceToken ?? "",
+            DeviceToken = signupDto.DeviceToken ?? "",
             Thumbnail = "",
             CreatedAt = DateTime.Now,
             Email = signupDto.Email,
@@ -139,7 +139,7 @@ public class UserService(
             );
         }
 
-        user.deviceToken = loginDto.DeviceToken;
+        user.DeviceToken = loginDto.DeviceToken;
         unitOfWork.UserRepository.Update(user);
 
         int result = await unitOfWork.SaveChanges();

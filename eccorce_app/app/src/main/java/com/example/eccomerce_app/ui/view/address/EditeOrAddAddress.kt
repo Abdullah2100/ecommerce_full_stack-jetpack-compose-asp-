@@ -68,6 +68,7 @@ import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.component.CustomButton
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.eccomerce_app.viewModel.StoreViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
@@ -185,36 +186,12 @@ fun EditOrAddLocationScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        stringResource(R.string.address_list),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                )
-            )
+           SharedAppBar(
+               title =stringResource(R.string.address_list) ,
+               nav=nav,
+               scrollBehavior=scrollBehavior
+           )
+
         },
         bottomBar = {
 
@@ -311,6 +288,7 @@ fun EditOrAddLocationScreen(
                         modifier = Modifier
                             .background(Color.White)
                             .padding(paddingValue)
+                            .padding(horizontal = 20.dp)
                             .fillMaxHeight()
                             .fillMaxWidth()
                     ) {

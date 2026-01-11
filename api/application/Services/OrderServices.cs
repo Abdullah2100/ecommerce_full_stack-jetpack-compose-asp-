@@ -567,9 +567,9 @@ public class OrderServices(
                 var orderItem = orderItems[i];
                 var cancelMessage = orderItem.Product.Name + " is Rejected For " + order.User.Name;
                 var storeMessage = this.StoreMessage(status, cancelMessage);
-                if (!string.IsNullOrEmpty(storeMessage))
+                if (!string.IsNullOrEmpty(storeMessage) && orderItem.Store.user.DeviceToken is not null)
                 {
-                    await messageServe.SendMessage(storeMessage, orderItem.Store.user.deviceToken);
+                    await messageServe.SendMessage(storeMessage, orderItem.Store.user.DeviceToken);
                 }
             }
         }
@@ -588,7 +588,7 @@ public class OrderServices(
             var userMessage = this.UserMessage(status);
             if (!string.IsNullOrEmpty(userMessage))
             {
-                await messageServe.SendMessage(userMessage, order.User.deviceToken);
+                await messageServe.SendMessage(userMessage, order.User.DeviceToken);
             }
         }
         catch (Exception e)

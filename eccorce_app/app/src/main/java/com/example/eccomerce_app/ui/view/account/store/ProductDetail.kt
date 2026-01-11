@@ -62,6 +62,7 @@ import com.example.e_commercompose.model.ProductVariant
 import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.util.General.convertPriceToAnotherCurrency
 import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.eccomerce_app.viewModel.ProductViewModel
@@ -212,37 +213,11 @@ fun ProductDetail(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                modifier = Modifier.padding(end = 15.dp),
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.product_detail),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
+            SharedAppBar(
+                title =stringResource(R.string.product_detail),
+                nav = nav,
             )
-        },
+           },
         bottomBar = {
 //            if (isFromHome && (myInfo.value == null || (myInfo.value != null && myInfo.value?.storeId != productData?.storeId)))
             BottomAppBar(

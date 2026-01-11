@@ -53,6 +53,7 @@ import com.example.eccomerce_app.ui.Screens
 import com.example.eccomerce_app.ui.component.AccountCustomBottom
 import com.example.eccomerce_app.ui.component.LogoutButton
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.util.General.currentLocal
 import com.example.eccomerce_app.util.General.whenLanguageUpdateDo
 import com.example.eccomerce_app.viewModel.AuthViewModel
@@ -184,34 +185,9 @@ fun AccountPage(
                 .fillMaxSize()
                 .background(Color.White),
             topBar = {
-                CenterAlignedTopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White
-                    ),
-                    title = {
-                        Text(
-                            stringResource(R.string.account),
-                            fontFamily = General.satoshiFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = (24).sp,
-                            color = CustomColor.neutralColor950,
-                            textAlign = TextAlign.Center
-                        )
-                    },
-                    navigationIcon = {
-                        IconButton(
-                            onClick = {
-                                nav.popBackStack()
-                            }
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                "",
-                                modifier = Modifier.size(30.dp),
-                                tint = CustomColor.neutralColor950
-                            )
-                        }
-                    },
+                SharedAppBar(
+                    title =stringResource(R.string.account),
+                    nav=nav,
                     scrollBehavior = scrollBehavior
                 )
             }

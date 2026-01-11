@@ -62,6 +62,7 @@ import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.eccomerce_app.ui.component.TextNumberInputWithTitle
 import com.example.eccomerce_app.ui.component.TextSecureInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.UserViewModel
 import com.example.hotel_mobile.Util.Validation
 import kotlinx.coroutines.async
@@ -182,36 +183,10 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(Color.White),
         topBar = {
-            CenterAlignedTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White
-                ),
-                title = {
-                    Text(
-                        stringResource(R.string.my_profile),
-                        fontFamily = General.satoshiFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = (24).sp,
-                        color = CustomColor.neutralColor950,
-                        textAlign = TextAlign.Center
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            nav.popBackStack()
-                        }
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            "",
-                            modifier = Modifier.size(30.dp),
-                            tint = CustomColor.neutralColor950
-                        )
-                    }
-                },
-
-                actions = {
+            SharedAppBar(
+                title = stringResource(R.string.my_profile),
+                nav = nav,
+                action = {
                     if (
                         file.value != null ||
                         (fullName.value.text.isNotEmpty() &&
@@ -266,8 +241,7 @@ fun ProfileScreen(
                                 textAlign = TextAlign.Center
                             )
                         }
-                },
-                scrollBehavior = scrollBehavior
+                }, scrollBehavior = scrollBehavior
             )
         }
     ) {
@@ -278,8 +252,8 @@ fun ProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
-                .padding(it)
-            ,horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(it),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
 

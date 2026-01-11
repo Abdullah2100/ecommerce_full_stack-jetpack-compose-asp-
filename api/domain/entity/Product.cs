@@ -25,7 +25,7 @@ public class Product
     public String Symbol { get; set; } 
 
     public ICollection<ProductVariant>? ProductVariants { get; set; } = null;
-    public ICollection<ProductImage>? ProductImages { get; set; } = null;
+    public ICollection<ProductImage>?  ProductImages { get; set; } = null;
     
    public SubCategory SubCategory { get; set; }
    public Store Store { get; set; }

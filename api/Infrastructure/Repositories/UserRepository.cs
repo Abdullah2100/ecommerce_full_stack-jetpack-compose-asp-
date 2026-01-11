@@ -105,21 +105,29 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
 
     public async Task<User?> GetUser(string username, string password)
     {
-        User? user = await dbContext
-            .Users
-            .Include(u => u.Store)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => (u.Name == username||u.Email==username) && u.Password == password);
-       
-        if (user == null) return null;
+        try
+        {
+            User? user = await dbContext
+                .Users
+                .Include(u => u.Store)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => (u.Name == username || u.Email == username) && u.Password == password);
 
-        user.Addresses = await dbContext
-            .Address
-            .AsNoTracking()
-            .Where(u => u.OwnerId == user.Id)
-            .ToListAsync();
+            if (user == null) return null;
 
-        return user;
+            user.Addresses = await dbContext
+                .Address
+                .AsNoTracking()
+                .Where(u => u.OwnerId == user.Id)
+                .ToListAsync();
+
+            return user;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"this the excptino error from get user {ex.Message}");
+            return null;
+        }
     }
 
     public async Task<bool> IsExist(int role)
