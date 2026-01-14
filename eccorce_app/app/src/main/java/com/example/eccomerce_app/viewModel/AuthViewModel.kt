@@ -19,6 +19,7 @@ import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,8 +33,7 @@ class AuthViewModel(
     val localDao: LocaleDao
 ) : ViewModel() {
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+//     val isLoading: StateFlow<Boolean> field = MutableStateFlow(false)
 
     val errorMessage = MutableStateFlow<String?>(null)
 
@@ -48,7 +48,6 @@ class AuthViewModel(
     private val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
         viewModelScope.launch(Dispatchers.IO) {
-            _isLoading.emit(false)
             when (message.message?.contains("java.net.ConnectException")) {
                 true -> {
                     errorMessage.update { "لا بد من تفعيل الانترنت لاكمال العملية" }
@@ -132,9 +131,9 @@ class AuthViewModel(
         phone: String,
         password: String,
         token: String,
-        isLoading: MutableState<Boolean>
+        updateIsLoading: (state: Boolean) -> Unit
     ): String? {
-        _isLoading.emit(true)
+        updateIsLoading.invoke(true)
         val result = authRepository.signup(
             SignupDto(
                 Name = name,
@@ -147,7 +146,8 @@ class AuthViewModel(
 
         return when (result) {
             is NetworkCallHandler.Successful<*> -> {
-                isLoading.value = false;
+                updateIsLoading.invoke(false)
+
                 val authData = result.data as AuthDto
 
                 val authDataHolder = AuthModelEntity(
@@ -165,8 +165,7 @@ class AuthViewModel(
             }
 
             is NetworkCallHandler.Error -> {
-                isLoading.value = false;
-
+                updateIsLoading.invoke(false)
                 val errorResult = (result.data.toString())
                 if (errorResult.contains(General.BASED_URL)) {
                     errorResult.replace(General.BASED_URL, " Server ")
@@ -182,9 +181,10 @@ class AuthViewModel(
         username: String,
         password: String,
         token: String,
-        isSendingData: MutableState<Boolean>
-    ): String? {
+        updateStateLoading: (state: Boolean) -> Unit
 
+    ): String? {
+        updateStateLoading.invoke(true)
         val result = authRepository.login(
             LoginDto(
                 Username = username,
@@ -194,7 +194,7 @@ class AuthViewModel(
         )
         return when (result) {
             is NetworkCallHandler.Successful<*> -> {
-                isSendingData.value = false
+                updateStateLoading.invoke(false)
                 val authData = result.data as AuthDto
                 val authDataHolder = AuthModelEntity(
                     id = 0,
@@ -209,7 +209,7 @@ class AuthViewModel(
             }
 
             is NetworkCallHandler.Error -> {
-                isSendingData.value = false
+                updateStateLoading.invoke(false)
                 val errorResult = (result.data?.replace("\"", ""))
 
                 errorMessage.emit(errorResult)
@@ -223,16 +223,17 @@ class AuthViewModel(
 
     suspend fun getOtp(
         email: String,
+        updateIsLoading: (state: Boolean) -> Unit
     ): String? {
-        _isLoading.emit(true)
-
+        updateIsLoading.invoke(true)
         when (val result = authRepository.getOtp(email)) {
             is NetworkCallHandler.Successful<*> -> {
+                updateIsLoading.invoke(false)
                 return null
             }
 
             is NetworkCallHandler.Error -> {
-
+                updateIsLoading.invoke(false)
                 val errorMessage = (result.data.toString())
                 if (errorMessage.contains(General.BASED_URL)) {
                     errorMessage.replace(General.BASED_URL, " Server ")
@@ -245,16 +246,19 @@ class AuthViewModel(
 
     suspend fun otpVerifying(
         email: String,
-        otp: String
+        otp: String,
+        updateIsLoading: (state: Boolean) -> Unit
     ): String? {
-        _isLoading.emit(true)
+        updateIsLoading.invoke(true)
 
         when (val result = authRepository.verifyingOtp(email, otp)) {
             is NetworkCallHandler.Successful<*> -> {
+                updateIsLoading.invoke(false)
                 return null
             }
 
             is NetworkCallHandler.Error -> {
+                updateIsLoading.invoke(false)
 
                 val errorMessage = (result.data.toString())
                 if (errorMessage.contains(General.BASED_URL)) {

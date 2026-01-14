@@ -24,16 +24,16 @@ class BannerViewModel(
     val webSocket: HubConnection?
 
 ) : ViewModel() {
- private    val _hub = MutableStateFlow<HubConnection?>(null)
+    private    val _hub = MutableStateFlow<HubConnection?>(null)
 
-  private   val _banners = MutableStateFlow<List<BannerModel>?>(null)
+    private   val _banners = MutableStateFlow<List<BannerModel>?>(null)
     val banners = _banners.asStateFlow()
 
- private    val _bannersRadom = MutableStateFlow<List<BannerModel>?>(null)
+    private    val _bannersRadom = MutableStateFlow<List<BannerModel>?>(null)
     val bannersRadom = _bannersRadom.asStateFlow()
 
 
- private    val _coroutineException = CoroutineExceptionHandler { _, message ->
+    private    val _coroutineException = CoroutineExceptionHandler { _, message ->
         Log.d("ErrorMessageIs", message.message.toString())
     }
 

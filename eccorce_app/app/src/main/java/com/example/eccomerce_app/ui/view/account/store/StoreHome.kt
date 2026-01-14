@@ -95,6 +95,7 @@ import com.example.e_commercompose.model.SubCategoryUpdate
 import com.example.e_commercompose.model.enMapType
 import com.example.eccomerce_app.ui.component.BannerBage
 import com.example.e_commercompose.ui.component.CustomButton
+import com.example.e_commercompose.ui.component.CustomDropDownComponent
 import com.example.e_commercompose.ui.component.ProductLoading
 import com.example.eccomerce_app.ui.component.ProductShape
 import com.example.e_commercompose.ui.component.Sizer
@@ -217,14 +218,6 @@ fun StoreScreen(
     else storeProduct.filter { it.subcategoryId == selectedSubCategoryId.value }
 
 
-    //animation
-    val animated = animateDpAsState(
-        if (isExpandedCategory.value) ((categories.value?.size ?: 1) * 35).dp else 0.dp
-    )
-
-    val rotation = animateFloatAsState(
-        if (isExpandedCategory.value) 180f else 0f
-    )
 
     //text filed
     val storeName = remember {
@@ -410,17 +403,17 @@ fun StoreScreen(
 
     fun getStoreInfoByStoreId(
         id: UUID,
-        isLoading: Boolean?=null,
-        updateLoadingState:((value: Boolean)->Unit)?  = null
+        isLoading: Boolean? = null,
+        updateLoadingState: ((value: Boolean) -> Unit)? = null
     ) {
-        
+
         storeViewModel.getStoreData(storeId = id)
         bannerViewModel.getStoreBanner(id)
         subCategoryViewModel.getStoreSubCategories(id, 1)
         productViewModel.getProducts(
-            1, id, isLoading?:false,
-            updatePageNumber = {value->page.intValue=value},
-            updateLoadingState = {value->updateLoadingState?.invoke(value)}
+            1, id, isLoading ?: false,
+            updatePageNumber = { value -> page.intValue = value },
+            updateLoadingState = { value -> updateLoadingState?.invoke(value) }
         )
     }
 
@@ -657,8 +650,8 @@ fun StoreScreen(
             updateConditionValue(isRefreshValue = true)
             page.intValue = 1;
             delay(100)
-            getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID(), ){
-                value->isRefresh.value=value
+            getStoreInfoByStoreId(storeId.value ?: UUID.randomUUID()) { value ->
+                isRefresh.value = value
             }
         }
     }
@@ -762,8 +755,8 @@ fun StoreScreen(
                         page.value,
                         storeId = storeId.value ?: UUID.randomUUID(),
                         isLoadingMore.value,
-                        updatePageNumber = {value->page.intValue=value},
-                        updateLoadingState = {value->isLoadingMore.value=value}
+                        updatePageNumber = { value -> page.intValue = value },
+                        updateLoadingState = { value -> isLoadingMore.value = value }
                     )
                 }
 
@@ -773,8 +766,8 @@ fun StoreScreen(
                         storeId = storeId.value!!,
                         selectedSubCategoryId.value!!,
                         isLoadingMore.value,
-                        updatePageNumber = {value->page.intValue=value},
-                        updateLoadingState = {value->isLoadingMore.value=value}
+                        updatePageNumber = { value -> page.intValue = value },
+                        updateLoadingState = { value -> isLoadingMore.value = value }
                     )
                 }
             }
@@ -1069,71 +1062,12 @@ fun StoreScreen(
                                 Sizer(10)
 
                                 //this custom drop down menu
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .border(
-                                            1.dp,
-                                            CustomColor.neutralColor400,
-                                            RoundedCornerShape(8.dp)
-                                        )
-                                        .clip(RoundedCornerShape(8.dp))
+                                CustomDropDownComponent(
+                                    value = categoryName.value.text.ifEmpty { stringResource(R.string.select_category_name) },
+                                    items = categories.value?.map { it.name } ?: emptyList(),
+                                    onSelectValue = { value -> selectCategory(value) }
                                 )
-                                {
-                                    Row(
-                                        modifier = Modifier
-                                            .height(65.dp)
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                updateConditionValue(
-                                                    isExpandedCategoryValue = !isExpandedCategory.value
-                                                )
-                                            }
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .padding(horizontal = 5.dp),
-                                        horizontalArrangement = Arrangement.SpaceBetween,
-                                        verticalAlignment = Alignment.CenterVertically) {
 
-                                        Text(
-                                            categoryName.value.text.ifEmpty { stringResource(R.string.select_category_name) })
-                                        Icon(
-                                            Icons.Default.KeyboardArrowDown,
-                                            "",
-                                            modifier = Modifier.rotate(rotation.value)
-                                        )
-                                    }
-
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(animated.value)
-                                            .border(
-                                                1.dp,
-                                                CustomColor.neutralColor200,
-                                                RoundedCornerShape(
-                                                    topStart = 0.dp,
-                                                    topEnd = 0.dp,
-                                                    bottomStart = 8.dp,
-                                                    bottomEnd = 8.dp
-                                                )
-                                            ),
-
-                                        ) {
-
-                                        categories.value?.forEach { option: Category ->
-                                            Text(
-                                                option.name,
-                                                modifier = Modifier
-                                                    .height(50.dp)
-                                                    .fillMaxWidth()
-                                                    .clip(RoundedCornerShape(8.dp))
-                                                    .clickable { selectCategory(option.name) }
-                                                    .padding(top = 12.dp, start = 5.dp)
-
-                                            )
-                                        }
-                                    }
-                                }
 
                                 Sizer(10)
 
@@ -1182,7 +1116,7 @@ fun StoreScreen(
             .background(Color.White),
         topBar = {
             SharedAppBar(
-                title =stringResource(R.string.store),
+                title = stringResource(R.string.store),
                 nav = nav,
                 action = {
                     if (isFromHome == false) {

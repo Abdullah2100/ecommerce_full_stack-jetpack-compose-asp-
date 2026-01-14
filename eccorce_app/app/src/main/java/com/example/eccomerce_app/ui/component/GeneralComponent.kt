@@ -24,11 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.e_commercompose.R
+import androidx.compose.ui.unit.sp
 import com.example.e_commercompose.ui.theme.CustomColor
-import java.util.UUID
+import com.example.eccomerce_app.util.General
 
 
 @Composable
@@ -115,5 +116,31 @@ fun CustomDropDownComponent(
             }
         }
     }
+}
 
+
+@Composable
+fun LableValueRow(text:String, value:String){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text,
+            fontFamily = General.satoshiFamily,
+            fontWeight = FontWeight.Normal,
+            fontSize = (16).sp,
+            color = CustomColor.neutralColor950,
+            textAlign = TextAlign.Center
+        )
+        Text(
+            value,
+            fontFamily = General.satoshiFamily,
+            fontWeight = FontWeight.Bold,
+            fontSize = (16).sp,
+            color = CustomColor.neutralColor950,
+            textAlign = TextAlign.Center
+        )
+    }
 }

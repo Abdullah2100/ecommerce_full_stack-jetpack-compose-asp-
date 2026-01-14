@@ -71,9 +71,7 @@ fun AddressHomeScreen(
         if (isNotEnablePermissionValue != null) isNotEnablePermission.value = isNotEnablePermissionValue
     }
 
-
     val snackBarHostState = remember { SnackbarHostState() }
-
 
     val locationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
