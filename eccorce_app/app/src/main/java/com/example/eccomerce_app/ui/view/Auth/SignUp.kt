@@ -28,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -84,7 +85,7 @@ fun SignUpPage(
     val confirmPassword = remember { mutableStateOf(TextFieldValue("12AS@#fs")) }
 
 
-    val isLoading = remember { mutableStateOf(false) }
+    val isLoading = rememberSaveable { mutableStateOf(false) }
     val isCheckBox = remember { mutableStateOf(false) }
     val isEmailError = remember { mutableStateOf(false) }
     val isNameError = remember { mutableStateOf(false) }
@@ -376,7 +377,7 @@ fun SignUpPage(
                                     password = password.value.text,
                                     name = name.value.text,
                                     token = token.first!!,
-                                    isLoading = isLoading
+                                    updateIsLoading = {value->isLoading.value = value}
                                 )
                                 if (result.isNullOrEmpty())
                                     nav.navigate(Screens.LocationGraph) {

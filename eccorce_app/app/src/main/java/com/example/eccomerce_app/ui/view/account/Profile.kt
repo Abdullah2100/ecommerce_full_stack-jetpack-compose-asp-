@@ -62,6 +62,7 @@ import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.eccomerce_app.ui.component.TextNumberInputWithTitle
 import com.example.eccomerce_app.ui.component.TextSecureInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.ProfileImage
 import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.UserViewModel
 import com.example.hotel_mobile.Util.Validation
@@ -258,138 +259,19 @@ fun ProfileScreen(
 
 
             item {
-                ConstraintLayout(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 15.dp)
+
+                ProfileImage(
+                    file = file.value,
+                    context = context,
+                    userThumbnail = myInfo.value?.thumbnail,
+                    onChoseImage = {
+                        onImageSelection.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
+                        )
+                    }
                 )
-                {
-                    val (imageRef, cameralRef) = createRefs()
-                    Box(
-                        modifier = Modifier
-                            .constrainAs(imageRef) {
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                                start.linkTo(parent.start)
-                                end.linkTo(parent.end)
-                            }
-                            .height(110.dp)
-                            .width(110.dp)
-                            .border(
-                                width = 1.dp,
-                                color = CustomColor.neutralColor500,
-                                shape = RoundedCornerShape(60.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    )
-                    {
-                        when (file.value == null) {
-                            true -> {
-                                when (myInfo.value?.thumbnail.isNullOrEmpty()) {
-                                    true -> {
-
-                                        Icon(
-                                            imageVector = ImageVector.vectorResource(R.drawable.user),
-                                            "",
-                                            modifier = Modifier.size(80.dp)
-                                        )
-                                    }
-
-                                    else -> {
-
-                                        SubcomposeAsyncImage(
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier
-                                                .height(90.dp)
-                                                .width(90.dp)
-                                                .clip(RoundedCornerShape(50.dp)),
-                                            model = General.handlingImageForCoil(
-                                                myInfo.value!!.thumbnail,
-                                                context
-                                            ),
-                                            contentDescription = "",
-                                            loading = {
-                                                Box(
-                                                    modifier = Modifier
-                                                        .fillMaxSize(),
-                                                    contentAlignment = Alignment.Center // Ensures the loader is centered and doesn't expand
-                                                ) {
-                                                    CircularProgressIndicator(
-                                                        color = Color.Black,
-                                                        modifier = Modifier.size(54.dp) // Adjust the size here
-                                                    )
-                                                }
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-
-                            else -> {
-                                SubcomposeAsyncImage(
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .height(90.dp)
-                                        .width(90.dp)
-                                        .clip(RoundedCornerShape(50.dp)),
-                                    model = General.handlingImageForCoil(
-                                        file.value!!.absolutePath,
-                                        context
-                                    ),
-                                    contentDescription = "",
-                                    loading = {
-                                        Box(
-                                            modifier = Modifier
-                                                .fillMaxSize(),
-                                            contentAlignment = Alignment.Center // Ensures the loader is centered and doesn't expand
-                                        ) {
-                                            CircularProgressIndicator(
-                                                color = Color.Black,
-                                                modifier = Modifier.size(54.dp) // Adjust the size here
-                                            )
-                                        }
-                                    },
-                                )
-                            }
-                        }
-
-                    }
-                    Box(
-                        modifier = Modifier
-                            .padding(end = 5.dp)
-                            .constrainAs(cameralRef) {
-                                end.linkTo(imageRef.end)
-                                bottom.linkTo(imageRef.bottom)
-                            }
-
-
-                    )
-                    {
-
-                        IconButton(
-                            onClick = {
-                                onImageSelection.launch(
-                                    PickVisualMediaRequest(
-                                        ActivityResultContracts.PickVisualMedia.ImageOnly
-                                    )
-                                )
-                            },
-                            modifier = Modifier
-                                .size(30.dp),
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = CustomColor.primaryColor200
-                            )
-                        ) {
-                            Icon(
-                                ImageVector.vectorResource(R.drawable.camera),
-                                "",
-                                modifier = Modifier.size(18.dp),
-                                tint = Color.White
-                            )
-                        }
-                    }
-
-                }
             }
 
             item {

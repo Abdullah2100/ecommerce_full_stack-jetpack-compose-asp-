@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,10 +43,12 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.eccomerce_app.ui.component.TextSecureInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
+import com.example.eccomerce_app.ui.component.SharedAppBar
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     nav: NavHostController, authKoin: AuthViewModel
@@ -87,7 +90,6 @@ fun LoginScreen(
     fun validateLoginInput(
         username: String, password: String
     ): Boolean {
-
         updateConditionValue(isEmailErrorValue = false, isPasswordErrorValue = false)
         when {
             username.trim().isEmpty() -> {
@@ -95,17 +97,14 @@ fun LoginScreen(
                 updateConditionValue(isEmailErrorValue = true)
                 return false
             }
-
             password.trim().isEmpty() -> {
                 errorMessageValidation.value =
                     context.getString(R.string.password_must_not_be_empty)
                 updateConditionValue(isPasswordErrorValue = true)
                 return false
             }
-
             else -> return true
         }
-
     }
 
 
@@ -117,6 +116,9 @@ fun LoginScreen(
     }
 
     Scaffold(
+        topBar = {
+            SharedAppBar(title =  stringResource(R.string.login))
+        },
         snackbarHost = {
             SnackbarHost(hostState = snackBarHostState)
         }) {
@@ -131,7 +133,8 @@ fun LoginScreen(
                 .padding(it)
                 .padding(start =10.dp, end = 10.dp )
                 .fillMaxSize()
-        ) {
+        )
+        {
             val (bottomRef, inputRef) = createRefs()
             Box(
                 modifier = Modifier
@@ -142,7 +145,8 @@ fun LoginScreen(
                         end.linkTo(parent.end)
                     }
 
-            ) {
+            )
+            {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Center
@@ -186,13 +190,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.Start,
             ) {
 
-                Text(
-                    text = stringResource(R.string.login),
-                    fontFamily = General.satoshiFamily,
-                    fontWeight = FontWeight.Bold,
-                    color = CustomColor.neutralColor950,
-                    fontSize = (34 / fontScall).sp
-                )
+
 
                 Sizer(heigh = 50)
                 TextInputWithTitle(
@@ -251,7 +249,9 @@ fun LoginScreen(
                                         userNameOrEmail.value.text,
                                         password = password.value.text,
                                         token = token.first!!,
-                                        isSendingData = isSendingData
+                                        updateStateLoading ={ value ->
+                                            isSendingData.value = value
+                                        },
                                     )
                                     if (result.isNullOrEmpty())
                                         nav.navigate(Screens.LocationGraph) {

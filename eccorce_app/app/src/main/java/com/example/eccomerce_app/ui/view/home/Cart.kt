@@ -62,6 +62,7 @@ import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.ui.Screens
 import com.example.e_commercompose.ui.component.CustomButton
+import com.example.e_commercompose.ui.component.LableValueRow
 import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.StoreViewModel
 import com.example.eccomerce_app.viewModel.VariantViewModel
@@ -127,22 +128,8 @@ fun CartScreen(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            stringResource(R.string.total),
-                            fontFamily = General.satoshiFamily,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = (16).sp,
-                            color = CustomColor.neutralColor950,
-                            textAlign = TextAlign.Center
-                        )
-                        Text(
-                            "$${cardData.value.totalPrice}",
-                            fontFamily = General.satoshiFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = (16).sp,
-                            color = CustomColor.neutralColor950,
-                            textAlign = TextAlign.Center
-                        )
+                        LableValueRow(stringResource(R.string.total),"$${cardData.value.totalPrice}")
+
                     }
 
                     Sizer(30)

@@ -12,10 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowLeft
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -29,10 +26,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -54,14 +51,8 @@ import com.example.e_commercompose.ui.component.Sizer
 import com.example.eccomerce_app.ui.component.TextInputWithTitle
 import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.ui.Screens
-import com.example.eccomerce_app.viewModel.BannerViewModel
-import com.example.eccomerce_app.viewModel.CategoryViewModel
-import com.example.eccomerce_app.viewModel.GeneralSettingViewModel
-import com.example.eccomerce_app.viewModel.OrderViewModel
-import com.example.eccomerce_app.viewModel.ProductViewModel
 import com.example.eccomerce_app.viewModel.StoreViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
-import com.example.eccomerce_app.viewModel.VariantViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.rememberCameraPositionState
@@ -120,10 +111,10 @@ fun MapHomeScreen(
     val coroutine = rememberCoroutineScope()
 
 
-    val isMyLocation = remember { mutableStateOf(false) }
-    val isLoading = remember { mutableStateOf(false) }
+    val isMyLocation = rememberSaveable { mutableStateOf(false) }
+    val isLoading = rememberSaveable { mutableStateOf(false) }
     val isHasError = remember { mutableStateOf(false) }
-    val isOpenSheet = remember { mutableStateOf(false) }
+    val isOpenSheet = rememberSaveable { mutableStateOf(false) }
     val isHasTitle = (mapType == enMapType.My)
     val isHasNavigationMap = (mapType == enMapType.Store || mapType == enMapType.TrackOrder)
 
@@ -159,34 +150,18 @@ fun MapHomeScreen(
 
     val snackBarHostState = remember { SnackbarHostState() }
 
-    Log.d(
-        "thisMMapInfo", """
-        this the main location ${longitude} ${latitude}
-        this the addtional location ${additionLong} ${additionLat}
-    """.trimIndent()
-    )
-
-
     fun updateMainLocation(point: LatLng) {
-//        marker.position = CameraPosition.fromLatLngZoom(point, 15f)
         mainLocation.position = point
     }
 
     fun handleMapClick(point: LatLng) {
-        Log.d("userChossloction",point.toString())
         when (mapType) {
-            enMapType.My -> {
-                updateMainLocation(point)
-            }
-
-            enMapType.MyStore -> {
-                coroutine.launch {
+            enMapType.My -> { updateMainLocation(point) }
+            enMapType.MyStore -> { coroutine.launch {
                     storeViewModel.setStoreCreateData(point.longitude, point.latitude)
                     updateMainLocation(point)
                     isMyLocation.value = true
-                }
-            }
-
+                } }
             else -> {}
         }
     }
@@ -217,7 +192,6 @@ fun MapHomeScreen(
             marker.animate(update = CameraUpdateFactory.newCameraPosition(newCameraPosition))
         }
     }
-
 
     //to request the update in location
     val locationRequest = remember {
@@ -276,8 +250,6 @@ fun MapHomeScreen(
             }
         }
     )
-
-
 
     LaunchedEffect(Unit) {
         if (isHasNavigationMap) {
@@ -457,10 +429,6 @@ fun MapHomeScreen(
                 .fillMaxSize()
         ) {
             val (bottomRef) = createRefs()
-
-
-
-
             GoogleMap(
                 modifier = Modifier
                     .padding(paddingValue  )

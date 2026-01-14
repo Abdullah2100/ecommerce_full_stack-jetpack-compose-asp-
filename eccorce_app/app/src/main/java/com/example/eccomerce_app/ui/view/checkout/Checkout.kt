@@ -7,29 +7,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -59,6 +54,7 @@ import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.e_commercompose.R
 import com.example.e_commercompose.model.PaymentMethodModel
 import com.example.e_commercompose.ui.component.CustomButton
+import com.example.e_commercompose.ui.component.LableValueRow
 import com.example.eccomerce_app.ui.component.SharedAppBar
 import com.example.eccomerce_app.viewModel.GeneralSettingViewModel
 import com.example.eccomerce_app.viewModel.OrderViewModel
@@ -104,7 +100,13 @@ fun CheckoutScreen(
     val selectedPaymentMethod = remember { mutableIntStateOf(0) }
 
 
-    val listOfPaymentMethod = listOf(PaymentMethodModel("Cach", R.drawable.money, 1))
+    val listOfPaymentMethod = listOf(
+        PaymentMethodModel("Cash", R.drawable.money, 1),
+        PaymentMethodModel("Card", R.drawable.money, 1),
+        PaymentMethodModel("Card", R.drawable.money, 1),
+        PaymentMethodModel("Card", R.drawable.money, 1),
+        PaymentMethodModel("Card", R.drawable.money, 1),
+    )
 
 
     val snackBarHostState = remember { SnackbarHostState() }
@@ -117,10 +119,10 @@ fun CheckoutScreen(
         },
         topBar = {
             SharedAppBar(
-                title =stringResource(R.string.checkout),
+                title = stringResource(R.string.checkout),
                 nav = nav
             )
-           },
+        },
         bottomBar = {
             BottomAppBar(
                 containerColor = Color.White
@@ -172,6 +174,7 @@ fun CheckoutScreen(
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(it)
+                .padding(horizontal = 15.dp)
 
 
         ) {
@@ -221,8 +224,7 @@ fun CheckoutScreen(
 
                         Row(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 5.dp),
+                                .fillMaxWidth(),
                             horizontalArrangement = Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -262,72 +264,73 @@ fun CheckoutScreen(
 
             item {
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    Column(
+
+                    Text(
+                        "Payment Method",
+                        fontFamily = General.satoshiFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = CustomColor.neutralColor950,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Sizer(15)
+
+                    FlowRow(
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         modifier = Modifier
+                            .fillParentMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(7.dp)
+
                     ) {
-
-                        Text(
-                            "Payment Method",
-                            fontFamily = General.satoshiFamily,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = CustomColor.neutralColor950,
-                            textAlign = TextAlign.Center
-                        )
-
-                        Sizer(15)
-
-                        LazyRow {
-                            items(listOfPaymentMethod.size) { index ->
-                                Row(
-                                    modifier = Modifier
-                                        .height(50.dp)
-                                        .width(((config.screenWidthDp - 30) / listOfPaymentMethod.size).dp)
-                                        .border(
-                                            width = if (selectedPaymentMethod.intValue == index) 0.dp else 1.dp,
-                                            color = CustomColor.neutralColor200,
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .background(
-                                            color = if (selectedPaymentMethod.intValue == index) CustomColor.primaryColor700 else Color.Transparent,
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .clip(
-                                            shape = RoundedCornerShape(8.dp)
-                                        )
-                                        .clickable {
-                                            selectedPaymentMethod.intValue = index
-                                        },
-                                    horizontalArrangement = Arrangement.Center,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        ImageVector.vectorResource(listOfPaymentMethod[index].icon),
-                                        contentDescription = "",
-                                        tint = if (selectedPaymentMethod.intValue == index) Color.White else Color.Black
+                        repeat(listOfPaymentMethod.size) { index ->
+                            Row(
+                                modifier = Modifier
+                                    .height(50.dp)
+                                    .width(
+                                        if (listOfPaymentMethod.size <= 3) ((((config.screenWidthDp - 30) / listOfPaymentMethod.size) - 15).dp)
+                                        else ((listOfPaymentMethod[index].name.length * 18) + 20).dp
                                     )
-                                    Sizer(width = 5)
-                                    Text(
-                                        listOfPaymentMethod[index].name,
-                                        fontFamily = General.satoshiFamily,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp,
-                                        color = if (selectedPaymentMethod.intValue == index) Color.White else CustomColor.neutralColor950,
-                                        textAlign = TextAlign.Center
+                                    .border(
+                                        width = if (selectedPaymentMethod.intValue == index) 0.dp else 1.dp,
+                                        color = CustomColor.neutralColor200,
+                                        shape = RoundedCornerShape(8.dp)
                                     )
-                                }
+                                    .background(
+                                        color = if (selectedPaymentMethod.intValue == index) CustomColor.primaryColor700 else Color.Transparent,
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clip(
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable {
+                                        selectedPaymentMethod.intValue = index
+                                    },
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    ImageVector.vectorResource(listOfPaymentMethod[index].icon),
+                                    contentDescription = "",
+                                    tint = if (selectedPaymentMethod.intValue == index) Color.White else Color.Black
+                                )
+                                Sizer(width = 5)
+                                Text(
+                                    listOfPaymentMethod[index].name,
+                                    fontFamily = General.satoshiFamily,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = if (selectedPaymentMethod.intValue == index) Color.White else CustomColor.neutralColor950,
+                                    textAlign = TextAlign.Center
+                                )
                             }
                         }
-                        Sizer(15)
-
                     }
-
+                    Sizer(15)
 
                 }
                 Sizer(10)
@@ -349,9 +352,7 @@ fun CheckoutScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    Column(
-                        modifier = Modifier
-                    ) {
+                    Column {
                         Text(
                             text = "Order Summary",
                             fontFamily = General.satoshiFamily,
@@ -361,80 +362,12 @@ fun CheckoutScreen(
                             textAlign = TextAlign.Center
 
                         )
-
-
                         Sizer(15)
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                "Total",
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                "\$${cartData.value.totalPrice}",
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        LableValueRow("Total", $$"$$${cartData.value.totalPrice}")
                         Sizer(15)
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                "Delivery Fee",
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                "$totalDeliveryPrice",
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        LableValueRow("Delivery Fee", "$totalDeliveryPrice")
                         Sizer(15)
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                "Distance To User In Kilo",
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.Center
-                            )
-                            Text(
-                                "${distanceToUser.value}",
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = (16).sp,
-                                color = CustomColor.neutralColor950,
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                        LableValueRow("Distance To User In Kilo", "${distanceToUser.value}")
 
 
                     }

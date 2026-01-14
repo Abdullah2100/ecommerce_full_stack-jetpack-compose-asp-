@@ -259,7 +259,6 @@ fun AccountPage(
 
                 HorizontalDivider(
                     modifier = Modifier
-//                        .padding(top = 5.dp)
                         .height(1.dp)
                         .fillMaxWidth()
                         .background(CustomColor.neutralColor200)

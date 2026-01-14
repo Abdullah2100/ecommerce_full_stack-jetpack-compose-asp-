@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,12 +51,10 @@ fun GenerateOtpScreen(
     val coroutine = rememberCoroutineScope()
 
     val email = remember { mutableStateOf(TextFieldValue("")) }
+    val isLoading = rememberSaveable { mutableStateOf(false) }
 
 
-    val isSendingData = remember { mutableStateOf(false) }
-    fun updateConditionValue(isSendingDataValue: Boolean? = null) {
-        if (isSendingDataValue != null) isSendingData.value = isSendingDataValue
-    }
+
     val snackBarHostState = remember { SnackbarHostState() }
 
 
@@ -105,15 +104,15 @@ fun GenerateOtpScreen(
 
 
                 CustomButton(
-                    isLoading = isSendingData.value,
+                    isLoading = isLoading.value,
                     operation = {
                         keyboardController?.hide()
-                        updateConditionValue(isSendingDataValue = true)
                         coroutine.launch {
                             val result = async {
-                                authViewModel.getOtp(email.value.text)
+                                authViewModel.getOtp(email.value.text, updateIsLoading = {value->
+                                    isLoading.value = value
+                                })
                             }.await()
-                            updateConditionValue(isSendingDataValue = false)
 
                             if (!result.isNullOrEmpty()) {
                                 snackBarHostState.showSnackbar(result)
