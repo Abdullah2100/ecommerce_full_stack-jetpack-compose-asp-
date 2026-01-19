@@ -1,4 +1,4 @@
-package com.example.e_commercompose.model
+package com.example.eccomerce_app.model
 
 import java.util.UUID
 

@@ -13,7 +13,7 @@ public interface IUserRepository:IRepository<User>
       
       Task<bool> IsExist(Guid id);
       
-      Task<bool> IsExist(int role);
+      Task<bool> IsExist(bool role);
       Task<bool> IsExistByPhone(string phone);
       Task<bool> IsExistByEmail(string email);
 

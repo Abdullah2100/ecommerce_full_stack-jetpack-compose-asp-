@@ -3,18 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.domain.entity;
 
-public class Banner
+public class Banner:GeneralSharedInfoWithCreatedAt
 {
-    [Key]
-    public Guid Id { get; set; }
     public String Image { get; set; }
     
     [Column(TypeName = "Timestamp")]
     public DateTime  EndAt{ get; set; }
     
-    [Column(TypeName = "Timestamp")]
-    public DateTime CreatedAt { get; set; }
-  
     public Guid StoreId { get; set; }
     public Store Store { get; set; }
 }

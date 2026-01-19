@@ -126,7 +126,7 @@ class OrderViewModel(
                 TotalPrice = cartItems.totalPrice
             )
         )
-        when (result) {
+        return  when (result) {
             is NetworkCallHandler.Successful<*> -> {
                 val data = result.data as OrderDto
                 val orderList = mutableListOf<Order>()
@@ -137,12 +137,12 @@ class OrderViewModel(
                 _orders.emit(orderList)
                 clearCartData()
 
-                return null
+                 null
             }
 
             is NetworkCallHandler.Error -> {
                 val errorMessage = result.data as String
-                return errorMessage
+                 errorMessage
             }
         }
 

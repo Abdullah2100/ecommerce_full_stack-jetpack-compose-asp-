@@ -389,7 +389,7 @@ class ProductViewModel(
         thumbnail: File,
         subcategoryId: UUID,
         storeId: UUID,
-        price: Double,
+        price: Int,
         symbol: String,
         productVariants: List<ProductVarientSelection>,
         images: List<File>
@@ -444,7 +444,7 @@ class ProductViewModel(
         thumbnail: File?,
         subcategoryId: UUID?,
         storeId: UUID,
-        price: Double?,
+        price: Int?,
         symbol: String?,
         productVariants: List<ProductVarientSelection>?,
         images: List<File>?,

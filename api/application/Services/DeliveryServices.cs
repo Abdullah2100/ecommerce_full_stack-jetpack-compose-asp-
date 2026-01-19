@@ -124,7 +124,7 @@ public class DeliveryServices(
         var store = user.IsValidateFunc(isAdmin: false, isStore: true);
 
 
-        if (admin is not null && user?.Role == 0 || store != null)
+        if (admin is not null && user?.IsUser == false || store != null)
         {
             return new Result<DeliveryDto?>
             (
@@ -168,7 +168,7 @@ public class DeliveryServices(
             OwnerId = id
         };
 
-        Delivery delivery = new Delivery
+        Delivery? delivery = new Delivery
         {
             Id = id,
             CreatedAt = DateTime.Now,
@@ -193,6 +193,16 @@ public class DeliveryServices(
         }
 
         delivery = await unitOfWork.DeliveryRepository.GetDelivery(id);
+        if (delivery is null)
+        {
+            return new Result<DeliveryDto?>
+            (
+                data: null,
+                message: "delivery is not found ",
+                isSuccessful: false,
+                statusCode: 404
+            );
+        }
 
         return new Result<DeliveryDto?>
         (
@@ -296,7 +306,7 @@ public class DeliveryServices(
 
         EnBelongToType belongType = EnBelongToType.Admin;
 
-        switch (user.Role == 0)
+        switch (user?.IsUser == false)
         {
             case true:
             {
@@ -388,15 +398,14 @@ public class DeliveryServices(
             );
         }
 
-        bool isPassOperation = false;
 
         if (deliveryDto.Longitude is not null && deliveryDto.Latitude is not null)
         {
-            var addressHolder = delivery.Address ?? new Address()
+            var addressHolder = delivery?.Address ?? new Address()
             {
                 Id = ClsUtil.GenerateGuid(),
                 CreatedAt = DateTime.Now,
-                OwnerId = delivery.Id,
+                OwnerId = delivery!.Id,
                 IsCurrent = true,
                 Title = "My Place"
             };
@@ -423,13 +432,13 @@ public class DeliveryServices(
 
         if (deliveryDto.Thumbnail is not null)
         {
-            var previuse = delivery.Thumbnail;
+            var previuse = delivery?.Thumbnail;
             if (previuse is not null)
                 fileServices.DeleteFile(filePath: previuse);
 
             string? newThumbNail = null;
             newThumbNail = await fileServices.SaveFile(file: deliveryDto.Thumbnail, type: EnImageType.Delivery);
-            delivery.Thumbnail = newThumbNail;
+            delivery?.Thumbnail = newThumbNail;
 
             unitOfWork.DeliveryRepository.Update(delivery);
         }
@@ -454,7 +463,7 @@ public class DeliveryServices(
         }
 
 
-        delivery = await unitOfWork.DeliveryRepository.GetDelivery(delivery.Id);
+        delivery = await unitOfWork.DeliveryRepository.GetDelivery(delivery!.Id);
 
         if (delivery is null)
         {

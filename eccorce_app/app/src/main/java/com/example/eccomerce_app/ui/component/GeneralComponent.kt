@@ -120,7 +120,7 @@ fun CustomDropDownComponent(
 
 
 @Composable
-fun LableValueRow(text:String, value:String){
+fun LabelValueRow(text:String, value:String){
     Row(
         modifier = Modifier
             .fillMaxWidth(),

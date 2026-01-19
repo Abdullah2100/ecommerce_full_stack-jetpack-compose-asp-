@@ -218,7 +218,7 @@ fun CreateProductScreen(
                         thumbnail = File(thumbnail.value!!),
                         subcategoryId = selectedSubCategoryId.value!!,
                         storeId = storeIdHolder!!,
-                        price = price.value.text.toDouble(),
+                        price = price.value.text.toInt(),
                         symbol = productCurrency.value!!,
                         productVariants = productVariants.value,
                         images = images.value.map { it -> File(it) },
@@ -276,7 +276,7 @@ fun CreateProductScreen(
                     subcategoryId = if (selectedSubCategoryId.value == null) null else selectedSubCategoryId.value!!,
                     storeId = storeIdHolder!!,
                     price = if (price.value.text.isEmpty()) null
-                    else if (Validation.isValidMoney(price.value.text)) price.value.text.toDouble()
+                    else if (Validation.isValidMoney(price.value.text)) price.value.text.toInt()
                     else null,
                     symbol = productCurrency.value,
                     productVariants = if (newProductVariant.isEmpty()) null

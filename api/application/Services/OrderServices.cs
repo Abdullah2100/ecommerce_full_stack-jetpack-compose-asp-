@@ -69,6 +69,7 @@ public class OrderServices(
         //end
         
         
+        
 
         var id = ClsUtil.GenerateGuid();
         Order? order = new Order
@@ -194,7 +195,7 @@ public class OrderServices(
     {
         User? delivery = await unitOfWork.UserRepository.GetUser(userId);
 
-        var isValid = delivery.IsValidateFunc(true);
+        var isValid = delivery.IsValidateFunc();
 
         if (isValid is not null)
         {
@@ -588,7 +589,7 @@ public class OrderServices(
             var userMessage = this.UserMessage(status);
             if (!string.IsNullOrEmpty(userMessage))
             {
-                await messageServe.SendMessage(userMessage, order.User.DeviceToken);
+                await messageServe.SendMessage(userMessage, order.User?.DeviceToken??"");
             }
         }
         catch (Exception e)
@@ -615,7 +616,7 @@ public class OrderServices(
             {
                 case 0:
                 {
-                    await messageServe.SendMessage(deliveryMessage, delivery.DeviceToken);
+                    await messageServe.SendMessage(deliveryMessage, delivery?.DeviceToken??"");
                 }
                     break;
 
@@ -627,7 +628,7 @@ public class OrderServices(
 
                 case 5:
                 {
-                    await messageServe.SendMessage(deliveryMessage, delivery.DeviceToken);
+                    await messageServe.SendMessage(deliveryMessage, delivery?.DeviceToken??"");
                 }
                     break;
             }

@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.e_commercompose.model.Address
 import com.example.e_commercompose.model.CardProductModel
 import com.example.e_commercompose.model.CartModel
-import com.example.e_commercompose.model.StoreModel
+import com.example.eccomerce_app.model.StoreModel
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

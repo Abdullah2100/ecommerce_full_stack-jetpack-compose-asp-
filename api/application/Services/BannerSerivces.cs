@@ -13,7 +13,6 @@ namespace api.application.Services;
 
 public class BannerSerivces(
     IConfig config,
-    IWebHostEnvironment host,
     IHubContext<BannerHub> hubContext,
     IUnitOfWork unitOfWork,
     IFileServices fileServices)
@@ -52,9 +51,9 @@ public class BannerSerivces(
 
 
         //this for api  to prevent user have more that 20 banners
-        int storeBannerCount = await unitOfWork.BannerRepository.GetBannerCount(user!.Store.Id);
+        int storeBannerCount = await unitOfWork.BannerRepository.GetBannerCount(user?.Store?.Id??ClsUtil.GenerateGuid());
 
-        if (storeBannerCount >= 20 && user.Role == 1)
+        if (storeBannerCount >= 20 && user?.IsUser == true)
         {
             return new Result<BannerDto?>
             (
@@ -80,14 +79,14 @@ public class BannerSerivces(
                 statusCode: 400
             );
         }
-
+        
         Banner banner = new Banner
         {
             Id = ClsUtil.GenerateGuid(),
             EndAt = bannerDto.EndAt,
             CreatedAt = DateTime.Today,
             Image = image,
-            StoreId = user.Store.Id,
+            StoreId = user!.Store!.Id,
         };
 
         unitOfWork.BannerRepository.Add(banner);
@@ -147,7 +146,7 @@ public class BannerSerivces(
             );
         }
 
-        if (banner.StoreId != user.Store.Id)
+        if (banner.StoreId != user!.Store!.Id)
         {
             return new Result<bool>
             (

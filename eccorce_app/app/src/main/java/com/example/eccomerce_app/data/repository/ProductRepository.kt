@@ -201,8 +201,8 @@ class ProductRepository(val client: HttpClient)  {
         thumbnail: File,
         subcategoryId: UUID,
         storeId: UUID,
-        price: Double,
-        symbol:String,
+        price: Int,
+        symbol: String,
         productVariants: List<ProductVarientSelection>,
         images: List<File>
     ): NetworkCallHandler {
@@ -302,8 +302,8 @@ class ProductRepository(val client: HttpClient)  {
         thumbnail: File?,
         subcategoryId: UUID?,
         storeId: UUID,
-        price: Double?,
-        symbol:String?,
+        price: Int?,
+        symbol: String?,
         productVariants: List<ProductVarientSelection>?,
         images: List<File>?,
         deletedProductVariants: List<ProductVarientSelection>?,

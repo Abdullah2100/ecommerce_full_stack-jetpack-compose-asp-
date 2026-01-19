@@ -6,34 +6,37 @@ namespace api.shared.mapper;
 
 public static class UserMapperExtension
 {
-    public static UserInfoDto ToUserInfoDto(this User user, string url)
+    extension(User user)
     {
-        return new UserInfoDto
+        public UserInfoDto ToUserInfoDto(string url)
         {
-            Id = user.Id,
-            Email = user.Email,
-            Name = user.Name,
-            Phone = user.Phone,
-            Thumbnail = string.IsNullOrEmpty(user.Thumbnail) ? "" : url + user.Thumbnail,
-            IsActive = user.IsBlocked == false,
-            IsAdmin = user.Role == 0,
-            Address = user.Addresses?.Select(ad => ad.ToDto()).ToList(),
-            StoreId = user?.Store?.Id,
-            StoreName = user?.Store?.Name ?? "",
-        };
+            return new UserInfoDto
+            {
+                Id = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                Phone = user.Phone,
+                Thumbnail = string.IsNullOrEmpty(user.Thumbnail) ? "" : url + user.Thumbnail,
+                IsActive = user.IsBlocked == false,
+                IsAdmin = user.IsUser == false,
+                Address = user.Addresses?.Select(ad => ad.ToDto()).ToList(),
+                StoreId = user?.Store?.Id,
+                StoreName = user?.Store?.Name ?? "",
+            };
+        }
+
+        public UserDeliveryInfoDto ToDeliveryInfoDto(string url)
+        {
+            return new UserDeliveryInfoDto
+            {
+                Email = user.Email,
+                Name = user.Name,
+                Phone = user.Phone,
+                Thumbnail = string.IsNullOrEmpty(user.Thumbnail) ? "" : url + user.Thumbnail,
+            };
+        }
     }
 
-
-    public static UserDeliveryInfoDto ToDeliveryInfoDto(this User user, string url)
-    {
-        return new UserDeliveryInfoDto
-        {
-            Email = user.Email,
-            Name = user.Name,
-            Phone = user.Phone,
-            Thumbnail = string.IsNullOrEmpty(user.Thumbnail) ? "" : url + user.Thumbnail,
-        };
-    }
 
     public static bool IsEmpty(this UpdateUserInfoDto dto)
     {
@@ -123,7 +126,7 @@ public static class UserMapperExtension
             }
             default:
             {
-                if (user is { Role: 1, IsBlocked: true })
+                if (user is { IsUser: true, IsBlocked: true })
                 {
                     return new Result<AuthDto?>
                     (

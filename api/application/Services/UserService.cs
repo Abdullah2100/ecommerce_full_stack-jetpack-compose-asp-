@@ -62,7 +62,7 @@ public class UserService(
             );
         }
 
-        if (signupDto.Role == 0 && await unitOfWork.UserRepository.IsExist(0))
+        if (signupDto.Role == 0 && await unitOfWork.UserRepository.IsExist(false))
         {
             return new Result<AuthDto?>
             (
@@ -80,7 +80,7 @@ public class UserService(
             Name = signupDto.Name,
             Phone = signupDto.Phone,
             Password = ClsUtil.HashingText(signupDto.Password),
-            Role =(int) (signupDto.Role?? enRole.User),
+            IsUser = (signupDto.Role?? enRole.User)==enRole.User,
             DeviceToken = signupDto.DeviceToken ?? "",
             Thumbnail = "",
             CreatedAt = DateTime.Now,
@@ -288,7 +288,7 @@ public class UserService(
 
         user!.IsBlocked = !user.IsBlocked;
 
-        if (user is { IsBlocked: true, Role: 0 })
+        if (user is { IsBlocked: true, IsUser: false })
         {
             return new Result<bool>(
                 isSuccessful: false,

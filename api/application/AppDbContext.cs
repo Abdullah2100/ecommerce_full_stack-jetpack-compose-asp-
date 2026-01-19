@@ -30,6 +30,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Delivery> Deliveries { get; set; }
     public DbSet<Currency> Payments { get; set; }
 public DbSet<Currency> Currencies { get; set; }
+public DbSet<PaymentType> PaymentTypes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -60,6 +61,14 @@ public DbSet<Currency> Currencies { get; set; }
                 //      .(DeleteBehavior.Restrict);
             }
         );
+
+        modelBuilder.Entity<PaymentType>(payType =>
+        {
+            payType.HasIndex(c => new { c.Name }).IsUnique();
+            payType.HasOne(u => u.User)
+                .WithMany(ad => ad.PaymentTypes)
+                .HasForeignKey(py => py.UserId);
+        });
 
         modelBuilder.Entity<Delivery>(delev =>
         {

@@ -85,6 +85,7 @@ captures/
 # Keystore files
 *.jks
 *.keystore
+native-lib.cpp
 
 # External native build folder generated in Android Studio 2.2 and later
 .externalNativeBuild/

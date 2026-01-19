@@ -3,24 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace api.domain.entity;
 
-public class Store
+public class Store:GeneralShredInfo
 {
-    [Key]
-    public Guid Id { get; set; }
     public string Name { get; set; }
     public string WallpaperImage  { get; set; }
     public string  SmallImage { get; set; }
     public bool IsBlock { get; set; } = true;
-
     public Guid UserId { get; set; }
-    
-    [Column(TypeName = "Timestamp")]
-    public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-     
-    [Column(TypeName = "Timestamp")]
-    public DateTime? UpdatedAt { get; set; } = null;
-    
     public ICollection<Address>? Addresses { get; set; } =null;
     public ICollection<SubCategory>? SubCategories { get; set; } =null;
     public ICollection<Banner>? Banners { get; set; } = null;

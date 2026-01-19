@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.dto.StoreDto
 import com.example.eccomerce_app.model.DtoToModel.toStore
-import com.example.e_commercompose.model.StoreModel
+import com.example.eccomerce_app.model.StoreModel
 import com.example.eccomerce_app.dto.CreateStoreDto
 import com.example.eccomerce_app.dto.StoreStatusDto
 import com.example.eccomerce_app.data.NetworkCallHandler
@@ -16,7 +16,6 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.io.File
 import java.util.UUID

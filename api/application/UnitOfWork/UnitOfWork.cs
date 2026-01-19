@@ -31,7 +31,7 @@ public class UnitOfWork : IUnitOfWork
         OrderProductVariantRepository = new OrderProductVariantRepository(context);
         AnalyseRepository = new AnalyseRepository( _context );
         CurrencyRepository = new CurrencyRepository( _context );
-
+        PaymentTypeRepository = new  PaymentTypeRepository( _context );
     }
     
     public void Dispose()
@@ -42,6 +42,7 @@ public class UnitOfWork : IUnitOfWork
     public IOrderProductVariant OrderProductVariantRepository { get; }
 
     public ICurrencyRepository CurrencyRepository { get; }
+    public IPaymentTypeRepository PaymentTypeRepository { get; set; }
 
     public async Task<int> SaveChanges()
     {

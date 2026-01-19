@@ -120,7 +120,7 @@ public class ProductServices(
             );
         }
 
-        if (user.Role != 0)
+        if (user.IsUser ==true)
         {
             return new Result<List<AdminProductsDto>>
             (

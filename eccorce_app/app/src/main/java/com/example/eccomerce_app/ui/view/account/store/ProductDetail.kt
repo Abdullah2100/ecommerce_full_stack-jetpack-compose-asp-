@@ -65,6 +65,7 @@ import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.ui.component.ProductShape
 import com.example.eccomerce_app.ui.component.ProductVariantComponent
 import com.example.eccomerce_app.ui.component.SharedAppBar
+import com.example.eccomerce_app.ui.component.StoreProductQuickInfo
 import com.example.eccomerce_app.util.General.convertPriceToAnotherCurrency
 import com.example.eccomerce_app.viewModel.CartViewModel
 import com.example.eccomerce_app.viewModel.ProductViewModel
@@ -285,15 +286,14 @@ fun ProductDetail(
         ) {
 
 
-
             item {
-                if(productData!=null)
-                ProductShape(
-                    product = productData,
-                    context = context,
-                    selectedImage = selectedImage.value?:"",
-                    updateSelectIndex = {value->selectedImage.value=value})
-              }
+                if (productData != null)
+                    ProductShape(
+                        product = productData,
+                        context = context,
+                        selectedImage = selectedImage.value ?: "",
+                        updateSelectIndex = { value -> selectedImage.value = value })
+            }
 
             if (!productData?.productVariants.isNullOrEmpty()) {
                 items(productData.productVariants.size) { index ->
@@ -317,67 +317,12 @@ fun ProductDetail(
             if (storeData != null)
                 item {
                     Sizer(10)
-                    Row(
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 15.dp)
+                    StoreProductQuickInfo(
+                        storeData = storeData,
+                        context = context,
+                        isCanNavigateToStore = isCanNavigateToStore,
+                        getStoreData = {getStoreData()}
                     )
-
-                    {
-                        SubcomposeAsyncImage(
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .height(50.dp)
-                                .width(50.dp)
-                                .clip(RoundedCornerShape(50.dp)),
-                            model = General.handlingImageForCoil(
-                                storeData.smallImage,
-                                context
-                            ),
-                            contentDescription = "",
-                            loading = {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize(),
-                                    contentAlignment = Alignment.Center // Ensures the loader is centered and doesn't expand
-                                ) {
-                                    CircularProgressIndicator(
-                                        color = Color.Black,
-                                        modifier = Modifier.size(54.dp) // Adjust the size here
-                                    )
-                                }
-                            },
-                        )
-                        Column(
-                            horizontalAlignment = Alignment.Start,
-                            modifier = Modifier.padding(start = 5.dp)
-                        ) {
-
-                            Text(
-                                storeData.name,
-                                fontFamily = General.satoshiFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = (16).sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-
-                            if (isCanNavigateToStore)
-                                Text(
-                                    stringResource(R.string.visit_store),
-                                    fontFamily = General.satoshiFamily,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = (16).sp,
-                                    color = CustomColor.primaryColor700,
-                                    modifier = Modifier
-                                        .clickable {
-                                            getStoreData()
-                                        }
-                                )
-
-
-                        }
-                    }
                 }
             item {
                 Sizer(130)

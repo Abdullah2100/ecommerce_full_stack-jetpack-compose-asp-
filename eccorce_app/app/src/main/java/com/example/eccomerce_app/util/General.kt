@@ -21,6 +21,7 @@ import net.sqlcipher.database.SQLiteDatabase
 import net.sqlcipher.database.SupportFactory
 import java.io.File
 import java.util.Locale
+import java.util.Properties
 
 
 object General {
@@ -108,6 +109,16 @@ object General {
     }
     }
 
+    fun getProperty(key:String):String?{
+        val property = Properties()
+        val propertyFile = Thread.currentThread().contextClassLoader?.getResourceAsStream("local.properties")
+        if(propertyFile != null)
+        {
+            property.load(propertyFile)
+            return  property.getProperty(key)
+        }
+        return  null
+    }
     fun Uri.toCustomFil(context: Context): File? {
         var file: File? = null
 

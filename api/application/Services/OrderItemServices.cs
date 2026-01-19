@@ -68,10 +68,10 @@ public class OrderItemServices(
         } ;
         
         orderItem.Status = orderItemsStatusDto.Status == EnOrderItemStatusDto.Excepted
-            ? enOrderItemStatus.Excepted
+            ? EnOrderItemStatus.Excepted
             : orderItemsStatusDto.Status == EnOrderItemStatusDto.TookByDelivery
-                ? enOrderItemStatus.ReceivedByDelivery
-                : enOrderItemStatus.Cancelled;
+                ? EnOrderItemStatus.ReceivedByDelivery
+                : EnOrderItemStatus.Cancelled;
         
         unitOfWork.OrderItemRepository.Update(orderItem);
         

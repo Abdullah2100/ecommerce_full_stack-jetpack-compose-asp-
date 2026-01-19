@@ -159,7 +159,7 @@ public class OrderRepository(AppDbContext context)
         return await context
             .OrderItems
             .AsNoTracking()
-            .AnyAsync(i => i.OrderId == id && i.Status == enOrderItemStatus.ReceivedByDelivery
+            .AnyAsync(i => i.OrderId == id && i.Status == EnOrderItemStatus.ReceivedByDelivery
             );
     }
 

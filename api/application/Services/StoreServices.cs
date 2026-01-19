@@ -125,7 +125,7 @@ public class StoreServices(
             Name = store.Name,
             WallpaperImage = wallperper,
             SmallImage = smallImage,
-            IsBlock = user?.Role != 0,
+            IsBlock = user?.IsUser != false,
             UserId = userId,
             CreatedAt = DateTime.Now,
             UpdatedAt = null,
@@ -455,7 +455,7 @@ public class StoreServices(
 
         store.IsBlock = !store.IsBlock;
 
-        if (store.IsBlock == true && user?.Role == 0)
+        if (store.IsBlock == true && user?.IsUser == false)
         {
             return new Result<bool?>(
                 isSuccessful: false,

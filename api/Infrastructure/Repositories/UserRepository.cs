@@ -130,12 +130,12 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         }
     }
 
-    public async Task<bool> IsExist(int role)
+    public async Task<bool> IsExist(bool role)
     {
         return await dbContext
             .Users
             .AsNoTracking()
-            .AnyAsync(u => u.Role == role);
+            .AnyAsync(u => u.IsUser == role);
     }
 
     public async Task<bool> IsExistByPhone(string phone)
