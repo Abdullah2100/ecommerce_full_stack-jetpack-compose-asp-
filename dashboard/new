@@ -1,2 +1,0 @@
-// Correctly listening for an event initiated by the SERVER
-connection.on('createdOrder', (user, message) => { ... });
