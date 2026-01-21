@@ -422,7 +422,7 @@ fun CreateProductScreen(
             Sizer(5)
             CustomDropDownComponent(
                 value =  productData?.symbol ?: (productCurrency.value ?: "Chose Currency"),
-                items =  currencies.value?.map { it.name }?:emptyList(),
+                items =  currencies.value?.map { it.symbol }?:emptyList(),
                 onSelectValue = { value ->
                     updateCurrentCurrencySymbol(value)
                 }

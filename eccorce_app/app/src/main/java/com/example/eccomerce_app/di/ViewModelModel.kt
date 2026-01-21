@@ -15,6 +15,7 @@ import com.example.eccomerce_app.viewModel.HomeViewModel
 import com.example.eccomerce_app.viewModel.MapViewModel
 import com.example.eccomerce_app.viewModel.OrderItemsViewModel
 import com.example.eccomerce_app.viewModel.OrderViewModel
+import com.example.eccomerce_app.viewModel.PaymentTypeViewModel
 import com.example.eccomerce_app.viewModel.PaymentViewModel
 import com.example.eccomerce_app.viewModel.UserViewModel
 import org.koin.core.qualifier.named
@@ -38,4 +39,5 @@ val viewModelModel = module {
     single { CurrencyViewModel(get(),get(),get()) }
     single { HomeViewModel() }
     single { PaymentViewModel(get()) }
+    single { PaymentTypeViewModel(get()) }
 }

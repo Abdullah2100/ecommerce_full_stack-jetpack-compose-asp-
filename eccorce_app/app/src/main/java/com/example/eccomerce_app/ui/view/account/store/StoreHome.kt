@@ -218,7 +218,6 @@ fun StoreScreen(
     else storeProduct.filter { it.subcategoryId == selectedSubCategoryId.value }
 
 
-
     //text filed
     val storeName = remember {
         mutableStateOf(
@@ -233,17 +232,25 @@ fun StoreScreen(
 
     val locationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    fun handlingLocation(mapType: enMapType, currentLocation: Location): LatLng? {
-        return when {
-            mapType == enMapType.MyStore || isFromHome == true ->
-                if (storeData == null) null
-                else
-                    LatLng(storeData.latitude, storeData.longitude)
+    fun handlingLocation( currentLocation: Location): LatLng? {
 
-            else -> {
-                LatLng(currentLocation.latitude, currentLocation.longitude)
+
+        return when {
+            isFromHome == true
+                -> {
+                LatLng(storeData!!.latitude, storeData!!.longitude)
 
             }
+
+            else -> {
+                if (storeData == null) LatLng(
+                    currentLocation.latitude,
+                    currentLocation.longitude
+                )
+                else
+                    LatLng(storeData!!.latitude, storeData!!.longitude)
+            }
+
         }
     }
 
@@ -271,8 +278,9 @@ fun StoreScreen(
                                     else -> enMapType.Store
                                 }
 
-                            val locationHolder = handlingLocation(type, location)
+                            val locationHolder = handlingLocation(location)
 
+                            Log.d("LocationData", "$locationHolder \n $location ")
                             nav.navigate(
                                 Screens.MapScreen(
                                     lognit = locationHolder?.longitude,
@@ -1922,7 +1930,7 @@ fun StoreScreen(
                     }
                 }
                 item {
-                    Sizer(90)
+                    Sizer(120)
                 }
 
             }

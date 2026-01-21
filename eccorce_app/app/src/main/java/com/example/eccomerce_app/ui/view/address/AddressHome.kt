@@ -98,7 +98,6 @@ fun AddressHomeScreen(
                         .apply {
                             addOnSuccessListener { location ->
 
-                                location?.toString()
                                 if (location != null)
                                     nav.navigate(
                                         Screens.MapScreen(

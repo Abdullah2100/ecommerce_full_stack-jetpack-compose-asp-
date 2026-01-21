@@ -423,12 +423,12 @@ fun MapHomeScreen(
         paddingValue.calculateTopPadding()
         paddingValue.calculateBottomPadding()
 
-        ConstraintLayout(
+       // ConstraintLayout
+        Box(
             modifier = Modifier
                 .background(Color.White)
                 .fillMaxSize()
         ) {
-            val (bottomRef) = createRefs()
             GoogleMap(
                 modifier = Modifier
                     .padding(paddingValue  )
@@ -501,12 +501,12 @@ fun MapHomeScreen(
 
                     .height(50.dp)
                     .fillMaxWidth(0.9f)
-                    .constrainAs(bottomRef) {
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    },
-
+//                    .constrainAs(bottomRef) {
+//                        bottom.linkTo(parent.bottom)
+//                        start.linkTo(parent.start)
+//                        end.linkTo(parent.end)
+//                    },
+,
                 isLoading = false,
                 operation = {
                     when (isHasTitle) {

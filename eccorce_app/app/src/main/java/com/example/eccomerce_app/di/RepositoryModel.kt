@@ -11,6 +11,7 @@ import com.example.eccomerce_app.data.repository.MapRepository
 import com.example.eccomerce_app.data.repository.OrderItemRepository
 import com.example.eccomerce_app.data.repository.OrderRepository
 import com.example.eccomerce_app.data.repository.PaymentRepository
+import com.example.eccomerce_app.data.repository.PaymentTypeRepository
 import com.example.eccomerce_app.data.repository.ProductRepository
 import com.example.eccomerce_app.data.repository.StoreRepository
 import com.example.eccomerce_app.data.repository.SubCategoryRepository
@@ -35,4 +36,5 @@ val repositoryModel = module {
     single { DeliveryRepository(get()) }
     single { CurrencyRepository(get()) }
     single { PaymentRepository(get()) }
+    single { PaymentTypeRepository(get()) }
 }

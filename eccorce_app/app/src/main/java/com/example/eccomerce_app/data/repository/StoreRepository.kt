@@ -44,8 +44,8 @@ class StoreRepository(val client: HttpClient)   {
                     MultiPartFormDataContent(
                         formData {
                             append("Name", name)
-                            append("Longitude", latitude)
-                            append("Latitude", longitude)
+                            append("Latitude", latitude)
+                            append("Longitude", longitude)
                             append(
                                 key = "WallpaperImage", // Must match backend expectation
                                 value = wallpaperImage.readBytes(),

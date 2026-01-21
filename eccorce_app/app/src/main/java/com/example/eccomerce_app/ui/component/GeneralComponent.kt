@@ -109,6 +109,7 @@ fun CustomDropDownComponent(
                         .clip(RoundedCornerShape(8.dp))
                         .clickable {
                             onSelectValue(value)
+                            isExpanded.value = !isExpanded.value
                         }
                         .padding(top = 12.dp, start = 5.dp)
 

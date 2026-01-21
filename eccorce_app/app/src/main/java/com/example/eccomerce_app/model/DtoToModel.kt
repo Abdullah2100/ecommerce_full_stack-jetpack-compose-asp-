@@ -220,4 +220,12 @@ object DtoToModel {
         )
     }
 
+    fun PaymentTypeDto.toPaymentType(): PaymentType{
+        return PaymentType(
+            id=this.id,
+            name=this.name,
+            isHashCheckOperation = this.isHashCheckOperation,
+            thumbnail = this.thumbnail.replace("localhost", Secrets.imageUrl)
+        )
+    }
 }
