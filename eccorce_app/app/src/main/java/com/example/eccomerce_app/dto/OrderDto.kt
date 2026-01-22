@@ -28,7 +28,7 @@ data class OrderUpdateStatusDto(
 data class CreateOrderDto(
     val Longitude: Double,
     val Latitude: Double,
-    val TotalPrice: Double,
+    val TotalPrice: Long,
     val Items: List<CreateOrderItemDto>,
 )
 
@@ -36,7 +36,7 @@ data class CreateOrderDto(
 data class OrderRequestItemsDto(
     @Serializable(with = UUIDKserialize::class)
     val StoreId: UUID,
-    val Price: Double,
+    val Price: Long,
     val Quantity: Int,
     @Serializable(with = UUIDKserialize::class)
     val ProductId: UUID,

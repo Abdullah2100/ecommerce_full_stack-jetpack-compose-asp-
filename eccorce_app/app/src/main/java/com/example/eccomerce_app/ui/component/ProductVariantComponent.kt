@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.e_commercompose.R
-import com.example.e_commercompose.model.ProductVariant
+import com.example.eccomerce_app.model.ProductVariant
 import com.example.e_commercompose.model.ProductVarientSelection
 import com.example.e_commercompose.model.VarirntModel
 import com.example.e_commercompose.ui.component.Sizer

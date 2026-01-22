@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.e_commercompose.model.Address
-import com.example.e_commercompose.model.CardProductModel
+import com.example.eccomerce_app.model.CardProductModel
 import com.example.e_commercompose.model.CartModel
 import com.example.eccomerce_app.model.StoreModel
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -28,7 +28,7 @@ class CartViewModel() : ViewModel() {
 
     val cartItems = MutableStateFlow(
         CartModel(
-            0.0,
+            0,
             0.0,
             0.0,
             UUID.randomUUID(),
@@ -165,7 +165,7 @@ class CartViewModel() : ViewModel() {
         viewModelScope.launch {
             cartItems.emit(
                 CartModel(
-                    totalPrice = 0.0,
+                    totalPrice = 0,
                     latitude = 0.0,
                     longitude = 0.0,
                     userId = UUID.randomUUID(),

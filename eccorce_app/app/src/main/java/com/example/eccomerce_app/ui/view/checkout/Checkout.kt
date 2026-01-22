@@ -1,11 +1,9 @@
 package com.example.eccomerce_app.ui.view.checkout
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
-import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -16,10 +14,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
-import androidx.compose.ui.draw.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.*
 import androidx.navigation.NavHostController
 import com.example.eccomerce_app.viewModel.*
@@ -28,8 +24,6 @@ import androidx.compose.ui.res.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.text.style.*
 import androidx.compose.ui.unit.*
-import coil.compose.SubcomposeAsyncImage
-import com.example.e_commercompose.model.PaymentMethodModel
 import com.example.e_commercompose.R
 import com.example.e_commercompose.ui.component.CustomButton
 import com.example.e_commercompose.ui.component.LabelValueRow
@@ -88,33 +82,42 @@ fun CheckoutScreen(
 
     val selectedPaymentMethod = remember { mutableIntStateOf(0) }
 
-    val paymentResultCallback: (PaymentSheetResult) -> Unit = { result: PaymentSheetResult ->
-        when (result) {
-            is PaymentSheetResult.Completed -> { /* Success! */
-                coroutine.launch {
 
-                    val orderResult = async {
-                        orderViewModel.submitOrder(
-                            cartItems = cartData.value,
-                            userAddress = currentAddress!!,
-                            clearCartData = { cartViewModel.clearCart() })
-                    }.await()
-                    updateConditionValue(isSendingDataValue = false)
+    fun submitOrderFun(isStartLoading: Boolean=false){
+        coroutine.launch {
+          if(!isStartLoading){
+              updateConditionValue(isSendingDataValue = false)
+          }
+            val orderResult = async {
+                orderViewModel.submitOrder(
+                    cartItems = cartData.value,
+                    userAddress = currentAddress!!,
+                    clearCartData = { cartViewModel.clearCart() })
+            }.await()
+            updateConditionValue(isSendingDataValue = false)
 
-                    var message = context.getString(R.string.order_submit_successfully)
-                    if (!orderResult.isNullOrEmpty()) {
-                        message = orderResult
-                    }
-                    snackBarHostState.showSnackbar(message)
-                    if (orderResult.isNullOrEmpty()) {
-                        nav.navigate(Screens.HomeGraph) {
-                            popUpTo(nav.graph.id) {
-                                inclusive = true
-                            }
-                        }
+            var message = context.getString(R.string.order_submit_successfully)
+            if (!orderResult.isNullOrEmpty()) {
+                message = orderResult
+            }
+            snackBarHostState.showSnackbar(message)
+            if (orderResult.isNullOrEmpty()) {
+                nav.navigate(Screens.HomeGraph) {
+                    popUpTo(nav.graph.id) {
+                        inclusive = true
                     }
                 }
             }
+        }
+
+    }
+
+
+    val paymentResultCallback: (PaymentSheetResult) -> Unit = { result: PaymentSheetResult ->
+        when (result) {
+            is PaymentSheetResult.Completed -> { /* Success! */
+                submitOrderFun(true)
+               }
 
             is PaymentSheetResult.Canceled -> { /* User backed out */
                 coroutine.launch {
@@ -138,7 +141,7 @@ fun CheckoutScreen(
     val paymentSheet = remember { PaymentSheet.Builder(paymentResultCallback) }.build()
 
 
-    fun submitOrder() {
+    fun submitStripOrder() {
         coroutine.launch {
 
             updateConditionValue(isSendingDataValue = true)
@@ -149,8 +152,6 @@ fun CheckoutScreen(
                 return@launch
             }
 
-            Log.d("thisResultFromApi", result)
-            // Guest checkout - create new overload or use Option 1
             paymentSheet.presentWithPaymentIntent(
                 result,
                 PaymentSheet.Configuration.Builder(merchantDisplayName = "My merchant name")
@@ -163,8 +164,20 @@ fun CheckoutScreen(
 
     }
 
-    LaunchedEffect(context) {
-        PaymentConfiguration.init(context, publicKey.value)
+
+    fun handleSubmitFun(){
+        when(paymentTypes.value[selectedPaymentMethod.intValue].name=="Stripe"){
+            true->{
+                submitStripOrder()
+            }
+            else ->{
+                submitOrderFun(false)
+            }
+        }
+    }
+    LaunchedEffect(selectedPaymentMethod.intValue) {
+        if (paymentTypes.value[selectedPaymentMethod.intValue].name == "Stripe")
+            PaymentConfiguration.init(context, publicKey.value)
     }
 
     Scaffold(
@@ -188,7 +201,7 @@ fun CheckoutScreen(
                 ) {
                     CustomButton(
                         isEnable = !isSendingData.value,
-                        operation = { submitOrder() },
+                        operation = { handleSubmitFun() },
                         buttonTitle = "Place Order",
                         isLoading = isSendingData.value
                     )
@@ -385,23 +398,5 @@ fun CheckoutScreen(
 
     }
 
-
-}
-
-private fun onPaymentSheetResult(paymentSheetResult: PaymentSheetResult) {
-    when (paymentSheetResult) {
-        is PaymentSheetResult.Canceled -> {
-            print("Canceled")
-        }
-
-        is PaymentSheetResult.Failed -> {
-            print("Error: ${paymentSheetResult.error}")
-        }
-
-        is PaymentSheetResult.Completed -> {
-            // Display for example, an order confirmation screen
-            print("Completed")
-        }
-    }
 
 }

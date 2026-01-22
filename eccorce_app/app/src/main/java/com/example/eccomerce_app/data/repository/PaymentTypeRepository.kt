@@ -16,7 +16,7 @@ import java.net.UnknownHostException
 class PaymentTypeRepository(private  val client: HttpClient) {
     suspend fun getPaymentTypes(pageNumber: Int): NetworkCallHandler {
         return try {
-            val fullUrl = Secrets.getUrl() + "/api/paymentType/${pageNumber}"
+            val fullUrl = Secrets.getUrl() + "/paymentType/${pageNumber}"
             val result = client.get(fullUrl) {
                 headers {
                     append(

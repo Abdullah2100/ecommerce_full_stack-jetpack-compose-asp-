@@ -1,10 +1,10 @@
-package com.example.e_commercompose.model
+package com.example.eccomerce_app.model
 
 import java.util.UUID
 
 data class ProductVariant(
     val id: UUID,
     val name:String,
-    val percentage: Double,
+    val percentage: Short,
     val variantId: UUID,
     )

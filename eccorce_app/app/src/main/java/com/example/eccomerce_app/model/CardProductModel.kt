@@ -1,4 +1,4 @@
-package com.example.e_commercompose.model
+package com.example.eccomerce_app.model
 
 import java.util.UUID
 
@@ -8,7 +8,7 @@ data class CardProductModel(
     val name: String,
     val thumbnail:String,
     val storeId: UUID,
-    val price: Double,
+    val price: Int,
     val productVariants:List<ProductVariant>,
     val quantity:Int=1
 ) 

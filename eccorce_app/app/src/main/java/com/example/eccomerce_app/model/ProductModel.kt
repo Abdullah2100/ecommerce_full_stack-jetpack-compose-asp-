@@ -1,5 +1,6 @@
 package com.example.e_commercompose.model
 
+import com.example.eccomerce_app.model.ProductVariant
 import java.util.UUID
 
 data class ProductModel(

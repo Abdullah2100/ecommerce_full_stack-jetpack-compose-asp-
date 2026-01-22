@@ -18,7 +18,7 @@ import kotlinx.serialization.Serializable
 import java.io.IOException
 import java.net.UnknownHostException
 class PaymentRepository(private  val httpClient: HttpClient) {
-    suspend fun generatePaymentIntent(totalPrice: Double): NetworkCallHandler
+    suspend fun generatePaymentIntent(totalPrice: Long): NetworkCallHandler
     {
         return  try {
             val url = Secrets.getUrl()+"/payment/createCheckout"

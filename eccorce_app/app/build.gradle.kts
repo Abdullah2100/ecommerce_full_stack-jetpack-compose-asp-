@@ -89,7 +89,11 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.ui.graphics)
     implementation(libs.ui)
+    implementation(libs.androidx.junit.ktx)
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.core.testing)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -106,6 +110,10 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.nav)
     implementation(libs.koin.compose)
+    testImplementation(libs.koin.test.junit4)
+    testImplementation(libs.koin.test)
+
+
 
     // Ktor dependencies
     implementation(libs.ktor.client.core)
@@ -116,17 +124,21 @@ dependencies {
     implementation(libs.ktor.auth)
     implementation(libs.ktor.cio)
 
+
     // Kotlinx Serialization JSON
     implementation(libs.kotlinx.serialization.json)
 
+
     // Kotlin Coroutines
     implementation(libs.kotlinx.coroutines.android)
+
 
     //navigation
     implementation(libs.compose.navigation)
 
     //constrain
     implementation(libs.compose.constrin)
+
 
 
     //room

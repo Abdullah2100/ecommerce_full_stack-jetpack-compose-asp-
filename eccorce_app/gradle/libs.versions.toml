@@ -3,7 +3,7 @@ agp = "8.12.3"
 core = "3.5.4"
 coreSplashscreen = "1.2.0"
 desugar_jdk_libs = "2.1.5"
-firebaseBom = "34.7.0"
+firebaseBom = "34.8.0"
 firebaseMessagingDirectboot = "25.0.1"
 kotlin = "2.3.0"
 coreKtx = "1.17.0"
@@ -13,19 +13,19 @@ espressoCore = "3.7.0"
 kotlinxDatetime = "0.7.1"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.2"
-composeBom = "2025.12.01"
+composeBom = "2026.01.00"
 lifecycleViewmodelKtx = "2.10.0"
 mapsCompose = "7.0.0"
 materialIconsExtended = "1.7.8"
 playServicesLocation = "21.3.0"
 room = "2.8.4"
-signalr = "10.0.1"
+signalr = "10.0.2"
 sqlcipher= "4.5.4"
 sqlight = "2.6.2"
 koin = "4.1.1"
 kspVersion = "2.2.21-2.0.4"
 serialize-kotlin = '2.3.0'
-kotlinxSerializationJson = "1.9.0"
+kotlinxSerializationJson = "1.10.0"
 ktor = "3.3.3"
 kotlinxCoroutinesPlayServices = "1.10.2"
 coroutines = "1.10.2"
@@ -34,18 +34,28 @@ constrain-compose = "1.1.1"
 coilCompose = "2.7.0"
 gms="4.4.4"
 mapsUtilsKtx = "5.2.2"
-playServicesMaps = "19.2.0"
+playServicesMaps = "20.0.0"
 qrKit = "3.1.3"
-uiGraphics = "1.10.0"
-ui = "1.10.0"
+uiGraphics = "1.10.1"
+ui = "1.10.1"
 gradleSecret = "2.0.1"
 zxingAndroidEmbedded = "4.3.0"
+junitKtx = "1.3.0"
+mockk = "1.13.13"
+kotlinxCoroutinesTest = "1.10.2"
+coreTesting = "2.2.0"
 
 
 [libraries]
+core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
 core = { module = "com.google.zxing:core", version.ref = "core" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4", version.ref = "koin" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "playServicesMaps" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
@@ -136,6 +146,7 @@ androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-
 androidx-lifecycle-compose-runntime = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycleViewmodelKtx" }
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
+androidx-junit-ktx = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "junitKtx" }
 
 #map
 

@@ -1,8 +1,8 @@
 package com.example.e_commercompose.dto
 
-import com.example.e_commercompose.model.CardProductModel
+import com.example.eccomerce_app.model.CardProductModel
 import com.example.e_commercompose.model.CartModel
-import com.example.e_commercompose.model.ProductVariant
+import com.example.eccomerce_app.model.ProductVariant
 import com.example.e_commercompose.model.ProductVarientSelection
 import com.example.e_commercompose.model.SubCategoryUpdate
 import com.example.eccomerce_app.dto.CreateOrderDto
