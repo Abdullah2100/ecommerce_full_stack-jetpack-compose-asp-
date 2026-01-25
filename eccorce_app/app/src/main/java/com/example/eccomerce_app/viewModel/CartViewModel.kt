@@ -57,7 +57,7 @@ class CartViewModel() : ViewModel() {
             if (productLength == distanceProductsLength) {
                 var variantPrice = product.price
                 product.productVariants.forEach { it ->
-                    variantPrice *= it.percentage
+                    variantPrice = it.percentage
                 }
                 val price = ((cartItems.value.totalPrice)) + variantPrice
                 val copyCardItem = cartItems.value.copy(

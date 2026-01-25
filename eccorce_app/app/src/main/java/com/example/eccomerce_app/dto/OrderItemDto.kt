@@ -25,7 +25,7 @@ data class OrderItemDto(
 data class CreateOrderItemDto(
     @Serializable(with = UUIDKserialize::class)
     val StoreId: UUID,
-    val Price: Double,
+    val Price: Int,
     val Quantity: Int,
     @Serializable(with = UUIDKserialize::class)
     val ProductId: UUID,

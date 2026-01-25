@@ -3,11 +3,11 @@ package com.example.e_commercompose.dto
 import com.example.eccomerce_app.model.CardProductModel
 import com.example.e_commercompose.model.CartModel
 import com.example.eccomerce_app.model.ProductVariant
-import com.example.e_commercompose.model.ProductVarientSelection
+import com.example.eccomerce_app.model.ProductVariantSelection
 import com.example.e_commercompose.model.SubCategoryUpdate
 import com.example.eccomerce_app.dto.CreateOrderDto
 import com.example.eccomerce_app.dto.CreateOrderItemDto
-import com.example.eccomerce_app.dto.CreateProductVarientDto
+import com.example.eccomerce_app.dto.CreateProductVariantDto
 import com.example.eccomerce_app.dto.UpdateSubCategoryDto
 
 object ModelToDto {
@@ -22,31 +22,21 @@ object ModelToDto {
         )
     }
 
-    fun ProductVarientSelection.toProdcutVarientRequestDto(): CreateProductVarientDto{
-        return CreateProductVarientDto(
+    fun ProductVariantSelection.toProductVariantRequestDto(): CreateProductVariantDto{
+        return CreateProductVariantDto(
             Name = this.name,
             Percentage = this.percentage,
             VariantId =this.variantId
         )
     }
-    fun List<List<ProductVariant>>.toListOfProductVarient(): List<ProductVarientSelection> {
+    fun List<List<ProductVariant>>.toListOfProductVariant(): List<ProductVariantSelection> {
         return   this.map{it->it.map {
                 data->
-            ProductVarientSelection(name = data.name, percentage = data.percentage, variantId = data.variantId)
-
+            ProductVariantSelection(name = data.name, percentage = data.percentage, variantId = data.variantId)
         }}.flatten()
     }
 
 
-
-    fun CartModel.toOrderRequestDto(): CreateOrderDto{
-        return CreateOrderDto(
-            Items = this.cartProducts.map { it.toOrderRequestItemDto() },
-            TotalPrice = this.totalPrice ,
-            Latitude = this.latitude,
-            Longitude=this.longitude
-        )
-    }
     fun CardProductModel.toOrderRequestItemDto(): CreateOrderItemDto{
         return CreateOrderItemDto(
             StoreId =  this.storeId,

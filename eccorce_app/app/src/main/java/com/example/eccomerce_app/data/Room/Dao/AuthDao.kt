@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.eccomerce_app.data.Room.Model.AuthModelEntity
 import com.example.eccomerce_app.data.Room.Model.IsPassLocationScreen
 import com.example.eccomerce_app.data.Room.Model.IsPassOnBoardingScreen
@@ -35,6 +36,5 @@ interface AuthDao {
 
     @Query("DELETE FROM location ")
     suspend fun nukeIsPassAddressTable()
-
 
 }

@@ -533,7 +533,8 @@ fun NavController(
                     generalSettingViewModel = generalSettingViewModel,
                     orderViewModel = orderViewModel,
                     paymentViewModel = paymentViewModel,
-                    paymentTypeViewModel = paymentTypeViewModel
+                    paymentTypeViewModel = paymentTypeViewModel,
+                    currencyViewModel = currencyViewModel
                 )
 
             }

@@ -2,9 +2,8 @@ package com.example.eccomerce_app.model
 
 import java.util.UUID
 
-data class ProductVariant(
-    val id: UUID,
-    val name:String,
-    val percentage: Int,
+data class ProductVariantSelection(
+    val name: String,
+    val percentage: Int?,
     val variantId: UUID,
     )

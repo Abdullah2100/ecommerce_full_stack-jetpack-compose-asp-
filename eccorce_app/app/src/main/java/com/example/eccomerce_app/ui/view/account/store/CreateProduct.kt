@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.util.General
-import com.example.e_commercompose.dto.ModelToDto.toListOfProductVarient
-import com.example.e_commercompose.model.ProductVarientSelection
+import com.example.e_commercompose.dto.ModelToDto.toListOfProductVariant
+import com.example.eccomerce_app.model.ProductVariantSelection
 import com.example.e_commercompose.ui.component.CustomButton
 import com.example.e_commercompose.ui.component.CustomDropDownComponent
 import com.example.e_commercompose.ui.component.Sizer
@@ -98,12 +98,12 @@ fun CreateProductScreen(
 
     val images = remember { mutableStateOf(productData?.productImages ?: emptyList()) }
     val productVariants = remember {
-        mutableStateOf(if (productData != null && !productData.productVariants.isNullOrEmpty()) productData.productVariants.toListOfProductVarient()
+        mutableStateOf(if (productData != null && !productData.productVariants.isNullOrEmpty()) productData.productVariants.toListOfProductVariant()
             else emptyList()
         )
     }
     val deleteImages = remember { mutableStateOf<List<String>>(emptyList()) }
-    val deleteProductVariant = remember { mutableStateOf<List<ProductVarientSelection>>(emptyList()) }
+    val deleteProductVariant = remember { mutableStateOf<List<ProductVariantSelection>>(emptyList()) }
 
 
     val productName = remember { mutableStateOf(TextFieldValue("")) }
@@ -167,12 +167,12 @@ fun CreateProductScreen(
     }
 
     //this for api product product variant not for create this only when product is update
-    fun removeProductVariant(value: ProductVarientSelection) {
+    fun removeProductVariant(value: ProductVariantSelection) {
         if (productData != null && !productData.productVariants.isNullOrEmpty() &&
-            productData.productVariants.toListOfProductVarient().firstOrNull{it==value}!=null
+            productData.productVariants.toListOfProductVariant().firstOrNull{it==value}!=null
         ) {
             val deletedProductVariant =
-                mutableListOf<ProductVarientSelection>()
+                mutableListOf<ProductVariantSelection>()
             deletedProductVariant.add(value)
             deletedProductVariant.addAll(deleteProductVariant.value)
             deleteProductVariant.value = deletedProductVariant
@@ -190,13 +190,13 @@ fun CreateProductScreen(
     fun updateSelectedVariant(id: UUID) { selectedVariantId.value = id }
 
     fun addProductVariant() {
-        val selectedVariant = ProductVarientSelection(
+        val selectedVariant = ProductVariantSelection(
             name = productVariantName.value.text,
-            percentage = if (productVariantPercentage.value.text.isEmpty()) 1.0 else productVariantPercentage.value.text.toDouble(),
+            percentage =  productVariantPercentage.value.text.toInt(),
             variantId = selectedVariantId.value!!
         )
 
-        val productVariantHolder = mutableListOf<ProductVarientSelection>()
+        val productVariantHolder = mutableListOf<ProductVariantSelection>()
         productVariantHolder.addAll(productVariants.value)
         productVariantHolder.add(selectedVariant)
         productVariants.value = productVariantHolder
@@ -246,12 +246,12 @@ fun CreateProductScreen(
     }
 
     fun updateProduct() {
-        val newProductVariant = mutableListOf<ProductVarientSelection>()
+        val newProductVariant = mutableListOf<ProductVariantSelection>()
         if (productVariants.value.isNotEmpty()) {
             newProductVariant.addAll(productVariants.value)
         }
         if (newProductVariant.isNotEmpty() && (productData != null && !productData.productVariants.isNullOrEmpty())) {
-            newProductVariant.removeAll(productData.productVariants.toListOfProductVarient())
+            newProductVariant.removeAll(productData.productVariants.toListOfProductVariant())
         }
 
         val newImages = mutableListOf<String>()

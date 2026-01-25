@@ -18,8 +18,8 @@ data class ProductDto(
     val storeId: UUID,
     @Serializable(with = UUIDKserialize::class)
     val categoryId: UUID,
-    val price: Double,
+    val price: Int,
     val symbol: String,
-    val productVariants:List<List<ProductVarientDto>>?=null,
+    val productVariants:List<List<ProductVariantDto>>?=null,
     val productImages:List<String>
 )

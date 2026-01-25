@@ -117,7 +117,7 @@ fun CartScreen(
                     .padding(bottom = 65.dp)
                     .offset(x = 16.dp),
             ) {
-                if (cardData.value.totalPrice != 0.0) {
+                if (cardData.value.totalPrice != 0L) {
                     Row(
                         modifier = Modifier
                             .background(Color.White)

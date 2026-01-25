@@ -7,7 +7,7 @@ import com.example.eccomerce_app.util.General
 import com.example.eccomerce_app.dto.ProductDto
 import com.example.eccomerce_app.model.DtoToModel.toProduct
 import com.example.e_commercompose.model.ProductModel
-import com.example.e_commercompose.model.ProductVarientSelection
+import com.example.eccomerce_app.model.ProductVariantSelection
 import com.example.eccomerce_app.data.NetworkCallHandler
 import com.example.eccomerce_app.data.Room.Dao.CurrencyDao
 import com.example.eccomerce_app.data.repository.ProductRepository
@@ -391,7 +391,7 @@ class ProductViewModel(
         storeId: UUID,
         price: Int,
         symbol: String,
-        productVariants: List<ProductVarientSelection>,
+        productVariants: List<ProductVariantSelection>,
         images: List<File>
     ): String? {
         val result = productRepository.createProduct(
@@ -446,9 +446,9 @@ class ProductViewModel(
         storeId: UUID,
         price: Int?,
         symbol: String?,
-        productVariants: List<ProductVarientSelection>?,
+        productVariants: List<ProductVariantSelection>?,
         images: List<File>?,
-        deletedProductVariants: List<ProductVarientSelection>?,
+        deletedProductVariants: List<ProductVariantSelection>?,
         deletedImages: List<String>?
 
     ): String? {

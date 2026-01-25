@@ -49,13 +49,15 @@ fun CheckoutScreen(
     generalSettingViewModel: GeneralSettingViewModel,
     orderViewModel: OrderViewModel,
     paymentViewModel: PaymentViewModel,
-    paymentTypeViewModel: PaymentTypeViewModel
+    paymentTypeViewModel: PaymentTypeViewModel,
+    currencyViewModel:CurrencyViewModel
 ) {
     val context = LocalContext.current
     val publicKey = rememberSaveable { mutableStateOf(Secrets.getStripKey()) }
     val coroutine = rememberCoroutineScope()
     val cartData = cartViewModel.cartItems.collectAsState()
     val paymentTypes = paymentTypeViewModel.paymentTypes.collectAsState()
+    val currenCurrncy = currencyViewModel.selectedCurrency.collectAsState()
 
     val snackBarHostState = remember { SnackbarHostState() }
 
@@ -67,6 +69,8 @@ fun CheckoutScreen(
 
 
     val isSendingData = remember { mutableStateOf(false) }
+
+    val paymentSecret = remember { mutableStateOf("") }
 
     fun updateConditionValue(isSendingDataValue: Boolean? = null) {
         if (isSendingDataValue != null) isSendingData.value = isSendingDataValue
@@ -83,7 +87,7 @@ fun CheckoutScreen(
     val selectedPaymentMethod = remember { mutableIntStateOf(0) }
 
 
-    fun submitOrderFun(isStartLoading: Boolean=false){
+    fun submitOrderFun(isStartLoading: Boolean=false,stripIntentId:String?=null){
         coroutine.launch {
           if(!isStartLoading){
               updateConditionValue(isSendingDataValue = false)
@@ -92,7 +96,10 @@ fun CheckoutScreen(
                 orderViewModel.submitOrder(
                     cartItems = cartData.value,
                     userAddress = currentAddress!!,
-                    clearCartData = { cartViewModel.clearCart() })
+                    symbol= currenCurrncy.value?.symbol?:"$",
+                    clearCartData = { cartViewModel.clearCart() },
+                    stripIntentId=stripIntentId,
+                    paymentType =paymentTypes.value[selectedPaymentMethod.intValue].id)
             }.await()
             updateConditionValue(isSendingDataValue = false)
 
@@ -116,7 +123,7 @@ fun CheckoutScreen(
     val paymentResultCallback: (PaymentSheetResult) -> Unit = { result: PaymentSheetResult ->
         when (result) {
             is PaymentSheetResult.Completed -> { /* Success! */
-                submitOrderFun(true)
+                submitOrderFun(true,paymentSecret.value.substringBefore("_secret_"))
                }
 
             is PaymentSheetResult.Canceled -> { /* User backed out */
@@ -149,8 +156,10 @@ fun CheckoutScreen(
             val result =
                 async { paymentViewModel.submitOrderToStripe(cartData.value.totalPrice) }.await()
             if (result == null) {
+                updateConditionValue(false)
                 return@launch
             }
+            paymentSecret.value = result
 
             paymentSheet.presentWithPaymentIntent(
                 result,
@@ -175,6 +184,7 @@ fun CheckoutScreen(
             }
         }
     }
+
     LaunchedEffect(selectedPaymentMethod.intValue) {
         if (paymentTypes.value[selectedPaymentMethod.intValue].name == "Stripe")
             PaymentConfiguration.init(context, publicKey.value)

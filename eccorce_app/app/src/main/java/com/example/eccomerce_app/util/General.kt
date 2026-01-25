@@ -81,7 +81,7 @@ object General {
 //        context.resources.updateConfiguration(config, context.resources.displayMetrics)
     }
 
-    fun convertPriceToAnotherCurrency(price: Double,productSymbol:String,selectedCurrency: Currency?,currencies:List<Currency>?): Double{
+    fun convertPriceToAnotherCurrency(price: Int,productSymbol:String,selectedCurrency: Currency?,currencies:List<Currency>?): Int{
         if(currencies.isNullOrEmpty())return price
         if(selectedCurrency==null)return price
 

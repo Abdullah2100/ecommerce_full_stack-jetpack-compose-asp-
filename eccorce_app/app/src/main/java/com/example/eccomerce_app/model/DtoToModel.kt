@@ -131,7 +131,7 @@ object DtoToModel {
         )
     }
 
-    fun ProductVarientDto.toProductVariant(): ProductVariant {
+    fun ProductVariantDto.toProductVariant(): ProductVariant {
         return ProductVariant(
             id = this.id,
             name = this.name,

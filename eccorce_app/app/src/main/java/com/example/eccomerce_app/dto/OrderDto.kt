@@ -29,7 +29,11 @@ data class CreateOrderDto(
     val Longitude: Double,
     val Latitude: Double,
     val TotalPrice: Long,
+    val Symbol: String,
+    @Serializable(with = UUIDKserialize::class)
+    val PaymentTypeId: UUID,
     val Items: List<CreateOrderItemDto>,
+    val PaymentId: String?,
 )
 
 @Serializable

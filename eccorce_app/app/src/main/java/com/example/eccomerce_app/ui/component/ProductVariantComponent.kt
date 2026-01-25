@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.example.e_commercompose.R
 import com.example.eccomerce_app.model.ProductVariant
-import com.example.e_commercompose.model.ProductVarientSelection
+import com.example.eccomerce_app.model.ProductVariantSelection
 import com.example.e_commercompose.model.VarirntModel
 import com.example.e_commercompose.ui.component.Sizer
 import com.example.e_commercompose.ui.theme.CustomColor
@@ -164,9 +164,9 @@ fun ProductVariantComponent(
 
 @Composable
 fun ProductVariantCreateComponent(
-    productVariants: List<ProductVarientSelection>,
+    productVariants: List<ProductVariantSelection>,
     variants: List<VarirntModel>? =null,
-    onRemoveProductVariant: (value: ProductVarientSelection) -> Unit
+    onRemoveProductVariant: (value: ProductVariantSelection) -> Unit
 ){
     FlowRow {
         productVariants.forEach { value ->

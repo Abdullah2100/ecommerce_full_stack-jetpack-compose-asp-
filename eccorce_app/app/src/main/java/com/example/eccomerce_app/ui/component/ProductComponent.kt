@@ -62,7 +62,11 @@ import com.example.e_commercompose.ui.theme.CustomColor
 import com.example.eccomerce_app.util.General.toCustomFil
 import java.util.UUID
 
-
+/**
+ * this nice but need to be more clear
+ * @constructor nice
+ * @see Int
+ */
 @Composable
 fun ProductShape(
     product: List<ProductModel>,

@@ -114,7 +114,10 @@ class OrderViewModel(
     suspend fun submitOrder(
         cartItems: CartModel,
         userAddress: Address?,
-        clearCartData: () -> Unit
+        clearCartData: () -> Unit,
+        symbol: String,
+        paymentType: UUID,
+        stripIntentId: String?=null
     ): String? {
         val result = orderRepository.submitOrder(
             CreateOrderDto(
@@ -123,7 +126,10 @@ class OrderViewModel(
                 Latitude = userAddress?.latitude
                     ?: 0.0,
                 Items = cartItems.cartProducts.map { it.toOrderRequestItemDto() },
-                TotalPrice = cartItems.totalPrice
+                TotalPrice = cartItems.totalPrice,
+                Symbol = symbol,
+                PaymentTypeId = paymentType,
+                PaymentId=stripIntentId
             )
         )
         return  when (result) {

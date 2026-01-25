@@ -1,7 +1,7 @@
 package com.example.eccomerce_app.data.repository
 
 
-import com.example.e_commercompose.model.ProductVarientSelection
+import com.example.eccomerce_app.model.ProductVariantSelection
 import com.example.eccomerce_app.dto.ProductDto
 import com.example.eccomerce_app.util.GeneralValue
 import com.example.eccomerce_app.util.Secrets
@@ -203,7 +203,7 @@ class ProductRepository(val client: HttpClient)  {
         storeId: UUID,
         price: Int,
         symbol: String,
-        productVariants: List<ProductVarientSelection>,
+        productVariants: List<ProductVariantSelection>,
         images: List<File>
     ): NetworkCallHandler {
         return try {
@@ -304,9 +304,9 @@ class ProductRepository(val client: HttpClient)  {
         storeId: UUID,
         price: Int?,
         symbol: String?,
-        productVariants: List<ProductVarientSelection>?,
+        productVariants: List<ProductVariantSelection>?,
         images: List<File>?,
-        deletedProductVariants: List<ProductVarientSelection>?,
+        deletedProductVariants: List<ProductVariantSelection>?,
         deleteImages: List<String>?
     ): NetworkCallHandler {
         return try {

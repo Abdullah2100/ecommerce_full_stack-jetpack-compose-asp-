@@ -20,7 +20,9 @@ import com.example.eccomerce_app.data.Room.Model.IsPassOnBoardingScreen
         Currency::class
     ], version = 1, exportSchema = false
 )
-abstract class DataBase : RoomDatabase() {
+abstract class DataBase
+    : RoomDatabase()
+{
     abstract fun authDao(): AuthDao
     abstract fun currentLocal(): LocaleDao
     abstract fun currencyDao(): CurrencyDao
